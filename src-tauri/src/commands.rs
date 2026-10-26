@@ -2527,6 +2527,9 @@ impl AppState {
     }
 
     pub(crate) fn maybe_start_realtime(&self, app: &tauri::AppHandle) {
+        if !crate::COLLABORATION_ENABLED {
+            return;
+        }
         let (is_bound, sync_protocol) = self
             .with_conn(|conn| {
                 Ok((
@@ -2592,6 +2595,9 @@ impl AppState {
     }
 
     fn can_schedule_background_sync(&self) -> bool {
+        if !crate::COLLABORATION_ENABLED {
+            return false;
+        }
         let has_session = self
             .sync_session
             .lock()
@@ -2889,6 +2895,7 @@ pub async fn sync_sign_in(
     email: String,
     password: String,
 ) -> Result<(), String> {
+    crate::require_collaboration()?;
     let cfg = sync_server_config(&app)?;
     let client = sync::client().map_err(|e| e.to_string())?;
 
@@ -2914,6 +2921,9 @@ pub async fn sync_restore_session(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<bool, String> {
+    if !crate::COLLABORATION_ENABLED {
+        return Ok(false);
+    }
     let Ok(cfg) = sync_server_config(&app) else {
         return Ok(false);
     };
@@ -2950,6 +2960,7 @@ pub async fn sync_list_memberships(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<Vec<sync::MembershipSummary>, String> {
+    crate::require_collaboration()?;
     let cfg = sync_server_config(&app)?;
     let session = state.sync_session()?;
     let client = sync::client().map_err(|e| e.to_string())?;
@@ -2981,6 +2992,7 @@ pub fn sync_join_project(
     state: State<'_, AppState>,
     project_id: String,
 ) -> Result<(), String> {
+    crate::require_collaboration()?;
     let cfg = sync_server_config(&app)?;
     let cached_v = state.cached_server_schema(&cfg.url);
     match cached_v {
@@ -3056,6 +3068,7 @@ pub async fn sync_sign_up(
     email: String,
     password: String,
 ) -> Result<bool, String> {
+    crate::require_collaboration()?;
     let cfg = sync_server_config(&app)?;
     let client = sync::client().map_err(|e| e.to_string())?;
     match sync::sign_up(&client, &cfg, email.trim(), &password)
@@ -3083,6 +3096,7 @@ pub async fn sync_request_password_reset(
     app: tauri::AppHandle,
     email: String,
 ) -> Result<(), String> {
+    crate::require_collaboration()?;
     let cfg = sync_server_config(&app)?;
     let client = sync::client().map_err(|e| e.to_string())?;
     sync::request_password_reset(&client, &cfg, email.trim())
@@ -3103,6 +3117,7 @@ pub async fn sync_complete_password_reset(
     access_token: Option<String>,
     refresh_token: Option<String>,
 ) -> Result<(), String> {
+    crate::require_collaboration()?;
     let cfg = sync_server_config(&app)?;
     let client = sync::client().map_err(|e| e.to_string())?;
     let session = sync::complete_password_reset(
@@ -3134,6 +3149,7 @@ pub async fn sync_redeem_invite(
     state: State<'_, AppState>,
     code: String,
 ) -> Result<sync::Redeemed, String> {
+    crate::require_collaboration()?;
     state.require_server_schema(&app).await?;
     let cfg = sync_server_config(&app)?;
     let session = state.sync_session()?;
@@ -3164,6 +3180,7 @@ pub async fn sync_create_project(
     state: State<'_, AppState>,
     title: String,
 ) -> Result<CreatedGroup, String> {
+    crate::require_collaboration()?;
     state.require_server_schema(&app).await?;
     let cfg = state.project_sync_config(&app)?;
     let session = state.sync_session()?;
@@ -3201,6 +3218,7 @@ pub async fn sync_join_group(
     key: String,
     coder_name: String,
 ) -> Result<sync::JoinedGroup, String> {
+    crate::require_collaboration()?;
     state.require_server_schema(&app).await?;
     let cfg = sync_server_config(&app)?;
     let session = state.sync_session()?;
@@ -4169,6 +4187,7 @@ pub async fn sync_now(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<SyncOutcome, String> {
+    crate::require_collaboration()?;
     state
         .request_sync(app, crate::sync_coordinator::SyncTrigger::Manual)
         .await

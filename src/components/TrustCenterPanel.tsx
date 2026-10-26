@@ -16,11 +16,13 @@ import {
   PROVENANCE_SIGNALS,
   PUBLISHER_VERIFICATION_NOTICE,
   STORED_SIGN_IN,
+  LOCAL_ONLY_SUMMARY,
   SUPPORT_CHANNELS,
   SUPPORT_MATRIX,
   WINDOWS_WARNING_CARDS,
   type WarningCard,
 } from "../content/trust-and-permissions";
+import { COLLABORATION_ENABLED } from "../lib/features";
 import { useAppStore } from "../store/app-store";
 import { SideSheet } from "./ui/Surfaces";
 
@@ -237,38 +239,47 @@ export function TrustCenterPanel() {
         </section>
 
         {/* Local vs collaboration */}
-        <section id="trust-section-data">
-          <h3 className="eyebrow">Local vs collaboration</h3>
-          <p className="mt-2 text-[13px] font-medium">{DATA_BOUNDARY_SUMMARY}</p>
-          <table className="mt-3 w-full text-left text-[12px]">
-            <thead>
-              <tr style={{ color: "var(--ink-3)" }}>
-                <th className="py-1 pr-2 font-medium">Category</th>
-                <th className="py-1 pr-2 font-medium">Synced when collaborating</th>
-                <th className="py-1 font-medium">Stays local</th>
-              </tr>
-            </thead>
-            <tbody>
-              {DATA_BOUNDARY.map((row) => (
-                <tr key={row.category} className="border-t border-[var(--border)] align-top">
-                  <td className="py-2 pr-2 font-medium">{row.category}</td>
-                  <td className="py-2 pr-2" style={{ color: "var(--ink-2)" }}>
-                    {row.syncedWhenCollaborating}
-                  </td>
-                  <td className="py-2" style={{ color: "var(--ink-2)" }}>
-                    {row.keptLocal}
-                  </td>
+        {!COLLABORATION_ENABLED ? (
+          <section id="trust-section-data">
+            <h3 className="eyebrow">Where your data lives</h3>
+            <p className="mt-2 text-[13px] font-medium">{LOCAL_ONLY_SUMMARY}</p>
+          </section>
+        ) : (
+          <section id="trust-section-data">
+            <h3 className="eyebrow">Local vs collaboration</h3>
+            <p className="mt-2 text-[13px] font-medium">{DATA_BOUNDARY_SUMMARY}</p>
+            <table className="mt-3 w-full text-left text-[12px]">
+              <thead>
+                <tr style={{ color: "var(--ink-3)" }}>
+                  <th className="py-1 pr-2 font-medium">Category</th>
+                  <th className="py-1 pr-2 font-medium">Synced when collaborating</th>
+                  <th className="py-1 font-medium">Stays local</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {DATA_BOUNDARY.map((row) => (
+                  <tr key={row.category} className="border-t border-[var(--border)] align-top">
+                    <td className="py-2 pr-2 font-medium">{row.category}</td>
+                    <td className="py-2 pr-2" style={{ color: "var(--ink-2)" }}>
+                      {row.syncedWhenCollaborating}
+                    </td>
+                    <td className="py-2" style={{ color: "var(--ink-2)" }}>
+                      {row.keptLocal}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
 
         {/* Network */}
         <section id="trust-section-network">
           <h3 className="eyebrow">Network</h3>
           <div className="mt-2 space-y-1.5 text-[12.5px]">
-            {NETWORK_BEHAVIOR.map((n) => (
+            {NETWORK_BEHAVIOR.filter(
+              (n) => COLLABORATION_ENABLED || !n.endpoint.includes("Supabase"),
+            ).map((n) => (
               <p key={n.purpose}>
                 <span className="font-medium">{n.purpose}</span> —{" "}
                 {n.endpoint}, outbound {n.protocol.replace("Outbound ", "")}.
@@ -279,22 +290,24 @@ export function TrustCenterPanel() {
             ))}
           </div>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-[12.5px]" style={{ color: "var(--ink-2)" }}>
-            {NETWORK_NOTES.map((note) => (
+            {(COLLABORATION_ENABLED ? NETWORK_NOTES : NETWORK_NOTES.slice(1, 2)).map((note) => (
               <li key={note}>{note}</li>
             ))}
           </ul>
         </section>
 
         {/* Stored sign-in */}
-        <section id="trust-section-signin">
-          <h3 className="eyebrow">Stored sign-in</h3>
-          <p className="mt-2 text-[12.5px]" style={{ color: "var(--ink-2)" }}>
-            {isMac ? STORED_SIGN_IN.macos : STORED_SIGN_IN.windows}
-          </p>
-          <p className="mt-2 text-[12.5px]" style={{ color: "var(--ink-2)" }}>
-            {STORED_SIGN_IN.universalNote}
-          </p>
-        </section>
+        {COLLABORATION_ENABLED && (
+          <section id="trust-section-signin">
+            <h3 className="eyebrow">Stored sign-in</h3>
+            <p className="mt-2 text-[12.5px]" style={{ color: "var(--ink-2)" }}>
+              {isMac ? STORED_SIGN_IN.macos : STORED_SIGN_IN.windows}
+            </p>
+            <p className="mt-2 text-[12.5px]" style={{ color: "var(--ink-2)" }}>
+              {STORED_SIGN_IN.universalNote}
+            </p>
+          </section>
+        )}
 
         {/* Support */}
         <section id="trust-section-support">

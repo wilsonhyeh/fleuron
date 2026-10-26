@@ -7,6 +7,9 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// The restore cases below are the collaboration path, which the shelved build skips.
+vi.mock("../lib/features", () => ({ COLLABORATION_ENABLED: true }));
+
 const { api } = vi.hoisted(() => ({
   api: {
     getAppPreferences: vi.fn(),

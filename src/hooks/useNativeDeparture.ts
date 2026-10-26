@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import type { NativeDepartureRequest } from "../lib/types";
 import { useProjectStore } from "../store/project-store";
 import { useNoteDepartureStore } from "../store/note-departure-store";
+import { COLLABORATION_ENABLED } from "../lib/features";
 
 /**
  * Native close/quit guard (menu quit, Cmd+Q, Alt+F4, window close).
@@ -47,8 +48,8 @@ export function useNativeDeparture() {
         // close path. Cancelling it keeps the study open (and answers the
         // held intent as cancelled from the modal's dismiss path).
         try {
-          const status = await api.syncStatus();
-          if (status.signedIn && status.pendingChanges > 0) {
+          const status = COLLABORATION_ENABLED ? await api.syncStatus() : null;
+          if (status?.signedIn && status.pendingChanges > 0) {
             useProjectStore.setState({
               showCloseConfirm: true,
               closeDraftApproved: draftApproved,

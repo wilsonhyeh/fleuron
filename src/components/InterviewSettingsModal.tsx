@@ -3,6 +3,7 @@ import { Modal } from "./ui/Surfaces";
 import { Icon } from "./ui/Icon";
 import { InfoTip } from "./ui/InfoTip";
 import type { Interview, InterviewDeleteImpact } from "../lib/types";
+import { COLLABORATION_ENABLED } from "../lib/features";
 
 interface InterviewSettingsModalProps {
   interview: Interview | null;
@@ -181,7 +182,11 @@ export function InterviewSettingsModal({
         {interview.participant_label}
       </div>
       <p className="hint mt-1.5 flex items-center gap-1.5 text-[11.5px]">
-        <span>Used to match this interview across group members.</span>
+        <span>
+          {COLLABORATION_ENABLED
+            ? "Used to match this interview across group members."
+            : "Identifies this interview in the study and in exports."}
+        </span>
         <InfoTip content="Participant IDs cannot be changed after creation." />
       </p>
 

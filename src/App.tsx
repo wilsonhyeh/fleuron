@@ -19,6 +19,7 @@ import { SelftestRunner } from "./selftest/runner";
 import { ToastStack } from "./components/ToastStack";
 import { NoteRecoveryPanel } from "./components/NoteRecoveryPanel";
 import { api } from "./lib/api";
+import { COLLABORATION_ENABLED } from "./lib/features";
 import { useAppInit, useGlobalKeyboardShortcuts } from "./hooks/useAppInit";
 import { useMenuEvents } from "./hooks/useMenuEvents";
 import { useNativeDeparture } from "./hooks/useNativeDeparture";
@@ -81,9 +82,9 @@ function App() {
       <SetupWizard />
       <UserGuidePanel />
       <AboutModal />
-      <SyncSheet />
+      {COLLABORATION_ENABLED && <SyncSheet />}
       <CoderIdentityModal />
-      <JoinStudyModal />
+      {COLLABORATION_ENABLED && <JoinStudyModal />}
       <SettingsSheet />
       <TrustCenterPanel />
       <ConfirmDialog />

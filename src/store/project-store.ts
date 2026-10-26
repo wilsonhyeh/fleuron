@@ -42,6 +42,7 @@ import type {
   TranscriptSegment,
 } from "../lib/types";
 import { firstUnreviewedSegmentId } from "../lib/reviewed-resume";
+import { COLLABORATION_ENABLED } from "../lib/features";
 
 let selectInterviewRequestToken = 0;
 
@@ -1212,8 +1213,9 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     // the other coder has never received. Best-effort — a sync status that
     // cannot be read must not block closing a project.
     try {
-      const status = await api.syncStatus();
-      if (status.signedIn && status.pendingChanges > 0) {
+      // Shelved collaboration: nothing is ever sent, so nothing is outstanding.
+      const status = COLLABORATION_ENABLED ? await api.syncStatus() : null;
+      if (status?.signedIn && status.pendingChanges > 0) {
         set({ showCloseConfirm: true, closeDraftApproved: draftApproved });
         return;
       }

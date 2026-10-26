@@ -3,6 +3,7 @@ import { useAppStore, type ThemePreference } from "../store/app-store";
 import { useSyncStore } from "../store/sync-store";
 import { SideSheet } from "./ui/Surfaces";
 import { AccountForm } from "./AccountForm";
+import { COLLABORATION_ENABLED } from "../lib/features";
 import { api } from "../lib/api";
 import { isMac } from "../lib/platform";
 import { STORED_SIGN_IN, CRASH_LOG_CAUTION, OFFICIAL_URLS } from "../content/trust-and-permissions";
@@ -80,49 +81,51 @@ export function SettingsSheet() {
       width="max-w-md"
     >
       <div className="scroll flex-1 space-y-7 px-5 py-5">
-        <section>
-          <h3 className="eyebrow">Account</h3>
-          {signedIn ? (
-            <div className="mt-3">
-              <p className="text-[13px]">
-                Signed in
-                {signedInEmail ? (
-                  <>
-                    {" "}
-                    as <span className="font-medium">{signedInEmail}</span>
-                  </>
-                ) : null}
-                . A sign-in token stays in this machine's keychain so you do
-                not re-enter the password every launch. The password itself is
-                never stored.
-              </p>
-              <p className="hint mt-2">
-                {isMac
-                  ? STORED_SIGN_IN.macos
-                  : STORED_SIGN_IN.windows}
-              </p>
-              <button
-                type="button"
-                className="btn btn-outline btn-sm mt-3"
-                onClick={() => void signOut()}
-              >
-                Sign out of Fleuron
-              </button>
-              <p className="hint mt-2">
-                Signing out does not leave a group or unbind a folder. It only
-                forgets this account on this machine.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-3">
-              <p className="hint mb-3">
-                One account per person. Joining a group is a separate step —
-                an account on its own grants nothing.
-              </p>
-              <AccountForm autoFocus />
-            </div>
-          )}
-        </section>
+        {COLLABORATION_ENABLED && (
+          <section>
+            <h3 className="eyebrow">Account</h3>
+            {signedIn ? (
+              <div className="mt-3">
+                <p className="text-[13px]">
+                  Signed in
+                  {signedInEmail ? (
+                    <>
+                      {" "}
+                      as <span className="font-medium">{signedInEmail}</span>
+                    </>
+                  ) : null}
+                  . A sign-in token stays in this machine's keychain so you do
+                  not re-enter the password every launch. The password itself is
+                  never stored.
+                </p>
+                <p className="hint mt-2">
+                  {isMac
+                    ? STORED_SIGN_IN.macos
+                    : STORED_SIGN_IN.windows}
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm mt-3"
+                  onClick={() => void signOut()}
+                >
+                  Sign out of Fleuron
+                </button>
+                <p className="hint mt-2">
+                  Signing out does not leave a group or unbind a folder. It only
+                  forgets this account on this machine.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-3">
+                <p className="hint mb-3">
+                  One account per person. Joining a group is a separate step —
+                  an account on its own grants nothing.
+                </p>
+                <AccountForm autoFocus />
+              </div>
+            )}
+          </section>
+        )}
 
         <section>
           <h3 className="eyebrow">Appearance</h3>

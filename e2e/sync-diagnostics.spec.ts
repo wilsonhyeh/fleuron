@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { gotoApp, openWorkspace } from "./helpers/workspace";
+import { COLLABORATION_ENABLED } from "../src/lib/features";
+
+// Every test here drives the collaboration UI, which the shelved build hides.
+test.skip(!COLLABORATION_ENABLED, "Collaboration is shelved (src/lib/features.ts)");
 
 test.describe("Silent Protocol 2 activation and sanitized sync status", () => {
   test.beforeEach(async ({ page }) => {

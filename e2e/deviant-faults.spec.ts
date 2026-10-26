@@ -5,6 +5,9 @@ import {
   openWorkspace,
 } from "./helpers/workspace";
 import { flushDiagnostics, watchPageDiagnostics } from "./helpers/diagnostics";
+import { COLLABORATION_ENABLED } from "../src/lib/features";
+
+const SHELVED = "Collaboration is shelved (src/lib/features.ts)";
 
 /**
  * Fault-injection journeys (E2E plan Task 4): the app must render a sane,
@@ -15,6 +18,8 @@ import { flushDiagnostics, watchPageDiagnostics } from "./helpers/diagnostics";
 let consoleLines: ReturnType<typeof watchPageDiagnostics>;
 
 test.afterEach(async ({ page }, testInfo) => {
+  // A test skipped before it starts watching has no console to flush.
+  if (testInfo.status === "skipped") return;
   await flushDiagnostics(page, testInfo, consoleLines);
 });
 
@@ -40,6 +45,7 @@ async function openSyncSheet(page: import("@playwright/test").Page) {
 test("fixture=sync-error renders the failure as a friendly status", async ({
   page,
 }) => {
+  test.skip(!COLLABORATION_ENABLED, SHELVED);
   test.setTimeout(120_000);
   consoleLines = watchPageDiagnostics(page);
   const errors = collectErrors(page);
@@ -67,6 +73,7 @@ test("fixture=sync-error renders the failure as a friendly status", async ({
 test("fixture=server-conflict surfaces the conflict and stays usable", async ({
   page,
 }) => {
+  test.skip(!COLLABORATION_ENABLED, SHELVED);
   test.setTimeout(120_000);
   consoleLines = watchPageDiagnostics(page);
   const errors = collectErrors(page);
@@ -92,6 +99,7 @@ test("fixture=server-conflict surfaces the conflict and stays usable", async ({
 test("fixture=auth-error shows actionable copy and never advances", async ({
   page,
 }) => {
+  test.skip(!COLLABORATION_ENABLED, SHELVED);
   test.setTimeout(120_000);
   consoleLines = watchPageDiagnostics(page);
   const errors = collectErrors(page);

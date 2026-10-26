@@ -373,15 +373,19 @@ impl UpdateCoordinator {
         self.publish(&app);
 
         state.set_update_write_blocked(true);
-        let preflight = tokio::time::timeout(
-            Duration::from_secs(5),
-            state.request_sync(app.clone(), SyncTrigger::UpdaterPreflight),
-        )
-        .await;
-        let sync_preflight_outcome = match preflight {
-            Ok(Ok(_)) => "synced",
-            Ok(Err(_)) => "offline_or_failed",
-            Err(_) => "timed_out",
+        let sync_preflight_outcome = if crate::COLLABORATION_ENABLED {
+            let preflight = tokio::time::timeout(
+                Duration::from_secs(5),
+                state.request_sync(app.clone(), SyncTrigger::UpdaterPreflight),
+            )
+            .await;
+            match preflight {
+                Ok(Ok(_)) => "synced",
+                Ok(Err(_)) => "offline_or_failed",
+                Err(_) => "timed_out",
+            }
+        } else {
+            "skipped"
         }
         .to_string();
         state.sync_coordinator.cancel();

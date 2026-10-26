@@ -58,6 +58,24 @@ mod sync_v2_harness;
 mod update_coordinator;
 mod window_guard;
 
+/// Collaboration — accounts, groups and sync — is shelved while the
+/// single-user experience is finished. With this off the app never restores a
+/// sign-in, never polls or opens a realtime socket, and refuses every command
+/// that would sign in, join, share or sync. Nothing is deleted: a study that
+/// was already in a group keeps its binding and queues its changes locally, so
+/// turning this back on (here and in `src/lib/features.ts`) resumes where it
+/// left off.
+pub const COLLABORATION_ENABLED: bool = false;
+
+/// The one refusal every shelved collaboration command returns.
+pub(crate) fn require_collaboration() -> Result<(), String> {
+    if COLLABORATION_ENABLED {
+        Ok(())
+    } else {
+        Err("Collaboration is turned off in this version of Fleuron.".into())
+    }
+}
+
 use commands::{AppState, PendingOpen};
 use tauri::{Emitter, Listener, Manager, RunEvent};
 
@@ -187,9 +205,11 @@ pub fn run() {
                     sync_coordinator::SyncTrigger::NetworkRecovered,
                 );
             });
-            app.handle()
-                .state::<AppState>()
-                .start_sync_polling(app.handle().clone());
+            if COLLABORATION_ENABLED {
+                app.handle()
+                    .state::<AppState>()
+                    .start_sync_polling(app.handle().clone());
+            }
             window_guard::clamp_main_window_to_work_area(app.handle());
 
             if !crate::selftest::is_selftest_active() {

@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// These cover the collaboration paths themselves, which the shelved build skips.
+vi.mock("../lib/features", () => ({ COLLABORATION_ENABLED: true }));
+
 vi.mock("../lib/api", () => ({
   api: {
     syncNow: vi.fn(),

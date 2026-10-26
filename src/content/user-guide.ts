@@ -1,4 +1,5 @@
 import { isMac, shortcut } from "../lib/platform";
+import { COLLABORATION_ENABLED } from "../lib/features";
 import {
   DATA_BOUNDARY_SUMMARY,
   OFFICIAL_URLS,
@@ -23,7 +24,7 @@ export interface GuideSection {
   relatedSectionIds?: string[];
 }
 
-export const GUIDE_CATEGORIES: { id: GuideCategory; label: string }[] = [
+const ALL_GUIDE_CATEGORIES: { id: GuideCategory; label: string }[] = [
   { id: "getting-started", label: "Getting started" },
   { id: "sync", label: "How sync works" },
   { id: "trust", label: "Trust, privacy & permissions" },
@@ -32,21 +33,27 @@ export const GUIDE_CATEGORIES: { id: GuideCategory; label: string }[] = [
   { id: "reflexive-ta", label: "Reflexive TA" },
 ];
 
-export const USER_GUIDE_SECTIONS: GuideSection[] = [
+const ALL_GUIDE_SECTIONS: GuideSection[] = [
   {
     id: "getting-started",
     category: "getting-started",
     title: "Quick reference: getting started",
-    whenToUse: "Opening Fleuron, starting a study, or joining an existing study.",
+    whenToUse: COLLABORATION_ENABLED
+      ? "Opening Fleuron, starting a study, or joining an existing study."
+      : "Opening Fleuron or starting a study.",
     steps: [
-      "Starting a study: Click 'Set up a new study' on the home screen. Name your study and choose a local folder.",
-      "Joining a study: Click 'Join with a key' and paste the 8-character study key sent by your colleague.",
+      "Starting a study: Click 'New study' on the home screen. Name your study and choose a local folder.",
+      ...(COLLABORATION_ENABLED
+        ? ["Joining a study: Click 'Join with a key' and paste the 8-character study key sent by your colleague."]
+        : []),
       "Importing transcripts: Add participant IDs (e.g. P01, P02) and point Fleuron at your local .docx or .vtt transcript files.",
       "Coding text: Select any text passage in the transcript to open the coding bubble and apply or create codes.",
     ],
     expectedResults: [
       "Your project is stored locally as an SQLite database (project.db).",
-      "Codes and coding decisions sync automatically in the background.",
+      ...(COLLABORATION_ENABLED
+        ? ["Codes and coding decisions sync automatically in the background."]
+        : []),
     ],
     relatedSectionIds: ["sync-with-your-coder", "shortcuts", "troubleshooting"],
   },
@@ -133,35 +140,65 @@ export const USER_GUIDE_SECTIONS: GuideSection[] = [
   {
     id: "troubleshooting",
     category: "troubleshooting",
-    title: "Troubleshooting: near-miss IDs, missing transcripts & conflicts",
-    whenToUse: "Diagnosing unlinked transcripts, missing highlights, or sync issues.",
-    steps: [
-      "Near-miss Participant IDs: If your colleague typed 'P07' and you typed 'P7', Fleuron warns you. Re-name the participant in Interview Settings to match.",
-      "Missing transcript file: If a participant has coding from a colleague but no local transcript text, use 'Link transcripts' to point to the local .docx/.vtt file.",
-      "Unresolved code highlights: A neutral dotted highlight indicates a code from a colleague that is still pulling or syncing.",
-      "Offline work: You can code freely while offline. All changes queue locally and reconcile automatically once reconnected.",
-    ],
-    expectedResults: [
-      "Coding aligns across the team through deterministic content hashes; conflicts surface in the sync sheet instead of silently overwriting anyone's work.",
-    ],
+    ...(COLLABORATION_ENABLED
+      ? {
+          title: "Troubleshooting: near-miss IDs, missing transcripts & conflicts",
+          whenToUse: "Diagnosing unlinked transcripts, missing highlights, or sync issues.",
+          steps: [
+            "Near-miss Participant IDs: If your colleague typed 'P07' and you typed 'P7', Fleuron warns you. Re-name the participant in Interview Settings to match.",
+            "Missing transcript file: If a participant has coding from a colleague but no local transcript text, use 'Link transcripts' to point to the local .docx/.vtt file.",
+            "Unresolved code highlights: A neutral dotted highlight indicates a code from a colleague that is still pulling or syncing.",
+            "Offline work: You can code freely while offline. All changes queue locally and reconcile automatically once reconnected.",
+          ],
+          expectedResults: [
+            "Coding aligns across the team through deterministic content hashes; conflicts surface in the sync sheet instead of silently overwriting anyone's work.",
+          ],
+        }
+      : {
+          title: "Troubleshooting: missing transcripts",
+          whenToUse: "An interview shows no transcript text, or you can't find the study folder.",
+          steps: [
+            "Missing transcript file: if a transcript file moved, use 'Link transcripts' to point Fleuron at the local .docx/.vtt file again.",
+            "Finding the study: click Saved in the toolbar to see which folder holds the study, and to open it.",
+          ],
+          expectedResults: ["The interview shows its transcript and coding again."],
+        }),
     relatedSectionIds: ["sync-with-your-coder", "shortcuts"],
   },
   {
     id: "reflexive-ta",
     category: "reflexive-ta",
     title: "Reflexive thematic analysis principles",
-    whenToUse: "Designing codebooks and collaborating organically in Braun & Clarke reflexive TA.",
+    whenToUse: COLLABORATION_ENABLED
+      ? "Designing codebooks and collaborating organically in Braun & Clarke reflexive TA."
+      : "Designing codebooks in Braun & Clarke reflexive TA.",
     steps: [
       "Codes evolve organically: Create, rename, nest, or retire codes as your conceptual understanding deepens.",
-      "Overlapping codes: Two coders marking overlapping phrases is normal; hover highlights to view coder attribution.",
+      COLLABORATION_ENABLED
+        ? "Overlapping codes: Two coders marking overlapping phrases is normal; hover highlights to view coder attribution."
+        : "Overlapping codes: applying more than one code to overlapping passages is normal.",
       "Two-level hierarchy: Drag sub-codes onto parent categories, use right-click 'Move into ▸', or press ⌘⌥→ to nest.",
     ],
     expectedResults: [
-      "A rich, collaborative codebook that captures nuanced interpretations.",
+      COLLABORATION_ENABLED
+        ? "A rich, collaborative codebook that captures nuanced interpretations."
+        : "A rich codebook that captures nuanced interpretations.",
     ],
     relatedSectionIds: ["getting-started", "sync-with-your-coder"],
   },
 ];
+
+// With collaboration shelved, the sync section and every link to it drop out.
+export const GUIDE_CATEGORIES = ALL_GUIDE_CATEGORIES.filter(
+  (c) => COLLABORATION_ENABLED || c.id !== "sync",
+);
+
+export const USER_GUIDE_SECTIONS: GuideSection[] = COLLABORATION_ENABLED
+  ? ALL_GUIDE_SECTIONS
+  : ALL_GUIDE_SECTIONS.filter((s) => s.category !== "sync").map((s) => ({
+      ...s,
+      relatedSectionIds: s.relatedSectionIds?.filter((id) => id !== "sync-with-your-coder"),
+    }));
 
 const ALIASES: Record<string, string> = {
   "workspace-overview": "getting-started",

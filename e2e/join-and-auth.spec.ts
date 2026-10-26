@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { flushDiagnostics, watchPageDiagnostics } from "./helpers/diagnostics";
 import { gotoApp } from "./helpers/workspace";
+import { COLLABORATION_ENABLED } from "../src/lib/features";
+
+// Every test here drives the collaboration UI, which the shelved build hides.
+test.skip(!COLLABORATION_ENABLED, "Collaboration is shelved (src/lib/features.ts)");
 
 let consoleLines: ReturnType<typeof watchPageDiagnostics>;
 

@@ -313,6 +313,10 @@ export interface DataBoundaryRow {
 export const DATA_BOUNDARY_SUMMARY =
   "Collaboration sync excludes transcript text and memo fields. It shares account, study, codebook, and coding metadata over encrypted HTTPS/WSS. Quotes copied into codebook fields sync as written; exports may leave your device through sharing or a synced folder.";
 
+/** Said in place of the collaboration boundary while collaboration is shelved. */
+export const LOCAL_ONLY_SUMMARY =
+  "Everything stays on this computer: transcripts, codebook, coding and notes. This version of Fleuron has no accounts and no sync. It goes online only to check for updates and, after you approve one, to download it.";
+
 export const DATA_BOUNDARY: DataBoundaryRow[] = [
   {
     category: "Account and access",

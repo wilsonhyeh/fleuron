@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { api } from "../lib/api";
 import type { GroupInfo, SyncOutcome, SyncStatus } from "../lib/types";
 import { useProjectStore } from "./project-store";
+import { COLLABORATION_ENABLED } from "../lib/features";
 
 let activeUiSyncRequests = 0;
 let inFlightActivation: Promise<void> | null = null;
@@ -124,6 +125,7 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
   sessionRestoreComplete: false,
 
   refreshGroup: async () => {
+    if (!COLLABORATION_ENABLED) return;
     try {
       const group = await api.syncGroupInfo();
       set({ group, groupLoaded: true });
@@ -231,6 +233,12 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
    * coder has done anything would be the first thing they see.
    */
   restoreSession: async () => {
+    // Shelved: no sign-in is restored, and status stays null so every
+    // "is this study in a group?" check in the UI reads false.
+    if (!COLLABORATION_ENABLED) {
+      set({ status: null, sessionRestoreComplete: true });
+      return;
+    }
     try {
       set({ sessionRestoreComplete: false });
       await api.syncRestoreSession();
@@ -244,6 +252,7 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
   },
 
   refreshStatus: async () => {
+    if (!COLLABORATION_ENABLED) return;
     try {
       set({ status: await api.syncStatus() });
     } catch {
@@ -323,6 +332,7 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
   },
 
   syncNow: async (opts) => {
+    if (!COLLABORATION_ENABLED) return;
     activeUiSyncRequests += 1;
     set({ syncing: true, error: opts?.silent ? get().error : null });
     try {
@@ -346,6 +356,7 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
   },
 
   maybeAutoActivateV2: async () => {
+    if (!COLLABORATION_ENABLED) return;
     if (inFlightActivation) {
       await inFlightActivation;
       return;
@@ -383,6 +394,7 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
   },
 
   openSyncSheet: () => {
+    if (!COLLABORATION_ENABLED) return;
     set({ showSyncSheet: true, error: null });
     void get().refreshGroup();
   },

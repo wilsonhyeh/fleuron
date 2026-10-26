@@ -160,7 +160,7 @@ export interface UpdateCoordinatorStatus {
   downloadedBytes: number;
   totalBytes: number | null;
   lastCheckedAt: string | null;
-  syncPreflightOutcome: "synced" | "offline_or_failed" | "timed_out" | null;
+  syncPreflightOutcome: "synced" | "offline_or_failed" | "timed_out" | "skipped" | null;
   failure: UpdateFailure | null;
 }
 

@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { gotoApp, openWorkspace } from "./helpers/workspace";
+import { COLLABORATION_ENABLED } from "../src/lib/features";
 
 async function stableScrollTop(
   page: Page,
@@ -35,6 +36,8 @@ test.describe("Transcript scroll and live-sync selection", () => {
   test("Sync now does not resurrect a cleared selection after a deep scroll", async ({
     page,
   }) => {
+    // Drives the sync chip and Sync now, which the shelved build hides.
+    test.skip(!COLLABORATION_ENABLED, "Collaboration is shelved (src/lib/features.ts)");
     await gotoApp(page, "/?fixture=stress");
     await openWorkspace(page);
 

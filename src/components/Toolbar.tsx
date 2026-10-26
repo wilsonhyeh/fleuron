@@ -6,6 +6,7 @@ import { useGuideStore } from "../store/guide-store";
 import { useAppStore } from "../store/app-store";
 import { Menu } from "./ui/Menu";
 import { SyncChip } from "./SyncChip";
+import { COLLABORATION_ENABLED } from "../lib/features";
 import { SaveStatus } from "./SaveStatus";
 import { UpdateAction, describeUpdateAction } from "./UpdateAction";
 import { useSyncStore } from "../store/sync-store";
@@ -270,7 +271,7 @@ export function Toolbar() {
         className="flex shrink-0 items-center gap-2"
       >
         <SaveStatus />
-        <SyncChip />
+        {COLLABORATION_ENABLED && <SyncChip />}
         <UpdateAction compact hideWhenIdle />
 
         <button
@@ -319,12 +320,16 @@ export function Toolbar() {
               section: "study",
               onSelect: () => setShowProjectFiles(true),
             },
-            {
-              label: "Study & sync…",
-              icon: "people",
-              section: "study",
-              onSelect: () => openSyncSheet(),
-            },
+            ...(COLLABORATION_ENABLED
+              ? [
+                  {
+                    label: "Study & sync…",
+                    icon: "people" as const,
+                    section: "study",
+                    onSelect: () => openSyncSheet(),
+                  },
+                ]
+              : []),
             {
               label: "Backups…",
               icon: "layers",

@@ -5,8 +5,10 @@ import { useAppStore } from "../store/app-store";
 import { useGuideStore } from "../store/guide-store";
 import {
   DATA_BOUNDARY_SUMMARY,
+  LOCAL_ONLY_SUMMARY,
   OFFICIAL_URLS,
 } from "../content/trust-and-permissions";
+import { COLLABORATION_ENABLED } from "../lib/features";
 import { UpdateAction } from "./UpdateAction";
 import { Modal } from "./ui/Surfaces";
 
@@ -194,7 +196,7 @@ export function AboutModal() {
         Offline-first qualitative coding for reflexive thematic analysis.
         Import transcripts in any common format, code passages against a living
         codebook, and export coded segments as CSV and markdown.{" "}
-        {DATA_BOUNDARY_SUMMARY}
+        {COLLABORATION_ENABLED ? DATA_BOUNDARY_SUMMARY : LOCAL_ONLY_SUMMARY}
       </p>
 
       <div className="mt-4 rounded-[12px] border border-[var(--border)] p-3">

@@ -15,6 +15,7 @@ import { StepRail, type StepSpec } from "./StepRail";
 import { StudyLabelField } from "../StudyLabelField";
 import { OptionCard } from "./OptionCard";
 import { setupJournal } from "../../lib/setup-journal";
+import { COLLABORATION_ENABLED } from "../../lib/features";
 
 const STEPS: StepSpec[] = [
   { id: "study", title: "Study", caption: "Name it and pick a home" },
@@ -405,7 +406,11 @@ export function SetupWizard() {
             {step === "you" && (
               <Section
                 heading="What's your name?"
-                lede="Codes you apply are stamped with this. Colleagues name themselves when they join a group — you do not list them here."
+                lede={
+                  COLLABORATION_ENABLED
+                    ? "Codes you apply are stamped with this. Colleagues name themselves when they join a group — you do not list them here."
+                    : "Codes you apply are stamped with this, and exports show it."
+                }
               >
                 <div>
                   <label className="label" htmlFor="setup-coder">

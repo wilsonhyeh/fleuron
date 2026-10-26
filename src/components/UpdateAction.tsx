@@ -3,6 +3,7 @@ import type { UpdateCoordinatorStatus } from "../lib/types";
 import { useUpdateStore } from "../store/update-store";
 import { Icon } from "./ui/Icon";
 import { InfoTip } from "./ui/InfoTip";
+import { COLLABORATION_ENABLED } from "../lib/features";
 
 export interface UpdateActionCopy {
   label: string;
@@ -225,7 +226,9 @@ export function UpdateStatus() {
             ) : (
               <>
                 <span>Saved locally. Restarting…</span>
-                <InfoTip content="Fleuron checks for unsent group changes before installing an update." />
+                {COLLABORATION_ENABLED && (
+                  <InfoTip content="Fleuron checks for unsent group changes before installing an update." />
+                )}
               </>
             )}
           </p>
