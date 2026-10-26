@@ -47,7 +47,7 @@ import { SelectionBubble, type BubbleAnchor } from "./SelectionBubble";
 import { SpeakerPickerPopover } from "./SpeakerPickerPopover";
 import { buildMarkMenuItems } from "./TranscriptPanel.menu";
 import { NoteConflictModal } from "./NoteConflictModal";
-import { modKey } from "../lib/platform";
+import { modKey, shortcut } from "../lib/platform";
 import { THEME_GROUND, usePrefersDark } from "../hooks/useTheme";
 import { computeStripeLayout, type StripeLayoutResult } from "../lib/stripe-layout";
 import { Icon } from "./ui/Icon";
@@ -922,41 +922,46 @@ export function TranscriptPanel() {
       data-testid="transcript-panel"
       className="@container glass-panel flex h-full min-h-0 min-w-0 flex-col overflow-hidden"
     >
-      {/* Header bar */}
-      <div className="flex h-[52px] shrink-0 items-center gap-2 border-b border-[var(--g-rim)] px-4">
+      {/* Header bar: the interview on the left (history, picker, its actions,
+          progress), tools for reading it on the right. The picker sizes to
+          its labels instead of stretching across the bar, its "···" sits
+          against it, and zoom is one stepper (⌘− ⌘+ ⌘0 also work). */}
+      <div className="flex h-[52px] shrink-0 items-center gap-3 border-b border-[var(--g-rim)] px-4">
         {interviews.length > 0 ? (
           <>
-            {interviews.length > 1 && <InterviewHistoryNav />}
-            <select
-              value={activeInterviewId ?? ""}
-              onChange={(e) => selectInterview(e.target.value)}
-              aria-label="Current interview"
-              className="field field-sm min-w-0 max-w-[200px] truncate text-[13px] font-medium @2xl:max-w-none"
-            >
-              {interviews.map((iv) => (
-                <option key={iv.id} value={iv.id}>
-                  {iv.participant_label}
-                  {iv.segment_count === 0 ? " (no transcript)" : ""}
-                </option>
-              ))}
-            </select>
-
-            {activeInterview && (
-              <button
-                type="button"
-                onClick={(e) =>
-                  openContextMenu(e, interviewOverflowMenu(activeInterview))
-                }
-                aria-label={`Interview actions for ${activeInterview.participant_label}`}
-                title="Interview actions"
-                className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[var(--ink-2)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            <div className="flex min-w-0 items-center gap-1">
+              {interviews.length > 1 && <InterviewHistoryNav />}
+              <select
+                value={activeInterviewId ?? ""}
+                onChange={(e) => selectInterview(e.target.value)}
+                aria-label="Current interview"
+                className="field field-sm h-7 w-auto min-w-0 max-w-[260px] truncate py-0 text-[13px] font-medium"
               >
-                <Icon name="dots" size={14} />
-              </button>
-            )}
+                {interviews.map((iv) => (
+                  <option key={iv.id} value={iv.id}>
+                    {iv.participant_label}
+                    {iv.segment_count === 0 ? " (no transcript)" : ""}
+                  </option>
+                ))}
+              </select>
+
+              {activeInterview && (
+                <button
+                  type="button"
+                  onClick={(e) =>
+                    openContextMenu(e, interviewOverflowMenu(activeInterview))
+                  }
+                  aria-label={`Interview actions for ${activeInterview.participant_label}`}
+                  title="Interview actions"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[var(--ink-3)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                >
+                  <Icon name="dots" size={14} />
+                </button>
+              )}
+            </div>
 
             {segments.length > 0 && (
-              <span className="text-xs text-[var(--ink-3)] shrink-0 ml-1">
+              <span className="shrink-0 text-[12px] tabular-nums text-[var(--ink-3)]">
                 {reviewedCount} of {segments.length} reviewed
               </span>
             )}
@@ -965,51 +970,12 @@ export function TranscriptPanel() {
           <span className="hint">No interviews yet</span>
         )}
 
-        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+        {segments.length > 0 && (
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {/* Filter sits with Search: both act on this transcript, and it
+                used to live in the window toolbar a row away from it. */}
+            <FilterButton />
 
-          {segments.length > 0 && (
-            <span
-              className="flex items-center gap-0.5"
-              role="group"
-              aria-label="Passage text size"
-            >
-              <button
-                type="button"
-                onClick={() => void setTranscriptZoom(stepZoom(zoom, -1))}
-                disabled={zoom <= ZOOM_MIN}
-                aria-label="Decrease passage text size"
-                title="Decrease passage text size"
-                className="btn btn-ghost btn-sm"
-              >
-                <Icon name="minus" size={13} />
-              </button>
-              <button
-                type="button"
-                onClick={() => void setTranscriptZoom(null)}
-                aria-label={`Reset passage text size (currently ${zoomPercent(zoom)} percent)`}
-                title="Reset to 100%"
-                className="min-w-11 rounded px-1 py-0.5 text-center text-[11px] tabular-nums text-[var(--ink-3)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)]"
-              >
-                {zoomPercent(zoom)}%
-              </button>
-              <button
-                type="button"
-                onClick={() => void setTranscriptZoom(stepZoom(zoom, 1))}
-                disabled={zoom >= ZOOM_MAX}
-                aria-label="Increase passage text size"
-                title="Increase passage text size"
-                className="btn btn-ghost btn-sm"
-              >
-                <Icon name="plus" size={13} />
-              </button>
-            </span>
-          )}
-
-          {/* Filter sits with Search: both act on this transcript, and it
-              used to live in the window toolbar a row away from it. */}
-          {segments.length > 0 && <FilterButton />}
-
-          {segments.length > 0 && (
             <label className="relative flex items-center">
               <Icon
                 name="search"
@@ -1030,11 +996,47 @@ export function TranscriptPanel() {
                 }}
                 placeholder="Search"
                 aria-label="Search transcript"
-                className="field field-sm w-24 pl-7 @2xl:w-36"
+                className="field field-sm h-7 w-28 py-0 pl-7 @2xl:w-44"
               />
             </label>
-          )}
-        </div>
+
+            <span
+              className="flex h-7 shrink-0 items-center rounded-[var(--r-sm)] bg-[var(--g2)] shadow-[inset_0_0_0_1px_var(--g-rim)]"
+              role="group"
+              aria-label="Passage text size"
+            >
+              <button
+                type="button"
+                onClick={() => void setTranscriptZoom(stepZoom(zoom, -1))}
+                disabled={zoom <= ZOOM_MIN}
+                aria-label="Decrease passage text size"
+                title={`Smaller text (${shortcut("mod", "-")})`}
+                className="grid h-full w-7 place-items-center rounded-l-[var(--r-sm)] text-[var(--ink-3)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] disabled:opacity-35 disabled:hover:bg-transparent"
+              >
+                <Icon name="minus" size={12} />
+              </button>
+              <button
+                type="button"
+                onClick={() => void setTranscriptZoom(null)}
+                aria-label={`Reset passage text size (currently ${zoomPercent(zoom)} percent)`}
+                title={`Reset to 100% (${shortcut("mod", "0")})`}
+                className="h-full min-w-11 px-1 text-center text-[11.5px] tabular-nums text-[var(--ink-2)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)]"
+              >
+                {zoomPercent(zoom)}%
+              </button>
+              <button
+                type="button"
+                onClick={() => void setTranscriptZoom(stepZoom(zoom, 1))}
+                disabled={zoom >= ZOOM_MAX}
+                aria-label="Increase passage text size"
+                title={`Larger text (${shortcut("mod", "+")})`}
+                className="grid h-full w-7 place-items-center rounded-r-[var(--r-sm)] text-[var(--ink-3)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] disabled:opacity-35 disabled:hover:bg-transparent"
+              >
+                <Icon name="plus" size={12} />
+              </button>
+            </span>
+          </div>
+        )}
       </div>
 
       {segments.length === 0 ? (

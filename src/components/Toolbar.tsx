@@ -5,6 +5,7 @@ import { useProjectStore } from "../store/project-store";
 import { useGuideStore } from "../store/guide-store";
 import { useAppStore } from "../store/app-store";
 import { Menu } from "./ui/Menu";
+import { Icon } from "./ui/Icon";
 import { SyncChip } from "./SyncChip";
 import { COLLABORATION_ENABLED } from "../lib/features";
 import { SaveStatus } from "./SaveStatus";
@@ -278,9 +279,12 @@ export function Toolbar() {
           type="button"
           onClick={() => requestExportProject()}
           disabled={exporting}
-          className="btn btn-primary"
+          className="btn btn-outline btn-sm"
           title="Configure and export reports, coded extracts, and matrix"
         >
+          {/* Not the primary button: exporting is occasional, and filled gold
+              made it the loudest thing on a screen whose job is coding. */}
+          <Icon name="export" size={13} />
           {exporting ? "Exporting…" : "Export…"}
         </button>
 

@@ -153,7 +153,7 @@ export function FilterButton() {
           onClick={toggleOpen}
           aria-expanded={open}
           aria-label="Filter passages"
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12.5px] font-medium transition-colors ${
+          className={`flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] font-medium transition-colors ${
             badgeCount > 0
               ? "bg-[var(--fill-on)] text-[var(--accent)] font-medium shadow-xs border border-[var(--g-rim)]"
               : "btn-ghost text-[var(--ink-3)] hover:text-[var(--ink)]"
