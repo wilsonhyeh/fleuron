@@ -16,6 +16,7 @@ import { useMapStore, type MapView } from "../store/map-store";
 import { useProjectStore } from "../store/project-store";
 import { useDisplayCodes } from "../hooks/useDisplayCodes";
 import { Icon } from "./ui/Icon";
+import { Tooltip } from "./ui/Tooltip";
 
 /**
  * The relationship map: what the researcher's coding says about how their
@@ -132,7 +133,6 @@ export function RelationshipMap() {
   const setExpanded = useMapStore((s) => s.setExpanded);
   const setOpen = useMapStore((s) => s.setOpen);
   const showPassages = useMapStore((s) => s.showPassages);
-  const setShowPassages = useMapStore((s) => s.setShowPassages);
 
   const codes = useDisplayCodes();
   const interviews = useProjectStore((s) => s.interviews);
@@ -202,21 +202,6 @@ export function RelationshipMap() {
               </button>
             ))}
           </div>
-          {view === "network" && (
-            <button
-              type="button"
-              aria-pressed={showPassages}
-              onClick={() => setShowPassages(!showPassages)}
-              title="Draw each coded passage between the codes it carries"
-              className={`rounded-md border px-2 py-0.5 text-[11.5px] transition-colors ${
-                showPassages
-                  ? "border-[var(--accent-line)] bg-[var(--accent-soft)] text-[var(--accent-chip-ink)]"
-                  : "border-[var(--g-rim)] text-[var(--ink-3)] hover:text-[var(--ink)]"
-              }`}
-            >
-              Passages
-            </button>
-          )}
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
@@ -320,6 +305,7 @@ function NetworkView({
   selection: Selection;
   onSelect: (s: Selection) => void;
 }) {
+  const setShowPassages = useMapStore((s) => s.setShowPassages);
   const simRef = useRef<ForceSim | null>(null);
   if (!simRef.current) simRef.current = new ForceSim();
   const sim = simRef.current;
@@ -749,6 +735,42 @@ function NetworkView({
 
       <div className="pointer-events-none absolute bottom-2 right-3 text-[10.5px] text-[var(--ink-4)]">
         Line weight = passages shared · drag to arrange
+      </div>
+
+      {/* In the canvas, not the header: a header control that only exists
+          for one view made the view tabs jump sideways on every switch. */}
+      <div className="absolute right-3 top-3">
+        <Tooltip
+          // Left, with a fixed width: the map always sits at the window's
+          // right edge, and a centred tip there shrank to a word per line.
+          side="left"
+          content={
+            <span className="block w-[230px] font-normal leading-snug">
+              Draws every coded passage as a small dot, tied to each code it carries.
+              Hover a dot to read the passage; double-click to open it.
+            </span>
+          }
+        >
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showPassages}
+            onClick={() => setShowPassages(!showPassages)}
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--g-rim)] bg-[var(--map-ground)] py-1 pl-1.5 pr-2.5 text-[11.5px] text-[var(--ink-2)] shadow-xs transition-colors hover:text-[var(--ink)]"
+          >
+            <span
+              aria-hidden="true"
+              className="relative h-3.5 w-6 rounded-full transition-colors"
+              style={{ background: showPassages ? "var(--accent)" : "var(--fill-hi)" }}
+            >
+              <span
+                className="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-white shadow-xs transition-[left]"
+                style={{ left: showPassages ? "12px" : "2px" }}
+              />
+            </span>
+            Show passages
+          </button>
+        </Tooltip>
       </div>
     </div>
   );
