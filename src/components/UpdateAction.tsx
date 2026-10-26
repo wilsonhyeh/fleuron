@@ -190,7 +190,7 @@ export function UpdateStatus() {
       <h3 id="updates-heading" className="eyebrow">Updates</h3>
       <div
         className="mt-3 rounded-[var(--r-md)] border p-3"
-        style={{ borderColor: "var(--border)", background: "var(--fill)" }}
+        style={{ borderColor: "var(--g-rim)", background: "var(--fill)" }}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -258,7 +258,7 @@ export function UpdatePreparationOverlay() {
     >
       <div
         className="max-w-sm rounded-[var(--r-lg)] border px-4 py-3 shadow-[var(--shadow-2)]"
-        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+        style={{ background: "var(--g2)", borderColor: "var(--g-rim)" }}
       >
         <div className="flex items-center gap-2.5">
           <Icon name="refresh" size={16} className="animate-spin" />

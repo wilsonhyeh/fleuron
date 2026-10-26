@@ -253,7 +253,7 @@ export function WorkspaceLayout() {
                 aria-label="Show codebook"
                 title="Show codebook (Cmd/Ctrl+B)"
                 data-testid="codebook-collapse-toggle"
-                className="grid h-6 w-6 place-items-center rounded-md border border-[var(--g-rim)] bg-[var(--surface)] text-[var(--ink-3)] shadow-xs transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] cursor-pointer"
+                className="grid h-6 w-6 place-items-center rounded-md border border-[var(--g-rim)] bg-[var(--g2)] text-[var(--ink-3)] shadow-xs transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] cursor-pointer"
               >
                 <Icon name="chevronRight" size={13} />
               </button>
@@ -275,7 +275,7 @@ export function WorkspaceLayout() {
                     aria-label="Hide codebook"
                     title="Hide codebook (Cmd/Ctrl+B)"
                     data-testid="codebook-collapse-toggle"
-                    className="grid h-6 w-6 place-items-center rounded-md border border-[var(--g-rim)] bg-[var(--surface)] text-[var(--ink-3)] shadow-xs transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] cursor-pointer"
+                    className="grid h-6 w-6 place-items-center rounded-md border border-[var(--g-rim)] bg-[var(--g2)] text-[var(--ink-3)] shadow-xs transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] cursor-pointer"
                   >
                     <Icon name="chevronLeft" size={13} />
                   </button>

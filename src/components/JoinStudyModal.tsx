@@ -868,7 +868,7 @@ export function JoinStudyModal() {
                 {targetVerdict && targetVerdict.verdict === "already_set_up_here" && (
                   <div
                     className="mb-3 rounded-[12px] p-3 text-[12.5px]"
-                    style={{ background: "var(--fill)", border: "1px solid var(--border)" }}
+                    style={{ background: "var(--fill)", border: "1px solid var(--g-rim)" }}
                   >
                     <p className="font-semibold">This study is already set up on this computer.</p>
                     <p className="mt-1 opacity-80">
@@ -900,7 +900,7 @@ export function JoinStudyModal() {
                 {targetVerdict && targetVerdict.verdict === "bound_elsewhere" && (
                   <div
                     className="mb-3 rounded-[12px] p-3 text-[12.5px]"
-                    style={{ background: "var(--warning-soft, #fef3c7)", color: "var(--warning, #b45309)" }}
+                    style={{ background: "var(--warn-soft)", color: "var(--warn)" }}
                   >
                     <p className="font-semibold">Folder already bound to another group.</p>
                     <p className="mt-1 opacity-90">
@@ -911,7 +911,7 @@ export function JoinStudyModal() {
                 {targetVerdict && targetVerdict.verdict === "occupied" && (
                   <div
                     className="mb-3 rounded-[12px] p-3 text-[12.5px]"
-                    style={{ background: "var(--fill)", border: "1px solid var(--border)" }}
+                    style={{ background: "var(--fill)", border: "1px solid var(--g-rim)" }}
                   >
                     <p className="font-semibold">Folder name in use.</p>
                     <p className="mt-1 opacity-80">
@@ -1011,7 +1011,7 @@ export function JoinStudyModal() {
                         </div>
 
                         {candidate && !done && (
-                          <div className="mt-2.5 flex items-center justify-between rounded-lg bg-[var(--surface)] p-2.5 text-[12px]">
+                          <div className="mt-2.5 flex items-center justify-between rounded-lg bg-[var(--g2)] p-2.5 text-[12px]">
                             <span className="truncate">
                               Found: <strong className="font-mono">{candidate.name}</strong>
                               {candidate.hashMatch ? (
@@ -1040,7 +1040,7 @@ export function JoinStudyModal() {
                         )}
 
                         {l && l.hashMismatch && (
-                          <p className="mt-1 text-[11.5px]" style={{ color: "var(--warning, #b45309)" }}>
+                          <p className="mt-1 text-[11.5px]" style={{ color: "var(--warn)" }}>
                             ⚠️ Transcript content does not match the server hash. Double check that you picked the right file.
                           </p>
                         )}
@@ -1120,7 +1120,7 @@ export function JoinStudyModal() {
                   type="button"
                   onClick={close}
                   className="btn btn-ghost"
-                  title="The workspace opens with empty transcripts; link them later from More actions → Import transcript…"
+                  title="The workspace opens with empty transcripts; link them later from More actions → Replace transcript…"
                 >
                   Link these later
                 </button>

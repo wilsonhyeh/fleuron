@@ -419,7 +419,7 @@ export function SyncSheet() {
       {schemaOutdated && (
         <div
           className="mb-4 rounded-lg px-3 py-2 text-[12.5px]"
-          style={{ background: "var(--warning-soft)", color: "var(--warning)" }}
+          style={{ background: "var(--warn-soft)", color: "var(--warn)" }}
           role="alert"
         >
           Server update needed. Your server is running schema version {serverSchemaVersion}; this version of Fleuron requires version {requiredServerSchema}. Group creation and management are paused until the server is updated.
@@ -897,9 +897,9 @@ export function SyncSheet() {
       )}
 
       {signedIn && inGroup && status?.protocol === 2 && conflicts.length > 0 && (
-        <section className="mb-5 rounded-lg border p-3" style={{ borderColor: "var(--warning)" }}>
+        <section className="mb-5 rounded-lg border p-3" style={{ borderColor: "var(--warn)" }}>
           <div className="flex items-center justify-between gap-2 mb-2">
-            <h3 className="label" style={{ color: "var(--warning)" }}>
+            <h3 className="label" style={{ color: "var(--warn)" }}>
               {conflicts.length} unresolved conflict{conflicts.length === 1 ? "" : "s"}
             </h3>
             <span className="chip chip-warn">Coding can continue</span>

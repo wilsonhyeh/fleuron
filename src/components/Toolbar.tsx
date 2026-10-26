@@ -193,7 +193,7 @@ export function Toolbar() {
     >
       <div className="min-w-0 flex-1 flex items-center gap-1.5 text-[13px]">
         <span
-          className="min-w-0 max-w-[200px] truncate font-semibold leading-tight text-[var(--ink-1)]"
+          className="min-w-0 max-w-[200px] truncate font-semibold leading-tight text-[var(--ink)]"
           title={segments.study}
         >
           {segments.study}
@@ -211,12 +211,12 @@ export function Toolbar() {
         >
           <span>coding as</span>
           {lockIdentity || coders.length <= 1 ? (
-            <span className="font-medium text-[var(--ink-1)]">
+            <span className="font-medium text-[var(--ink)]">
               {segments.coder.name}
             </span>
           ) : (
             <select
-              className="field field-sm w-auto py-0.5 px-1 font-medium text-[var(--ink-1)] bg-transparent border-none shadow-none cursor-pointer"
+              className="field field-sm w-auto py-0.5 px-1 font-medium text-[var(--ink)] bg-transparent border-none shadow-none cursor-pointer"
               value={activeCoder}
               onChange={(e) => setActiveCoder(e.target.value)}
               aria-label="Active coder"
@@ -296,7 +296,7 @@ export function Toolbar() {
               onSelect: () => setIntent("new-interview"),
             },
             {
-              label: "Import transcript…",
+              label: "Replace transcript…",
               icon: "import",
               section: "interview",
               onSelect: () => setIntent("import-vtt"),
@@ -309,7 +309,7 @@ export function Toolbar() {
             },
             {
               label: "Unsaved notes…",
-              icon: "note",
+              icon: "edit",
               badge: unfinishedCount,
               section: "study",
               onSelect: () => setShowRecoveryPanel(true),

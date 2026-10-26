@@ -149,7 +149,7 @@ export function SetupWizard() {
     const picked = await open({
       directory: true,
       multiple: false,
-      title: "Where should this project live?",
+      title: "Where should this study live?",
     });
     if (picked) setParentDir(picked as string);
   }
@@ -189,7 +189,7 @@ export function SetupWizard() {
 
     try {
       if (!journal.completedStages.includes("created_folder")) {
-        setBusy("Creating project folder…");
+        setBusy("Creating the study folder…");
         const ok = await createProject(
           parentDir!,
           effectiveFolder,
@@ -198,7 +198,7 @@ export function SetupWizard() {
         );
         if (!ok) {
           setError(
-            useProjectStore.getState().error ?? "Could not create the project.",
+            useProjectStore.getState().error ?? "Could not create the study.",
           );
           setBusy(null);
           return;
@@ -277,7 +277,7 @@ export function SetupWizard() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="New project setup"
+        aria-label="New study setup"
         className="glass-sheet anim-sheet relative flex h-[560px] w-full max-w-3xl overflow-hidden"
       >
         <StepRail steps={STEPS} activeIndex={stepIndex} />
@@ -317,7 +317,7 @@ export function SetupWizard() {
                   </button>
                   {parentDir === libraryDir && libraryDir && (
                     <p className="hint mt-1.5">
-                      Recommended — Fleuron keeps projects here.{" "}
+                      Recommended — Fleuron keeps studies here.{" "}
                       <button
                         type="button"
                         onClick={chooseLocation}
@@ -337,9 +337,9 @@ export function SetupWizard() {
                           {effectiveFolder}
                           {PROJECT_EXT}
                         </span>{" "}
-                        here. This local working folder stays on this computer.
-                        If you collaborate, coding metadata syncs to the team —
-                        transcript text never does.
+                        here. This folder stays on this computer.
+                        {COLLABORATION_ENABLED &&
+                          " If you collaborate, coding metadata syncs to the team — transcript text never does."}
                       </>
                     ) : (
                       "Your study's local working folder lives here."
@@ -354,9 +354,9 @@ export function SetupWizard() {
                     <div className="notice notice-warn mt-2">
                       <p>
                         This folder is in <strong>{cloudProvider}</strong>. The
-                        project database is written continuously while you code,
+                        study's database is written continuously while you code,
                         and sync clients have been seen removing or replacing it
-                        mid-session — that is how a project loses its coding.
+                        mid-session — that is how a study loses its coding.
                       </p>
                       <p className="mt-1.5">
                         Safer: keep studies in the default local library{" "}
@@ -607,7 +607,7 @@ export function SetupWizard() {
                 onClick={() => (isLast ? finish() : setStepIndex(stepIndex + 1))}
                 className="btn btn-primary btn-lg"
               >
-                {isLast ? "Create project" : "Continue"}
+                {isLast ? "Create study" : "Continue"}
                 {!isLast && <Icon name="arrowRight" size={15} />}
               </button>
             </div>

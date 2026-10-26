@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
+import { COLLABORATION_ENABLED } from "../lib/features";
 import { draftKey, useNoteDraftStore } from "../store/note-draft-store";
 import { SideSheet } from "./ui/Surfaces";
 import { useAutosaveMemo } from "../hooks/useAutosaveMemo";
@@ -86,10 +87,11 @@ export function InterviewMemoPanel() {
         title="Notes on this interview"
         subtitle={
           interview
-            ? `${interview.participant_label} — yours alone, never synced`
+            ? COLLABORATION_ENABLED
+              ? `${interview.participant_label} — yours alone, never synced`
+              : interview.participant_label
             : undefined
         }
-        width="max-w-lg"
         actions={
           <span className="hint text-[11px]" role="status">
             {autosave.status === "saving"
@@ -104,7 +106,8 @@ export function InterviewMemoPanel() {
       >
         <div className="flex min-h-0 flex-1 flex-col px-5 py-4">
           <p className="hint text-[11.5px]">
-            About the interview as a whole, not any one passage. Memo fields are excluded from collaboration sync. Exports may include them.
+            About the interview as a whole, not any one passage. Exports can include these notes.
+            {COLLABORATION_ENABLED && " They are never synced to your group."}
           </p>
           {beginError && !missing ? (
             <div role="alert" className="mt-2 rounded-md bg-[var(--danger,#b03a34)]/10 px-2.5 py-1.5 text-[11.5px] text-[var(--danger,#b03a34)]">

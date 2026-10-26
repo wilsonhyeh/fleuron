@@ -505,7 +505,7 @@ export function CodebookPanel() {
                     ? activeDrag.validity.valid
                       ? "border-[var(--accent)] bg-[var(--accent-soft)]"
                       : "border-[var(--danger)] bg-[var(--danger-soft)]"
-                    : "border-[var(--border)] opacity-70"
+                    : "border-[var(--g-rim)] opacity-70"
                 }`}
               >
                 <span className="text-[11.5px] font-medium" style={{ color: "var(--ink-2)" }}>
@@ -897,12 +897,12 @@ export function CodebookPanel() {
             className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-1/2 select-none"
             style={{ left: activeDrag.pointerX, top: activeDrag.pointerY }}
           >
-            <div className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 shadow-lg">
+            <div className="flex items-center gap-1.5 rounded-lg border border-[var(--g-rim)] bg-[var(--g2)] px-2.5 py-1.5 shadow-lg">
               <span
                 className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: activeDrag.draggedCode.color }}
               />
-              <span className="text-[12px] font-medium text-[var(--ink-1)]">
+              <span className="text-[12px] font-medium text-[var(--ink)]">
                 {activeDrag.draggedCode.name}
               </span>
             </div>

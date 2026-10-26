@@ -33,7 +33,7 @@ export async function openWorkspace(page: Page) {
   // into the store or mock internals. An open already in flight (the opening
   // overlay) is waited out, never clicked on top of: a second open would
   // replace the connection and tear down the workspace the first one built.
-  const opening = () => page.getByText("Opening project…");
+  const opening = () => page.getByText("Opening study…");
   for (let attempt = 0; attempt < 3; attempt += 1) {
     if (await opening().isVisible({ timeout: 1500 }).catch(() => false)) {
       if (await passages.isVisible({ timeout: 30_000 }).catch(() => false)) {

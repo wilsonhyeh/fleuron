@@ -50,7 +50,7 @@ const ALL_GUIDE_SECTIONS: GuideSection[] = [
       "Coding text: Select any text passage in the transcript to open the coding bubble and apply or create codes.",
     ],
     expectedResults: [
-      "Your project is stored locally as an SQLite database (project.db).",
+      "Your study is one folder on this computer. Everything you code is saved inside it as you go.",
       ...(COLLABORATION_ENABLED
         ? ["Codes and coding decisions sync automatically in the background."]
         : []),
@@ -107,8 +107,8 @@ const ALL_GUIDE_SECTIONS: GuideSection[] = [
       `${shortcut("mod", "alt", "ArrowRight")}: Nest focused code under the preceding sibling.`,
       `${shortcut("mod", "alt", "ArrowLeft")}: Move focused code back to top level.`,
       "ArrowUp / ArrowDown: Navigate between transcript passages.",
-      `${shortcut("mod", "shift", "E")}: Open project export options (CSV & Markdown).`,
-      "?: Toggle this User Guide reference.",
+      `${shortcut("mod", "shift", "E")}: Open export options.`,
+      "?: Open or close this guide.",
     ],
     expectedResults: [
       "Fluent keyboard-driven coding without reaching for the mouse.",

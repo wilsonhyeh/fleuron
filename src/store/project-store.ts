@@ -2313,10 +2313,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
     if (codedSegments.length > 0) {
       const ok = await appConfirm({
-        title: "Re-import transcript",
+        title: "Replace this transcript?",
         body: `This interview has ${codedSegments.length} coded passage(s). Coding on passages whose wording is unchanged will be kept; coding on passages that changed or were removed will go with them.`,
-        confirmLabel: "Re-import",
-        cancelLabel: "Cancel import",
+        confirmLabel: "Replace",
+        cancelLabel: "Keep current",
         destructive: true,
         dedupeKey: `reimport-${activeInterviewId}`,
       });

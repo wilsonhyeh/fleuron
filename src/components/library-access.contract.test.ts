@@ -52,7 +52,7 @@ describe("setup copy offers the local library", () => {
   });
 
   it("describes the local working folder and honest sync boundary", () => {
-    expect(wizard).toContain("local working folder stays on this computer");
+    expect(wizard).toContain("This folder stays on this computer");
     expect(wizard).toContain("transcript text never does");
   });
 

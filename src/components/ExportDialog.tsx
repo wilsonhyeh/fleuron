@@ -155,7 +155,7 @@ export function ExportDialog({
     }
     files.push({
       name: "export-manifest.json",
-      desc: "Audit manifest with export metadata & checksums",
+      desc: "Record of what was exported, with checksums",
       icon: "note",
     });
     return files;
@@ -208,7 +208,7 @@ export function ExportDialog({
       const selected = await openDialog({
         directory: true,
         multiple: false,
-        title: "Choose Export Destination",
+        title: "Choose a folder for the export",
       });
       // Cancelling the folder picker keeps drafts and editing state intact.
       if (!selected || typeof selected !== "string") return;
@@ -228,8 +228,8 @@ export function ExportDialog({
     <Modal
       open={open}
       onClose={onClose}
-      title="Export Study Data & Reports"
-      subtitle={project?.title ? `Study: ${project.title}` : "Select format and destination"}
+      title="Export study data"
+      subtitle={project?.title ?? "Choose what to include, then a folder"}
       width="max-w-4xl"
       footer={
         <>
@@ -248,7 +248,7 @@ export function ExportDialog({
             className="btn btn-primary flex items-center gap-1.5"
           >
             <Icon name="export" size={15} />
-            {exporting ? "Exporting…" : "Export to Folder…"}
+            {exporting ? "Exporting…" : "Export to folder…"}
           </button>
         </>
       }
@@ -256,7 +256,7 @@ export function ExportDialog({
       {unresolvedConflictCount > 0 && (
         <div
           className="mb-5 rounded-lg border px-3 py-2 text-[13px]"
-          style={{ borderColor: "var(--warning)", background: "var(--warn-soft)" }}
+          style={{ borderColor: "var(--warn)", background: "var(--warn-soft)" }}
         >
           <strong>{unresolvedConflictCount} unresolved sync conflict{unresolvedConflictCount === 1 ? "" : "s"}.</strong>{" "}
           This export uses the current canonical values; pending proposals are not merged into analysis.
@@ -280,56 +280,49 @@ export function ExportDialog({
         {/* Left Column: Preset & Checkbox Options */}
         <div className="space-y-5 md:col-span-7">
           <div>
-            <div className="text-[13px] font-medium text-[var(--ink-2)] mb-2 uppercase tracking-wider">
-              Methodology Presets
-            </div>
+            <div className="eyebrow mb-2">Method</div>
             <div className="space-y-2">
               <OptionCard
                 selected={!custom && config.preset === "reflexive-ta"}
                 onSelect={() => handleSelectPreset("reflexive-ta")}
                 icon="book"
-                title="Reflexive Thematic Analysis"
+                title="Reflexive thematic analysis"
                 blurb="Qualitative synthesis emphasizing patterns of meaning. Omits counts by default to avoid quantitative misinterpretation."
               />
               <OptionCard
                 selected={!custom && config.preset === "content-analysis"}
                 onSelect={() => handleSelectPreset("content-analysis")}
                 icon="layers"
-                title="Qualitative Content Analysis"
+                title="Qualitative content analysis"
                 blurb="Systematic categorization including coding frequencies and corpus breadth tables."
               />
               <OptionCard
                 selected={!custom && config.preset === "framework-analysis"}
                 onSelect={() => handleSelectPreset("framework-analysis")}
                 icon="folder"
-                title="Framework Analysis"
+                title="Framework analysis"
                 blurb="Structured case-by-code thematic grid matrix with sub-code rollup and key quote extracts."
               />
             </div>
           </div>
 
           <div>
-            <div className="text-[13px] font-medium text-[var(--ink-2)] mb-2 uppercase tracking-wider flex items-center justify-between">
-              <span>Included Content</span>
-              {custom && (
-                <span className="text-[11px] font-normal text-[var(--accent-ink)] bg-[var(--accent-soft)] px-2 py-0.5 rounded-full">
-                  Custom Configuration
-                </span>
-              )}
+            <div className="mb-2 flex items-center justify-between">
+              <span className="eyebrow">What to include</span>
+              {custom && <span className="chip chip-accent">Custom</span>}
             </div>
 
             <div className="rounded-xl border border-[var(--g-rim)] bg-[var(--fill)] p-3.5 space-y-3">
-              <div className="text-[12px] font-semibold text-[var(--ink-3)] uppercase tracking-wide">
-                Report Sections (HTML / PDF)
+              <div className="text-[12.5px] font-medium text-[var(--ink-2)]">
+                Report (HTML and PDF)
               </div>
               <label className="flex items-center gap-2.5 text-[13.5px] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.items.includes("report-html")}
                   onChange={() => handleToggleItem("report-html")}
-                  className="rounded text-[var(--accent)]"
                 />
-                <span className="font-medium">Self-contained HTML Report</span>
+                <span className="font-medium">Self-contained HTML report</span>
               </label>
 
               {config.items.includes("report-html") && (
@@ -339,7 +332,6 @@ export function ExportDialog({
                       type="checkbox"
                       checked={config.items.includes("codebook")}
                       onChange={() => handleToggleItem("codebook")}
-                      className="rounded text-[var(--accent)]"
                     />
                     <span>Codebook hierarchy &amp; definitions</span>
                   </label>
@@ -348,7 +340,6 @@ export function ExportDialog({
                       type="checkbox"
                       checked={config.items.includes("memos")}
                       onChange={() => handleToggleItem("memos")}
-                      className="rounded text-[var(--accent)]"
                     />
                     <span>Interview and passage notes</span>
                   </label>
@@ -357,22 +348,20 @@ export function ExportDialog({
                       type="checkbox"
                       checked={config.items.includes("counts")}
                       onChange={() => handleToggleItem("counts")}
-                      className="rounded text-[var(--accent)]"
                     />
                     <span>Coding frequencies &amp; corpus breadth</span>
                   </label>
                 </div>
               )}
 
-              <div className="text-[12px] font-semibold text-[var(--ink-3)] uppercase tracking-wide pt-2">
-                Data Tables (CSV)
+              <div className="pt-2 text-[12.5px] font-medium text-[var(--ink-2)]">
+                Spreadsheets (CSV)
               </div>
               <label className="flex items-center gap-2.5 text-[13.5px] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.items.includes("coded-segments")}
                   onChange={() => handleToggleItem("coded-segments")}
-                  className="rounded text-[var(--accent)]"
                 />
                 <span className="font-medium">Coded passages spreadsheet (CSV)</span>
               </label>
@@ -381,24 +370,21 @@ export function ExportDialog({
                   type="checkbox"
                   checked={config.items.includes("framework-matrix")}
                   onChange={() => handleToggleItem("framework-matrix")}
-                  className="rounded text-[var(--accent)]"
                 />
-                <span className="font-medium">Framework Analysis Matrix CSV (Case × Code)</span>
+                <span className="font-medium">Framework matrix, participant × code (CSV)</span>
               </label>
             </div>
 
             {config.preset === "reflexive-ta" && !config.items.includes("counts") && (
               <p className="mt-2 text-[12px] text-[var(--ink-3)] italic leading-relaxed">
-                Note (Braun &amp; Clarke): Code-frequency tables are omitted by default in this Reflexive Thematic Analysis preset to avoid implying quantitative significance. Overview and extract totals still appear.
+                Note (Braun &amp; Clarke): Code-frequency tables are left out by default for reflexive thematic analysis to avoid implying quantitative significance. Overview and extract totals still appear.
               </p>
             )}
           </div>
 
           {/* Scope selection */}
           <div className="space-y-3 pt-1">
-            <div className="text-[13px] font-medium text-[var(--ink-2)] uppercase tracking-wider">
-              Participant Scope
-            </div>
+            <div className="eyebrow">Participants</div>
             <div className="flex gap-4 text-[13.5px]">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -407,7 +393,7 @@ export function ExportDialog({
                   checked={config.includeParticipantScope === "all"}
                   onChange={() => handleScopeChange("participant", "all")}
                 />
-                <span>All Participants ({interviews.length})</span>
+                <span>All participants ({interviews.length})</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -416,7 +402,7 @@ export function ExportDialog({
                   checked={config.includeParticipantScope === "selected"}
                   onChange={() => handleScopeChange("participant", "selected")}
                 />
-                <span>Selected Participants…</span>
+                <span>Only some…</span>
               </label>
             </div>
 
@@ -441,25 +427,23 @@ export function ExportDialog({
 
         {/* Right Column: Live Preview & File Output */}
         <div className="space-y-5 md:col-span-5">
-          <div className="text-[13px] font-medium text-[var(--ink-2)] mb-2 uppercase tracking-wider">
-            Output Preview
-          </div>
+          <div className="eyebrow mb-2">Output</div>
 
           <div className="rounded-2xl border border-[var(--g-rim)] bg-[var(--fill)] p-4 space-y-4">
-            <div className="text-[12px] font-semibold text-[var(--ink-3)] uppercase tracking-wide">
-              Files to be Generated
+            <div className="text-[12.5px] font-medium text-[var(--ink-2)]">
+              Files Fleuron will write
             </div>
             <div className="space-y-2.5">
               {previewFiles.map((file) => (
                 <div
                   key={file.name}
-                  className="rounded-xl border border-[var(--g-rim)] bg-[var(--surface-card)] p-2.5 flex items-start gap-2.5"
+                  className="rounded-xl border border-[var(--g-rim)] bg-[var(--g2)] p-2.5 flex items-start gap-2.5"
                 >
                   <span className="mt-0.5 text-[var(--ink-2)]">
                     <Icon name={file.icon} size={15} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="font-mono text-[12.5px] font-semibold text-[var(--ink-1)]">
+                    <div className="font-mono text-[12.5px] font-semibold text-[var(--ink)]">
                       {file.name}
                     </div>
                     <div className="text-[11.5px] text-[var(--ink-3)] leading-tight mt-0.5">
@@ -472,31 +456,31 @@ export function ExportDialog({
 
             <div className="divider" />
 
-            <div className="text-[12px] font-semibold text-[var(--ink-3)] uppercase tracking-wide">
-              Scope Summary
+            <div className="text-[12.5px] font-medium text-[var(--ink-2)]">
+              In this export
             </div>
             <div className="grid grid-cols-2 gap-2 text-[12px]">
-              <div className="rounded-lg bg-[var(--surface)] p-2">
+              <div className="rounded-lg bg-[var(--g2)] p-2">
                 <div className="text-[var(--ink-3)]">Participants</div>
-                <div className="text-[14px] font-semibold text-[var(--ink-1)]">
+                <div className="text-[14px] font-semibold text-[var(--ink)]">
                   {activeInterviews.length} / {interviews.length}
                 </div>
               </div>
-              <div className="rounded-lg bg-[var(--surface)] p-2">
-                <div className="text-[var(--ink-3)]">Coded Extracts</div>
-                <div className="text-[14px] font-semibold text-[var(--ink-1)]">
+              <div className="rounded-lg bg-[var(--g2)] p-2">
+                <div className="text-[var(--ink-3)]">Coded passages</div>
+                <div className="text-[14px] font-semibold text-[var(--ink)]">
                   {activeSegments.length}
                 </div>
               </div>
-              <div className="rounded-lg bg-[var(--surface)] p-2">
-                <div className="text-[var(--ink-3)]">Active Codes</div>
-                <div className="text-[14px] font-semibold text-[var(--ink-1)]">
+              <div className="rounded-lg bg-[var(--g2)] p-2">
+                <div className="text-[var(--ink-3)]">Codes</div>
+                <div className="text-[14px] font-semibold text-[var(--ink)]">
                   {codes.filter((c) => !c.is_retired).length}
                 </div>
               </div>
-              <div className="rounded-lg bg-[var(--surface)] p-2">
-                <div className="text-[var(--ink-3)]">Exported By</div>
-                <div className="text-[13px] font-semibold text-[var(--ink-1)] truncate">
+              <div className="rounded-lg bg-[var(--g2)] p-2">
+                <div className="text-[var(--ink-3)]">Exported by</div>
+                <div className="text-[13px] font-semibold text-[var(--ink)] truncate">
                   {activeCoder || "Anonymous"}
                 </div>
               </div>

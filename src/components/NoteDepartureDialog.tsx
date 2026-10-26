@@ -50,7 +50,7 @@ export function NoteDepartureDialog() {
           </div>
         ) : null}
         {prompt.dirtyLabels.length > 0 ? (
-          <ul className="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-[12px] border border-[var(--border)] bg-[var(--surface)] p-2.5">
+          <ul className="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-[12px] border border-[var(--g-rim)] bg-[var(--g2)] p-2.5">
             {prompt.dirtyLabels.map((label) => (
               <li key={label} className="text-[12.5px]">
                 {label}

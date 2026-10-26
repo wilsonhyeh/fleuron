@@ -56,12 +56,12 @@ export function StudyLocationPopover({
       data-tauri-drag-region="false"
       className="note-card absolute right-0 top-full z-50 mt-2 w-[340px] p-3.5 text-left shadow-xl"
     >
-      <p className="text-[13px] font-semibold text-[var(--ink-1)]">Where your work is saved</p>
+      <p className="text-[13px] font-semibold text-[var(--ink)]">Where your work is saved</p>
 
       <div className="mt-2.5 flex items-start gap-2 rounded-[10px] bg-[var(--fill)] px-2.5 py-2">
         <Icon name="folder" size={15} className="mt-0.5 shrink-0 text-[var(--ink-3)]" />
         <div className="min-w-0">
-          <p className="break-all text-[12.5px] font-medium leading-snug text-[var(--ink-1)]">{folder}</p>
+          <p className="break-all text-[12.5px] font-medium leading-snug text-[var(--ink)]">{folder}</p>
           {parents.length > 0 && (
             <p className="mt-0.5 break-all text-[11.5px] leading-snug text-[var(--ink-3)]">
               in {parents.join(" › ")}

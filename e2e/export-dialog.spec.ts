@@ -19,11 +19,11 @@ test.describe("Export Dialog & Presets", () => {
     // Dialog should be open
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText("Export Study Data & Reports")).toBeVisible();
+    await expect(dialog.getByText("Export study data")).toBeVisible();
 
     // Verify Reflexive TA default preset is selected
     const reflexiveCard = dialog.getByRole("radio", {
-      name: /Reflexive Thematic Analysis/i,
+      name: /Reflexive thematic analysis/i,
     });
     await expect(reflexiveCard).toBeVisible();
     await expect(dialog.getByText("report.html")).toBeVisible();
@@ -32,7 +32,7 @@ test.describe("Export Dialog & Presets", () => {
 
     // Switch to Framework Analysis preset
     const frameworkCard = dialog.getByRole("radio", {
-      name: /Framework Analysis/i,
+      name: /Framework analysis/i,
     });
     await frameworkCard.click();
 
@@ -46,7 +46,7 @@ test.describe("Export Dialog & Presets", () => {
     await countsCheckbox.click(); // toggle off
 
     // Should display Custom Configuration badge
-    await expect(dialog.getByText("Custom Configuration")).toBeVisible();
+    await expect(dialog.getByText("Custom", { exact: true })).toBeVisible();
 
     // Click Cancel to dismiss
     const cancelBtn = dialog.getByRole("button", { name: "Cancel" });

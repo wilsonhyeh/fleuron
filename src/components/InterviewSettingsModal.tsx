@@ -178,7 +178,7 @@ export function InterviewSettingsModal({
       }
     >
       <label className="label">Participant ID</label>
-      <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[13.5px] font-medium text-[var(--ink-1)]">
+      <div className="rounded-md border border-[var(--g-rim)] bg-[var(--g2)] px-3 py-2 text-[13.5px] font-medium text-[var(--ink)]">
         {interview.participant_label}
       </div>
       <p className="hint mt-1.5 flex items-center gap-1.5 text-[11.5px]">
@@ -202,10 +202,10 @@ export function InterviewSettingsModal({
       />
 
       {onToggleRedaction && (
-        <div className="mt-4 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-3">
+        <div className="mt-4 rounded-[10px] border border-[var(--g-rim)] bg-[var(--g2)] p-3">
           <label className="flex cursor-pointer items-center justify-between gap-3">
             <span>
-              <span className="block text-[13px] font-medium text-[var(--ink-1)]">
+              <span className="block text-[13px] font-medium text-[var(--ink)]">
                 Redact speaker names
               </span>
               <span className="hint mt-0.5 flex items-center gap-1.5 text-[11.5px]">

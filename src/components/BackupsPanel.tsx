@@ -126,7 +126,7 @@ export function BackupsPanel() {
     try {
       await api.importBackup(file);
       await refresh();
-      showStatus("Backup added to this project.");
+      showStatus("Backup added to this study.");
     } catch (e) {
       setError(String(e));
     } finally {
@@ -139,8 +139,7 @@ export function BackupsPanel() {
       open={showBackups}
       onClose={() => setShowBackups(false)}
       title="Backups"
-      subtitle="Snapshots of this project you can go back to"
-      width="max-w-lg"
+      subtitle="Snapshots of this study you can go back to"
     >
       <div className="scroll flex-1 p-4">
         <section
@@ -148,7 +147,7 @@ export function BackupsPanel() {
           style={{ background: "var(--fill)" }}
         >
           <p className="text-[12.5px]" style={{ color: "var(--ink-2)" }}>
-            Fleuron takes a snapshot every time this project opens. You can also
+            Fleuron takes a snapshot every time this study opens. You can also
             save one now — worth doing before anything you are unsure about.
           </p>
           <div className="mt-2.5 flex items-center gap-2">
@@ -168,7 +167,7 @@ export function BackupsPanel() {
               disabled={busy}
               onClick={() => void backUpNow()}
             >
-              <Icon name="check" size={13} />
+              <Icon name="layers" size={13} />
               Back up now
             </button>
           </div>
@@ -204,7 +203,7 @@ export function BackupsPanel() {
         ) : backups.length === 0 ? (
           <p className="hint">
             No snapshots yet. One is taken automatically the next time this
-            project opens.
+            study opens.
           </p>
         ) : (
           <ul className="flex flex-col gap-1.5">
@@ -266,7 +265,7 @@ export function BackupsPanel() {
                           gamble — a restore is itself undoable, and somebody
                           hovering over this button has no way to know that. */}
                       <p className="text-[12.5px]" style={{ color: "var(--ink)" }}>
-                        This replaces everything in the project with the{" "}
+                        This replaces everything in the study with the{" "}
                         {summarise(b)} above. Coding done since{" "}
                         {formatRelativeTime(b.created_at)} will be rolled back.
                       </p>

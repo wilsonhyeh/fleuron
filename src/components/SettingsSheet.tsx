@@ -82,7 +82,6 @@ export function SettingsSheet() {
       onClose={close}
       title="Settings"
       subtitle="App-wide preferences. Changes save immediately."
-      width="max-w-md"
     >
       <div className="scroll flex-1 space-y-7 px-5 py-5">
         {COLLABORATION_ENABLED && (
@@ -219,10 +218,10 @@ export function SettingsSheet() {
             />
             <span>
               <span className="block text-[13px] font-medium">
-                Reopen the last project on launch
+                Reopen the last study on launch
               </span>
               <span className="hint mt-0.5 block">
-                Off means Fleuron always starts at the project library.
+                Off means Fleuron always starts on the home screen.
               </span>
             </span>
           </label>
@@ -249,9 +248,10 @@ export function SettingsSheet() {
 
         {/* Quiet-update toggle: turning it off stops startup and interval
             checks entirely. Manual checks always remain available. */}
-        <section>
-          <h3 className="eyebrow">Update checks</h3>
-          <label className="mt-3 flex items-start gap-3 text-[13px]">
+        {/* Belongs to the Updates group above, so it carries no heading of
+            its own; the negative margin pulls it into that group. */}
+        <section className="-mt-3">
+          <label className="flex items-start gap-3 text-[13px]">
             <input
               type="checkbox"
               checked={automaticUpdateChecks}
@@ -267,7 +267,7 @@ export function SettingsSheet() {
         </section>
 
         <section>
-          <h3 className="eyebrow">Support &amp; Diagnostics</h3>
+          <h3 className="eyebrow">Support &amp; diagnostics</h3>
           <div className="mt-3 flex items-center gap-2">
             <button
               type="button"

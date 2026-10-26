@@ -96,7 +96,7 @@ export function SyncDiagnostics({ status }: SyncDiagnosticsProps) {
           <span
             className={
               isConnected
-                ? "text-[var(--success)] font-medium"
+                ? "text-[var(--ok)] font-medium"
                 : "text-muted"
             }
           >

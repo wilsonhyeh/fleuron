@@ -835,23 +835,23 @@ export function TranscriptPanel() {
     const isSingle = interviews.length <= 1;
     return [
       {
-        label: "Add transcripts…",
+        label: "Import several transcripts…",
         icon: "import" as const,
         onSelect: () => setShowBulkImport(true),
       },
       {
         label: "Edit details…",
-        icon: "settings" as const,
+        icon: "edit" as const,
         onSelect: () => setEditingInterview(interview),
       },
       {
         label: "Manage speakers…",
-        icon: "settings" as const,
+        icon: "people" as const,
         onSelect: () => setManagingSpeakersInterview(interview),
       },
       {
         label: "Replace transcript…",
-        icon: "import" as const,
+        icon: "refresh" as const,
         onSelect: () => pickVttAndImport(interview.id),
       },
       {

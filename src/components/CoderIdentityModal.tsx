@@ -55,7 +55,7 @@ export function CoderIdentityModal() {
         ))}
         {coders.length === 0 && (
           <p className="hint">
-            This project lists no coders. Add one in the project settings before
+            This study lists no coders. Add one in the study settings before
             coding.
           </p>
         )}

@@ -13,7 +13,7 @@ export interface StepSpec {
 export function StepRail({
   steps,
   activeIndex,
-  eyebrow = "New project",
+  eyebrow = "New study",
   footnote = "Everything here can be changed after setup.",
 }: {
   steps: StepSpec[];

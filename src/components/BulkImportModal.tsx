@@ -170,7 +170,7 @@ export function BulkImportModal({
       <Modal
         open={open}
         onClose={onClose}
-        title="Add transcripts"
+        title="Import several transcripts"
         subtitle="Pick many files, check the participant IDs, import once."
         width="max-w-lg"
         footer={
@@ -274,7 +274,7 @@ export function BulkImportModal({
               return (
                 <div
                   key={row.key}
-                  className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-2.5"
+                  className="rounded-[10px] border border-[var(--g-rim)] bg-[var(--g2)] p-2.5"
                 >
                   <div className="flex items-center gap-2">
                     <span

@@ -176,15 +176,15 @@ export function AboutModal() {
     >
       {reportText ? (
         <div className="space-y-3">
-          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--fill)] p-3">
-            <p className="text-[12.5px] font-medium" style={{ color: "var(--ink-1)" }}>
+          <div className="rounded-[12px] border border-[var(--g-rim)] bg-[var(--fill)] p-3">
+            <p className="text-[12.5px] font-medium" style={{ color: "var(--ink)" }}>
               Diagnostic report preview
             </p>
             <p className="mt-1 text-[12px] leading-relaxed" style={{ color: "var(--ink-2)" }}>
               This is everything that will be saved. It contains no transcript text, participant labels, or code names. Read it before you share it.
             </p>
           </div>
-          <div className="max-h-[260px] overflow-y-auto rounded-[12px] border border-[var(--border)] bg-[var(--bg-inset)] p-3">
+          <div className="max-h-[260px] overflow-y-auto rounded-[12px] border border-[var(--g-rim)] bg-[var(--fill)] p-3">
             <pre className="font-mono text-[11.5px] whitespace-pre-wrap select-text leading-relaxed" style={{ color: "var(--ink-2)" }}>
               {reportText}
             </pre>
@@ -199,7 +199,7 @@ export function AboutModal() {
         {COLLABORATION_ENABLED ? DATA_BOUNDARY_SUMMARY : LOCAL_ONLY_SUMMARY}
       </p>
 
-      <div className="mt-4 rounded-[12px] border border-[var(--border)] p-3">
+      <div className="mt-4 rounded-[12px] border border-[var(--g-rim)] p-3">
         <div className="text-[12.5px]" style={{ color: "var(--ink-2)" }}>
           <span className="font-medium">Build</span>{" "}
           <span className="font-mono break-all">{info?.build_commit ?? "…"}</span>

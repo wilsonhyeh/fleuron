@@ -99,7 +99,7 @@ export function useAppInit() {
         if (!cancelled) {
           setAutoOpenFailed({
             autoOpenFailed:
-              "Could not reopen last project — it may have been moved. Open a .qcproj file from Recent projects.",
+              "Could not reopen your last study — it may have been moved. Open it from the home screen.",
           });
         }
       }

@@ -47,7 +47,7 @@ export function NewInterviewModal({
     <Modal
       open={open}
       onClose={onCancel}
-      title="Add participant"
+      title="New interview"
       subtitle={
         showCustom
           ? inGroup
@@ -96,7 +96,7 @@ export function NewInterviewModal({
                   key={k}
                   type="button"
                   onClick={() => onConfirm(k)}
-                  className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-left transition-all hover:bg-[var(--fill)] hover:border-[var(--ink-4)]"
+                  className="flex items-center justify-between rounded-lg border border-[var(--g-rim)] bg-[var(--g2)] p-3 text-left transition-all hover:bg-[var(--fill)] hover:border-[var(--ink-4)]"
                 >
                   <span className="font-medium text-[14px]">{k}</span>
                   <span className="text-[12px] text-[var(--ink-3)] flex items-center gap-1">
@@ -107,7 +107,7 @@ export function NewInterviewModal({
             </div>
           </div>
 
-          <div className="border-t border-[var(--border)] pt-3">
+          <div className="border-t border-[var(--g-rim)] pt-3">
             <button
               type="button"
               onClick={() => setShowCustom(true)}

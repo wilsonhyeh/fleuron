@@ -28,6 +28,9 @@ export function Tooltip({
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const timerRef = useRef<number | null>(null);
+  /** Set by a click on the trigger, so the focus that follows it does not
+      bring the tip straight back. Cleared when the pointer leaves. */
+  const pressedRef = useRef(false);
 
   const calculatePos = useCallback(() => {
     if (!triggerRef.current) return;
@@ -95,8 +98,19 @@ export function Tooltip({
       <span
         ref={triggerRef}
         onMouseEnter={show}
-        onMouseLeave={hide}
-        onFocus={show}
+        onMouseLeave={() => {
+          pressedRef.current = false;
+          hide();
+        }}
+        // A click starts whatever the control does (often a dialog over the
+        // trigger), and the pointer never "leaves", so the tip stayed on top.
+        onPointerDown={() => {
+          pressedRef.current = true;
+          hide();
+        }}
+        onFocus={() => {
+          if (!pressedRef.current) show();
+        }}
         onBlur={hide}
         className={`inline-flex ${className}`}
       >

@@ -109,7 +109,7 @@ export function WelcomeScreen() {
       try {
         setRecents(await api.listRecentProjects());
       } catch (e) {
-        setRecentError(`Could not read recent projects: ${String(e)}`);
+        setRecentError(`Could not read recent studies: ${String(e)}`);
       }
       return;
     }
@@ -128,7 +128,7 @@ export function WelcomeScreen() {
       const r = await api.listRecentProjects();
       setRecents(r);
     } catch (e) {
-      setRecentError(`Could not read recent projects: ${String(e)}`);
+      setRecentError(`Could not read recent studies: ${String(e)}`);
     }
 
     // 3. Fetch left studies
@@ -253,7 +253,7 @@ export function WelcomeScreen() {
         });
         return;
       }
-      setRecentError(`Could not open project — ${errStr}`);
+      setRecentError(`Could not open the study — ${errStr}`);
     }
   }
 
@@ -492,7 +492,7 @@ export function WelcomeScreen() {
                   type="button"
                   onClick={() => void setOnboardingChoiceSeen(true)}
                   disabled={loading}
-                  className="w-full rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-5 text-left shadow-sm transition-colors hover:bg-[var(--fill)]"
+                  className="w-full rounded-[16px] border border-[var(--g-rim)] bg-[var(--g2)] p-5 text-left shadow-sm transition-colors hover:bg-[var(--fill)]"
                 >
                   <span className="flex items-center gap-2.5">
                     <Icon name="layers" size={18} />
@@ -514,7 +514,7 @@ export function WelcomeScreen() {
                 <button
                   type="button"
                   onClick={() => setOnboardingStep("disclosure")}
-                  className="w-full rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-5 text-left transition-colors hover:bg-[var(--fill)]"
+                  className="w-full rounded-[16px] border border-[var(--g-rim)] bg-[var(--g2)] p-5 text-left transition-colors hover:bg-[var(--fill)]"
                 >
                   <span className="flex items-center gap-2.5">
                     <Icon name="people" size={18} />
@@ -541,7 +541,7 @@ export function WelcomeScreen() {
             )}
 
             {onboardingStep === "disclosure" && (
-              <div className="anim-rise mt-8 w-full rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <div className="anim-rise mt-8 w-full rounded-[16px] border border-[var(--g-rim)] bg-[var(--g2)] p-6 shadow-sm">
                 <h2 className="text-[15px] font-semibold">Collaborate with a team</h2>
                 <CollaborationDisclosure className="mt-3" />
                 <div className="mt-4 flex items-center gap-2">
@@ -564,7 +564,7 @@ export function WelcomeScreen() {
             )}
 
             {onboardingStep === "account" && (
-              <div className="anim-rise mt-8 w-full rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <div className="anim-rise mt-8 w-full rounded-[16px] border border-[var(--g-rim)] bg-[var(--g2)] p-6 shadow-sm">
                 <AccountForm
                   idPrefix="firstrun"
                   autoFocus
@@ -873,7 +873,7 @@ export function WelcomeScreen() {
                                 },
                               ])
                             }
-                            className="group flex items-center justify-between gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-3.5 transition-all hover:bg-[var(--fill)]"
+                            className="group flex items-center justify-between gap-3 rounded-[14px] border border-[var(--g-rim)] bg-[var(--g2)] p-3.5 transition-all hover:bg-[var(--fill)]"
                           >
                             <button
                               type="button"
@@ -889,8 +889,8 @@ export function WelcomeScreen() {
                                   <span
                                     className="chip text-[10.5px]"
                                     style={{
-                                      background: "var(--warning-soft, #fef3c7)",
-                                      color: "var(--warning, #b45309)",
+                                      background: "var(--warn-soft)",
+                                      color: "var(--warn)",
                                     }}
                                   >
                                     {readiness.missingCount} missing
@@ -982,9 +982,9 @@ export function WelcomeScreen() {
                     <div
                       className="mb-3 rounded-[12px] p-3 text-[12.5px]"
                       style={{
-                        background: "var(--warning-soft, #fef3c7)",
-                        color: "var(--warning, #b45309)",
-                        border: "1px solid var(--warning, #b45309)",
+                        background: "var(--warn-soft)",
+                        color: "var(--warn)",
+                        border: "1px solid var(--warn)",
                       }}
                     >
                       <p className="font-semibold">Two studies here have the same name.</p>
@@ -1086,7 +1086,7 @@ export function WelcomeScreen() {
                                     },
                                   ])
                                 }
-                                className="group flex items-center justify-between gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-3.5 transition-all hover:bg-[var(--fill)]"
+                                className="group flex items-center justify-between gap-3 rounded-[14px] border border-[var(--g-rim)] bg-[var(--g2)] p-3.5 transition-all hover:bg-[var(--fill)]"
                               >
                                 <button
                                   type="button"
@@ -1102,8 +1102,8 @@ export function WelcomeScreen() {
                                       <span
                                         className="chip text-[10.5px]"
                                         style={{
-                                          background: "var(--warning-soft, #fef3c7)",
-                                          color: "var(--warning, #b45309)",
+                                          background: "var(--warn-soft)",
+                                          color: "var(--warn)",
                                         }}
                                       >
                                         {readiness.missingCount} missing
@@ -1113,8 +1113,8 @@ export function WelcomeScreen() {
                                       <span
                                         className="chip text-[10.5px]"
                                         style={{
-                                          background: "var(--warning-soft, #fef3c7)",
-                                          color: "var(--warning, #b45309)",
+                                          background: "var(--warn-soft)",
+                                          color: "var(--warn)",
                                         }}
                                       >
                                         Same name
@@ -1206,7 +1206,7 @@ export function WelcomeScreen() {
                                     : []),
                                 ])
                               }
-                              className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-3.5 transition-all"
+                              className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--g-rim)] bg-[var(--g2)] p-3.5 transition-all"
                             >
                               <div className="flex min-w-0 flex-1 flex-col text-left">
                                 <div className="flex items-center gap-2">
@@ -1220,8 +1220,8 @@ export function WelcomeScreen() {
                                     <span
                                       className="chip text-[10.5px]"
                                       style={{
-                                        background: "var(--warning-soft, #fef3c7)",
-                                        color: "var(--warning, #b45309)",
+                                        background: "var(--warn-soft)",
+                                        color: "var(--warn)",
                                       }}
                                     >
                                       Same name
@@ -1266,7 +1266,7 @@ export function WelcomeScreen() {
                         {leftStudies.map((s) => (
                           <li
                             key={s.projectId}
-                            className="flex items-center justify-between gap-3 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] p-2.5 text-[12.5px]"
+                            className="flex items-center justify-between gap-3 rounded-[12px] border border-[var(--g-rim)] bg-[var(--g2)] p-2.5 text-[12.5px]"
                           >
                             <div className="min-w-0 flex-1">
                               <span className="font-medium text-[var(--ink)]">{s.title}</span>
@@ -1406,7 +1406,7 @@ export function WelcomeScreen() {
                           )}
                         </ul>
                         {!!removalState.summary.unreadable_sections?.length && (
-                          <p className="mt-2 text-[11.5px] text-[var(--warning, #b45309)]">
+                          <p className="mt-2 text-[11.5px] text-[var(--warn)]">
                             ⚠️ Some sections could not be checked:{" "}
                             {removalState.summary.unreadable_sections.join(", ")}
                           </p>
@@ -1418,7 +1418,7 @@ export function WelcomeScreen() {
                         className="flex-1 leading-relaxed"
                         style={{ color: "var(--ink-2)" }}
                       >
-                        This moves the project folder and its database into your{" "}
+                        This moves the study folder and its database into your{" "}
                         {trashName()}. Transcripts stored in other folders are not
                         deleted.
                       </p>
@@ -1446,7 +1446,7 @@ export function WelcomeScreen() {
                         className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
                           removalState.mode === "detach"
                             ? "border-[var(--accent)] bg-[var(--fill)]"
-                            : "border-[var(--border)] hover:bg-[var(--fill)]"
+                            : "border-[var(--g-rim)] hover:bg-[var(--fill)]"
                         }`}
                       >
                         <input
@@ -1481,8 +1481,8 @@ export function WelcomeScreen() {
                       <div
                         className="rounded-[10px] p-3 text-[12px] leading-relaxed"
                         style={{
-                          background: "var(--warning-soft, #fef3c7)",
-                          color: "var(--warning, #b45309)",
+                          background: "var(--warn-soft)",
+                          color: "var(--warn)",
                         }}
                       >
                         <p className="font-semibold text-[12.5px]">
@@ -1550,7 +1550,7 @@ export function WelcomeScreen() {
                         className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
                           removalState.mode === "leave"
                             ? "border-[var(--danger,#ef4444)] bg-[var(--fill)]"
-                            : "border-[var(--border)] hover:bg-[var(--fill)]"
+                            : "border-[var(--g-rim)] hover:bg-[var(--fill)]"
                         }`}
                       >
                         <input
@@ -1578,7 +1578,7 @@ export function WelcomeScreen() {
 
                           {removalState.mode === "leave" &&
                             removalState.target.path && (
-                              <div className="mt-3 border-t border-[var(--border)] pt-2.5">
+                              <div className="mt-3 border-t border-[var(--g-rim)] pt-2.5">
                                 <label className="flex cursor-pointer items-center gap-2 text-[12.5px] font-medium text-[var(--ink)]">
                                   <input
                                     type="checkbox"
@@ -1612,7 +1612,7 @@ export function WelcomeScreen() {
                                           <>
                                             <p
                                               className="text-[11.5px]"
-                                              style={{ color: "var(--warning, #b45309)" }}
+                                              style={{ color: "var(--warn)" }}
                                             >
                                               ⚠️ Fleuron could not check all local work.
                                               Do not remove this folder until it can be
@@ -1635,7 +1635,7 @@ export function WelcomeScreen() {
                                           <>
                                             <p
                                               className="text-[11.5px]"
-                                              style={{ color: "var(--warning, #b45309)" }}
+                                              style={{ color: "var(--warn)" }}
                                             >
                                               ⚠️ This folder contains {localMemos} local
                                               memo{localMemos === 1 ? "" : "s"} which are
@@ -1677,7 +1677,7 @@ export function WelcomeScreen() {
                         className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
                           removalState.mode === "delete_group"
                             ? "border-[var(--danger,#ef4444)] bg-[var(--fill)]"
-                            : "border-[var(--border)] hover:bg-[var(--fill)]"
+                            : "border-[var(--g-rim)] hover:bg-[var(--fill)]"
                         }`}
                       >
                         <input
@@ -1705,7 +1705,7 @@ export function WelcomeScreen() {
                           </div>
 
                           {removalState.mode === "delete_group" && (
-                            <div className="mt-3 space-y-2 border-t border-[var(--border)] pt-2.5">
+                            <div className="mt-3 space-y-2 border-t border-[var(--g-rim)] pt-2.5">
                               <label className="block text-[12px] text-[var(--ink-2)]">
                                 Type{" "}
                                 <strong className="text-[var(--ink)]">
@@ -1762,7 +1762,7 @@ export function WelcomeScreen() {
                                           <p
                                             className="text-[11.5px]"
                                             style={{
-                                              color: "var(--warning, #b45309)",
+                                              color: "var(--warn)",
                                             }}
                                           >
                                             ⚠️ This folder contains {localMemos}{" "}

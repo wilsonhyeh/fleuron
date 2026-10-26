@@ -115,7 +115,7 @@ export function ProjectFilesPanel() {
           ? `Saved in ${friendlyLocation(project.path).join(" › ")}. Exports are below.`
           : "Exported CSV, HTML reports, and matrix"
       }
-      width="max-w-2xl"
+      wide
       actions={
         <>
           <button
@@ -124,7 +124,7 @@ export function ProjectFilesPanel() {
             disabled={exporting}
             className="btn btn-outline btn-sm"
           >
-            <Icon name="refresh" size={13} />
+            <Icon name="export" size={13} />
             {exporting ? "Exporting…" : "Export…"}
           </button>
           <button

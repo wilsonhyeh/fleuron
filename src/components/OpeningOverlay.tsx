@@ -22,7 +22,7 @@ export function OpeningOverlay({ path }: { path: string | null }) {
 
   if (!mounted) return null;
 
-  const projectName = path ? basename(path) : "Project";
+  const projectName = path ? basename(path) : "Study";
 
   return (
     <div
@@ -66,7 +66,7 @@ export function OpeningOverlay({ path }: { path: string | null }) {
             <div className="flex items-center justify-between text-[12.5px]">
               <span className="font-medium text-[var(--ink)] flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-[var(--accent)] animate-ping" />
-                Opening project…
+                Opening study…
               </span>
               <span className="text-[var(--ink-4)] font-mono text-[11.5px] tabular-nums">
                 {projectName}
@@ -76,7 +76,7 @@ export function OpeningOverlay({ path }: { path: string | null }) {
             {/* Progress bar */}
             <div
               role="progressbar"
-              aria-label="Loading project"
+              aria-label="Loading study"
               className="h-[3px] w-full rounded-full overflow-hidden bg-[var(--fill)]"
             >
               <div className="h-full w-1/3 bg-[var(--accent)] animate-pulse" />
@@ -89,7 +89,7 @@ export function OpeningOverlay({ path }: { path: string | null }) {
               </p>
             ) : stageElapsed >= 6000 ? (
               <p className="text-[11.5px] text-[var(--ink-3)]">
-                Still working — larger projects or network drives can take a few seconds to load.
+                Still working — larger studies or network drives can take a few seconds to load.
               </p>
             ) : null}
           </div>

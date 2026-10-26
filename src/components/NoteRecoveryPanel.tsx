@@ -241,8 +241,7 @@ export function NoteRecoveryPanel() {
       open={open}
       onClose={() => setOpen(false)}
       title="Unsaved notes"
-      subtitle="Local crash recovery on this computer — never synced, never exported"
-      width="max-w-lg"
+      subtitle="Kept on this computer in case Fleuron closes unexpectedly. Never exported."
     >
       <div className="flex min-h-0 flex-1 flex-col px-5 py-4">
         {loadError ? (
@@ -267,7 +266,7 @@ export function NoteRecoveryPanel() {
                     return (
                       <li
                         key={record.draft_id}
-                        className="rounded-[12px] border border-[var(--border)] bg-[var(--surface)]"
+                        className="rounded-[12px] border border-[var(--g-rim)] bg-[var(--g2)]"
                       >
                         <button
                           type="button"

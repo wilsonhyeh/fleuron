@@ -133,7 +133,7 @@ export function RecentProjectList({ onHelp }: RecentProjectListProps) {
               onContextMenu={(e) =>
                 openContextMenu(e, [
                   {
-                    label: "Open project",
+                    label: "Open study",
                     icon: "folder",
                     onSelect: () => handleOpen(recent),
                     disabled: projectLoading,

@@ -207,9 +207,9 @@ export function TranscriptLinkPanel({
         </p>
 
         {/* Top Folder Scan Bar */}
-        <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+        <div className="flex items-center justify-between rounded-lg border border-[var(--g-rim)] bg-[var(--g2)] p-3">
           <div className="min-w-0 flex-1 pr-2">
-            <div className="text-[13px] font-medium text-[var(--ink-1)]">
+            <div className="text-[13px] font-medium text-[var(--ink)]">
               Scan a folder of transcripts
             </div>
             <div className="truncate text-[11.5px] text-[var(--ink-3)]">
@@ -228,7 +228,7 @@ export function TranscriptLinkPanel({
         </div>
 
         {scanFailure && (
-          <div role="alert" className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+          <div role="alert" className="rounded-lg border border-[var(--g-rim)] bg-[var(--g2)] p-3">
             <p className="text-[12.5px] font-medium">{fileAccessCopy(scanFailure).title}</p>
             <p className="mt-1 text-[12px]" style={{ color: "var(--ink-2)" }}>
               {fileAccessCopy(scanFailure).recovery}
@@ -271,11 +271,11 @@ export function TranscriptLinkPanel({
               return (
                 <div
                   key={r.study_label}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2.5"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--g-rim)] bg-[var(--g2)] p-2.5"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-[13.5px] text-[var(--ink-1)]">
+                      <span className="font-semibold text-[13.5px] text-[var(--ink)]">
                         {r.study_label}
                       </span>
                       {isImported ? (

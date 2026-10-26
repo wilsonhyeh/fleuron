@@ -45,7 +45,7 @@ export function UserGuidePanel() {
       onClose={closeGuide}
       title="User guide"
       subtitle="Every workflow, with what to expect"
-      width="max-w-[560px]"
+      wide
     >
       <div className="px-5 py-2.5">
         <label className="relative flex items-center">

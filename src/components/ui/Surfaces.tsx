@@ -139,7 +139,11 @@ interface SideSheetProps {
   /** Rendered in the header row, left of the close button. */
   actions?: ReactNode;
   children: ReactNode;
-  width?: string;
+  /**
+   * Two widths only, so sheets line up with each other: the default for a
+   * single column, `wide` for two-column content (guide, files, tables).
+   */
+  wide?: boolean;
 }
 
 /** Right-edge sheet for reference content: guide, files, activity. */
@@ -150,8 +154,9 @@ export function SideSheet({
   subtitle,
   actions,
   children,
-  width = "max-w-xl",
+  wide = false,
 }: SideSheetProps) {
+  const width = wide ? "max-w-2xl" : "max-w-lg";
   const titleId = useId();
   const sheetRef = useRef<HTMLDivElement>(null);
   useEscape(open, onClose);

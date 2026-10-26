@@ -210,7 +210,7 @@ export function FilterButton() {
                     onClick={() => setFilterMatchMode("any")}
                     className={`rounded px-2 py-0.5 transition-colors ${
                       filterMatchMode === "any"
-                        ? "bg-[var(--surface)] text-[var(--accent)] font-semibold shadow-xs"
+                        ? "bg-[var(--g2)] text-[var(--accent)] font-semibold shadow-xs"
                         : "text-[var(--ink-3)] hover:text-[var(--ink)]"
                     }`}
                   >
@@ -221,7 +221,7 @@ export function FilterButton() {
                     onClick={() => setFilterMatchMode("all")}
                     className={`rounded px-2 py-0.5 transition-colors ${
                       filterMatchMode === "all"
-                        ? "bg-[var(--surface)] text-[var(--accent)] font-semibold shadow-xs"
+                        ? "bg-[var(--g2)] text-[var(--accent)] font-semibold shadow-xs"
                         : "text-[var(--ink-3)] hover:text-[var(--ink)]"
                     }`}
                   >

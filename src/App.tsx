@@ -47,7 +47,7 @@ function App() {
           useProjectStore
             .getState()
             .showStatus(
-              "Fleuron closed unexpectedly during its last session. Your project database has been verified and is ready.",
+              "Fleuron closed unexpectedly during its last session. Your study has been checked and is ready.",
               "info",
             );
         }

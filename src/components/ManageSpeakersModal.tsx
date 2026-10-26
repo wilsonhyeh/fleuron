@@ -163,7 +163,7 @@ export function ManageSpeakersModal({
         <div className="flex flex-col items-center gap-4 py-6 text-center">
           <div
             className="flex h-12 w-12 items-center justify-center rounded-full"
-            style={{ background: "var(--warning-soft)", color: "var(--warning)" }}
+            style={{ background: "var(--warn-soft)", color: "var(--warn)" }}
           >
             <Icon name="eye" size={24} />
           </div>
@@ -192,8 +192,8 @@ export function ManageSpeakersModal({
           <div
             className="rounded-[10px] p-3 text-[13px] leading-relaxed"
             style={{
-              background: "var(--warning-soft)",
-              color: "var(--warning)",
+              background: "var(--warn-soft)",
+              color: "var(--warn)",
             }}
           >
             <div className="font-semibold text-[13.5px]">Combine speakers?</div>
@@ -277,7 +277,7 @@ export function ManageSpeakersModal({
               No speakers found in this interview transcript.
             </div>
           ) : (
-            <div className="flex flex-col divide-y divide-[var(--border)] max-h-[380px] overflow-y-auto">
+            <div className="flex flex-col divide-y divide-[var(--g-rim)] max-h-[380px] overflow-y-auto">
               {speakers.map((s) => {
                 const isEditing = editingSpeaker === s.speaker;
                 return (
@@ -353,7 +353,7 @@ export function ManageSpeakersModal({
             </div>
           )}
 
-          <div className="flex items-center justify-end pt-2 border-t border-[var(--border)]">
+          <div className="flex items-center justify-end pt-2 border-t border-[var(--g-rim)]">
             <button
               type="button"
               className="btn"

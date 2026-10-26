@@ -161,6 +161,10 @@
 
   --scrim: rgba(40, 36, 28, 0.14);
 
+  /* The select chevron. A background image cannot read currentColor, so the
+     stroke colour is baked into the URI once per theme (--ink-3). */
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2366686e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
   --shadow-1: 0 1px 2px rgba(73, 63, 43, 0.07), 0 4px 12px rgba(73, 63, 43, 0.06);
   --shadow-2: 0 2px 6px rgba(73, 63, 43, 0.09), 0 12px 32px rgba(73, 63, 43, 0.1);
   --shadow-3: 0 8px 20px rgba(73, 63, 43, 0.12), 0 32px 80px rgba(73, 63, 43, 0.18);
@@ -243,6 +247,7 @@
     --fill-hi: rgba(255, 255, 255, 0.13);
     --fill-on: rgba(255, 255, 255, 0.16);
     --scrim: rgba(10, 10, 14, 0.45);
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239a999d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
     --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.42);
@@ -317,6 +322,7 @@
     --fill-hi: rgba(255, 255, 255, 0.13);
     --fill-on: rgba(255, 255, 255, 0.16);
     --scrim: rgba(10, 10, 14, 0.45);
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239a999d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
     --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.42);
@@ -391,6 +397,22 @@ body {
   textarea {
     font: inherit;
     color: inherit;
+  }
+
+  /* One checkbox for the whole app. Without this, every checkbox that didn't
+     set its own accent painted the platform's default blue, so a single sheet
+     could show a gold box next to a blue one. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  input[type="checkbox"]:disabled,
+  input[type="radio"]:disabled {
+    cursor: default;
   }
 }
 
@@ -654,7 +676,9 @@ body {
     padding: 9px 12px;
     border: 0;
     border-radius: var(--r-md);
-    background: var(--fill);
+    /* Paper, not --fill: a grey field at rest reads as disabled, and the
+       panels it sits on are already tinted. */
+    background-color: var(--g2);
     box-shadow: inset 0 0 0 1px var(--g-rim);
     color: var(--ink);
     font-size: 14px;
@@ -665,9 +689,16 @@ body {
   .field::placeholder {
     color: var(--ink-4);
   }
+  .field:disabled {
+    background-color: var(--fill);
+    color: var(--ink-3);
+    cursor: default;
+  }
+  /* background-color, never the shorthand: the shorthand also clears
+     background-image, which is the chevron on a focused select. */
   .field:focus {
     outline: none;
-    background: var(--fill-on);
+    background-color: var(--fill-on);
     box-shadow:
       inset 0 0 0 1px var(--accent),
       0 0 0 3.5px var(--accent-soft);
@@ -684,20 +715,12 @@ body {
   select.field {
     -webkit-appearance: none;
     appearance: none;
-    padding-right: 28px;
-    background-image: linear-gradient(
-        45deg,
-        transparent 50%,
-        currentColor 50%
-      ),
-      linear-gradient(135deg, currentColor 50%, transparent 50%);
-    background-position:
-      calc(100% - 15px) calc(50% + 1px),
-      calc(100% - 10px) calc(50% + 1px);
-    background-size:
-      5px 5px,
-      5px 5px;
+    padding-right: 30px;
+    background-image: var(--chevron);
+    background-position: right 12px center;
+    background-size: 10px 6px;
     background-repeat: no-repeat;
+    cursor: pointer;
   }
 
   .label {

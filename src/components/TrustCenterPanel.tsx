@@ -61,7 +61,7 @@ function WarningRow({ card }: { card: WarningCard }) {
     <div
       className="rounded-[12px] border p-3"
       style={{
-        borderColor: stop ? "var(--danger)" : "var(--border)",
+        borderColor: stop ? "var(--danger)" : "var(--g-rim)",
         background: stop ? "var(--danger-soft)" : "var(--fill)",
       }}
     >
@@ -113,6 +113,7 @@ export function TrustCenterPanel() {
 
   return (
     <SideSheet
+      wide
       open={open}
       onClose={close}
       title="Trust & permissions"
@@ -122,7 +123,7 @@ export function TrustCenterPanel() {
         {/* This build */}
         <section id="trust-section-build">
           <h3 className="eyebrow">This build</h3>
-          <div className="mt-3 rounded-[12px] border border-[var(--border)] p-3 text-[13px]">
+          <div className="mt-3 rounded-[12px] border border-[var(--g-rim)] p-3 text-[13px]">
             <div className="flex items-center justify-between gap-3">
               <span>Version</span>
               <span className="font-mono">{info?.version ?? "…"}</span>
@@ -190,7 +191,7 @@ export function TrustCenterPanel() {
           </div>
 
           {/* Supported matrix */}
-          <div className="mt-3 rounded-[12px] border border-[var(--border)] p-3">
+          <div className="mt-3 rounded-[12px] border border-[var(--g-rim)] p-3">
             {SUPPORT_MATRIX.map((row) => (
               <div key={row.platform} className="text-[12.5px] leading-relaxed">
                 <span
@@ -258,7 +259,7 @@ export function TrustCenterPanel() {
               </thead>
               <tbody>
                 {DATA_BOUNDARY.map((row) => (
-                  <tr key={row.category} className="border-t border-[var(--border)] align-top">
+                  <tr key={row.category} className="border-t border-[var(--g-rim)] align-top">
                     <td className="py-2 pr-2 font-medium">{row.category}</td>
                     <td className="py-2 pr-2" style={{ color: "var(--ink-2)" }}>
                       {row.syncedWhenCollaborating}
