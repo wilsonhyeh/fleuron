@@ -21,7 +21,10 @@ import {
   formatRunAttribution,
   matchRanges,
   splitRunsOnMatches,
-  getSpanUnderlineColor,
+  inlineMark,
+  underlineLayer,
+  MARK_THICKNESS_PX,
+  type InlineMark,
   type MatchRange,
 } from "../lib/highlight";
 import { resolveClickedCoding } from "../lib/coding-target";
@@ -49,7 +52,7 @@ import { Icon } from "./ui/Icon";
 import { FilterButton } from "./FilterButton";
 import { InterviewHistoryNav } from "./InterviewHistoryNav";
 import { openContextMenu } from "./ui/ContextMenu";
-import { readableOn, textOnSolid } from "../lib/code-colors";
+import { readableOn } from "../lib/code-colors";
 import {
   scrollFraction,
   scrollPlan,
@@ -1328,17 +1331,6 @@ export function TranscriptPanel() {
                         >
                           {formatTimestampDisplay(seg.timestamp_start)}
                         </span>
-                        {isCoded && (
-                          <span
-                            className="h-1.5 w-1.5 rounded-full"
-                            style={{
-                              backgroundColor:
-                                codesById.get(segCodings[0].code_ids[0])?.color ??
-                                "var(--accent)",
-                            }}
-                            title="Coded passage"
-                          />
-                        )}
                         <div className="ml-auto flex items-center gap-1.5">
                           {isReviewed && (
                             <span
@@ -1443,13 +1435,11 @@ export function TranscriptPanel() {
                                           ? `${coding.coder_name} coded this — Edit coding — “${code.name}” on passage ${seg.segment_index + 1}. Right-click to filter by this code.`
                                           : `Edit coding — “${code.name}” on passage ${seg.segment_index + 1}. Right-click to filter by this code.`
                                       }
-                                      className="rounded-full px-2 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80"
-                                      style={{
-                                        backgroundColor: code.color,
-                                        color: textOnSolid(code.color),
-                                      }}
+                                      className="code-chip"
+                                      data-active={hoveredPillCodeId === code.id || undefined}
+                                      style={{ "--code": code.color } as React.CSSProperties}
                                     >
-                                      {code.name}
+                                      <span className="code-chip-name">{code.name}</span>
                                     </button>
                                   );
                                 })}
@@ -1562,6 +1552,39 @@ export function TranscriptPanel() {
  * the single inline note editor: every Add/Edit route selects the shared
  * coding identity and the editor docks below its source passage.
  */
+/**
+ * Background layers for a mark: an optional full-height tint (search match)
+ * under the 2 px underline pinned to the bottom of the inline box. See
+ * underlineLayer() for why the line is a background, not text-decoration.
+ */
+function markBackground(
+  mark: InlineMark | null,
+  otherCoder: boolean,
+  tint?: string,
+): React.CSSProperties {
+  const underline = underlineLayer(mark, otherCoder);
+  const layers: string[] = [];
+  const sizes: string[] = [];
+  const positions: string[] = [];
+  if (underline) {
+    layers.push(underline);
+    sizes.push(`100% ${MARK_THICKNESS_PX}px`);
+    positions.push("0 100%");
+  }
+  if (tint) {
+    layers.push(`linear-gradient(${tint}, ${tint})`);
+    sizes.push("100% 100%");
+    positions.push("0 0");
+  }
+  if (layers.length === 0) return {};
+  return {
+    backgroundImage: layers.join(", "),
+    backgroundSize: sizes.join(", "),
+    backgroundPosition: positions.join(", "),
+    backgroundRepeat: "no-repeat",
+  };
+}
+
 const PassageText = memo(function PassageText({
   segmentId,
   segmentIndex,
@@ -1731,13 +1754,16 @@ const PassageText = memo(function PassageText({
                   top: s.top,
                   height: s.height,
                   width: 3,
-                  borderLeft: s.isDashed
-                    ? `3px dashed ${s.color}`
-                    : `3px solid ${s.color}`,
+                  // Another coder's coding is the same bar at reduced
+                  // strength, as its underline is. A dashed 3 px border
+                  // drew a short bar as a bracket.
+                  borderLeft: `3px solid ${s.color}`,
                   opacity:
                     (hoveredPillCodeId ?? hoveredStripeCodeId) && !isHovered
                       ? 0.35
-                      : 1,
+                      : s.isDashed
+                        ? 0.55
+                        : 1,
                   borderRadius: 1,
                 }}
               />
@@ -1745,7 +1771,7 @@ const PassageText = memo(function PassageText({
           })}
           {stripeLayout.overflowCount > 0 && (
             <div
-              className="absolute top-0 right-0 text-[9px] font-sans font-medium px-0.5 rounded bg-surface-sunken text-muted cursor-help"
+              className="absolute top-0 right-0 rounded bg-[var(--fill)] px-0.5 font-sans text-[9px] font-medium text-[var(--ink-3)] cursor-help"
               title={stripeLayout.overflowCodes.map((c) => c.name).join(", ")}
             >
               +{stripeLayout.overflowCount}
@@ -1762,17 +1788,10 @@ const PassageText = memo(function PassageText({
           color: isReviewed ? "var(--ink-3)" : undefined,
         }}
       >
-        {pieces.map((run, idx) => {
+        {pieces.map((run) => {
           const hasOtherCoder =
             Boolean(activeCoder && run.coders.some((c) => c !== activeCoder)) ||
             run.unresolvedCount > 0;
-
-          const nextPiece = pieces[idx + 1];
-          const hasAdjacentCodedRun = Boolean(
-            (run.codes.length > 0 || run.unresolvedCount > 0) &&
-              nextPiece &&
-              (nextPiece.codes.length > 0 || nextPiece.unresolvedCount > 0),
-          );
 
           if (run.codes.length === 0) {
             if (run.unresolvedCount > 0) {
@@ -1781,24 +1800,14 @@ const PassageText = memo(function PassageText({
                   key={run.start}
                   data-run-start={run.start}
                   data-run-end={run.end}
-                  className={hasAdjacentCodedRun ? "mr-1" : undefined}
                 >
                   <mark
                     title={formatRunAttribution(run, activeCoder)}
-                    className="rounded-[3px] px-px cursor-help"
+                    className="cursor-help"
                     style={{
                       color: "inherit",
-                      background: dark
-                        ? "rgba(255, 255, 255, 0.12)"
-                        : "rgba(0, 0, 0, 0.07)",
-                      boxShadow: `inset 0 -1px 0 0 ${
-                        dark ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.25)"
-                      }`,
-                      textDecorationLine: "underline",
-                      textDecorationColor: dark
-                        ? "rgba(255, 255, 255, 0.55)"
-                        : "rgba(0, 0, 0, 0.45)",
-                      textUnderlineOffset: "2px",
+                      backgroundColor: "transparent",
+                      ...markBackground(inlineMark(run), false),
                     }}
                   >
                     {run.text}
@@ -1850,7 +1859,10 @@ const PassageText = memo(function PassageText({
             flashCodeId && run.codes.some((c) => c.id === flashCodeId),
           );
 
-          let bg = dark ? "rgba(255, 255, 255, 0.085)" : "rgba(0, 0, 0, 0.055)";
+          // No fill at rest: the underline is the mark. A tint appears only
+          // while a code is being pointed at (pill, side bar, flash) or
+          // filtered, so the matching text stands out on demand.
+          let bg = "transparent";
           if (isStripeOrPillHighlighted) {
             const matchedCode = run.codes.find((c) => c.id === activeHoverId);
             if (matchedCode) {
@@ -1861,20 +1873,9 @@ const PassageText = memo(function PassageText({
             if (matchedCode) {
               bg = `${matchedCode.color}${dark ? "40" : "2e"}`;
             }
-          } else if (hasActiveHover) {
-            bg = dark ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.02)";
           }
 
-          const underlineRaw = getSpanUnderlineColor(run);
-          const underlineColor = underlineRaw
-            ? underlineRaw.startsWith("#") && underlineRaw.length === 7
-              ? `${underlineRaw}a6`
-              : underlineRaw
-            : null;
-
-          const shadows: string[] = [];
-          if (run.isMatch) shadows.push("0 0 0 1.5px var(--find-ring)");
-          if (underlineColor) shadows.push(`inset 0 -2px 0 0 ${underlineColor}`);
+          const mark = inlineMark(run);
 
           const matchedCodeForFlash = isFlashed
             ? run.codes.find((c) => c.id === flashCodeId)
@@ -1885,7 +1886,6 @@ const PassageText = memo(function PassageText({
               key={run.start}
               data-run-start={run.start}
               data-run-end={run.end}
-              className={hasAdjacentCodedRun ? "mr-1" : undefined}
             >
               <mark
                 data-coding-id={run.codes.map((c) => c.id).join(",")}
@@ -1934,23 +1934,20 @@ const PassageText = memo(function PassageText({
                   });
                   openContextMenu(e, items);
                 }}
-                className="rounded-[3px] px-px cursor-pointer"
+                className="cursor-pointer"
                 style={{
                   color: "inherit",
                   backgroundColor: bg,
-                  backgroundImage: run.isCurrentMatch
-                    ? "linear-gradient(var(--find-on), var(--find-on))"
-                    : undefined,
-                  boxShadow: shadows.length > 0 ? shadows.join(", ") : undefined,
+                  boxShadow: run.isMatch ? "0 0 0 1.5px var(--find-ring)" : undefined,
                   outline: isFlashed
                     ? `2px solid ${matchedCodeForFlash?.color ?? "var(--accent)"}`
                     : undefined,
                   outlineOffset: isFlashed ? "1px" : undefined,
-                  textDecorationLine: hasOtherCoder ? "underline" : undefined,
-                  textDecorationColor: dark
-                    ? "rgba(255, 255, 255, 0.55)"
-                    : "rgba(0, 0, 0, 0.45)",
-                  textUnderlineOffset: "2px",
+                  ...markBackground(
+                    mark,
+                    hasOtherCoder,
+                    run.isCurrentMatch ? "var(--find-on)" : undefined,
+                  ),
                 }}
               >
                 {run.text}
@@ -2198,10 +2195,10 @@ function InlineNoteEditor({
               {codeItems.map((code) => (
                 <span
                   key={code.id}
-                  className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-                  style={{ backgroundColor: code.color, color: textOnSolid(code.color) }}
+                  className="code-chip"
+                  style={{ "--code": code.color } as React.CSSProperties}
                 >
-                  {code.name}
+                  <span className="code-chip-name">{code.name}</span>
                 </span>
               ))}
             </div>

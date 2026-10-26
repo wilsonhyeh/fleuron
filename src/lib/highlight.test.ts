@@ -444,25 +444,42 @@ describe("splitRunsOnMatches", () => {
     expect(pendingPiece!.text).toBe("rehearse");
   });
 
-  describe("getSpanUnderlineColor", () => {
-    it("picks first code color for single and multi-code runs", async () => {
-      const { getSpanUnderlineColor } = await import("./highlight");
-      const code1 = { id: "c1", name: "One", color: "#e11d48", sort_order: 1 } as any;
-      const code2 = { id: "c2", name: "Two", color: "#2563eb", sort_order: 2 } as any;
+  describe("inlineMark", () => {
+    const one = { id: "c1", name: "One", color: "#e11d48", sort_order: 1 } as any;
+    const two = { id: "c2", name: "Two", color: "#2563eb", sort_order: 2 } as any;
 
-      expect(getSpanUnderlineColor({ codes: [code1] })).toBe("#e11d48");
-      expect(getSpanUnderlineColor({ codes: [code1, code2] })).toBe("#e11d48");
-      expect(getSpanUnderlineColor({ codes: [code2, code1] })).toBe("#2563eb");
+    it("uses the code colour when one span code covers the run", async () => {
+      const { inlineMark } = await import("./highlight");
+      expect(inlineMark({ codes: [one], spanCodes: [one] })).toEqual({ color: "#e11d48" });
     });
 
-    it("returns neutral color for unresolved codes", async () => {
-      const { getSpanUnderlineColor } = await import("./highlight");
-      expect(getSpanUnderlineColor({ codes: [], unresolvedCount: 1 })).toBe("rgba(150, 150, 150, 0.65)");
+    it("draws a neutral line where span codes overlap", async () => {
+      const { inlineMark, NEUTRAL_MARK } = await import("./highlight");
+      expect(inlineMark({ codes: [one, two], spanCodes: [one, two] })).toEqual({ color: NEUTRAL_MARK });
     });
 
-    it("returns null for plain text runs", async () => {
-      const { getSpanUnderlineColor } = await import("./highlight");
-      expect(getSpanUnderlineColor({ codes: [], unresolvedCount: 0 })).toBeNull();
+    it("leaves whole-passage codes to the side bar", async () => {
+      const { inlineMark } = await import("./highlight");
+      expect(inlineMark({ codes: [one], spanCodes: [], wholeTurnOnly: true })).toBeNull();
+      // A span inside a whole-passage coding is coloured by the span alone.
+      expect(inlineMark({ codes: [one, two], spanCodes: [two] })).toEqual({ color: "#2563eb" });
+    });
+
+    it("draws a neutral line under codes this computer cannot resolve", async () => {
+      const { inlineMark, NEUTRAL_MARK } = await import("./highlight");
+      expect(inlineMark({ codes: [], unresolvedCount: 1 })).toEqual({ color: NEUTRAL_MARK });
+    });
+
+    it("draws another coder's line at reduced strength", async () => {
+      const { underlineLayer } = await import("./highlight");
+      expect(underlineLayer({ color: "#e11d48" })).toBe("linear-gradient(#e11d48e6, #e11d48e6)");
+      expect(underlineLayer({ color: "#e11d48" }, true)).toBe("linear-gradient(#e11d488c, #e11d488c)");
+      expect(underlineLayer(null)).toBeNull();
+    });
+
+    it("returns null for plain text", async () => {
+      const { inlineMark } = await import("./highlight");
+      expect(inlineMark({ codes: [], unresolvedCount: 0 })).toBeNull();
     });
   });
 });

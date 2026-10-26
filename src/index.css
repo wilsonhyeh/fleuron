@@ -758,6 +758,50 @@ body {
     font-weight: 500;
     white-space: nowrap;
   }
+  /* A code's label wherever a code is applied (under a passage, on a note,
+     in the coding bubble). Neutral chip with the code's colour as a dot:
+     the colour identifies the code, it does not need to fill the label.
+     Set --code on the element. */
+  .code-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    max-width: 100%;
+    padding: 2px 8px 2px 7px;
+    border-radius: var(--r-full);
+    background: var(--fill);
+    color: var(--ink-2);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .code-chip::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: var(--r-full);
+    background: var(--code, var(--ink-4));
+  }
+  .code-chip > .code-chip-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  button.code-chip {
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-glass),
+      color var(--dur-fast) var(--ease-glass);
+  }
+  button.code-chip:hover,
+  .code-chip[data-active="true"] {
+    background: var(--fill-hi);
+    color: var(--ink);
+  }
+
   .chip-accent {
     background: var(--accent-soft);
     color: var(--accent-chip-ink);
@@ -811,6 +855,7 @@ body {
   /* Focus ring for keyboard users only */
   .btn:focus-visible,
   .chip:focus-visible,
+  .code-chip:focus-visible,
   [role="button"]:focus-visible,
   /* Menu rows are <button role="menuitem"> and carry no `.btn` class, so they
      matched none of the selectors above and keyboard focus in the overflow

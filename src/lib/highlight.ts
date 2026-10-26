@@ -20,6 +20,12 @@ export interface HighlightRun {
   /** Per-code attribution: which coder(s) applied each code on this run. */
   codeCoders?: { code: Code; coders: string[] }[];
   /**
+   * Codes on this run that come from a span somebody selected, not from a
+   * whole-passage coding. The in-text mark is drawn from these alone; a
+   * whole-passage code is shown by the side bar.
+   */
+  spanCodes?: Code[];
+  /**
    * True when every coding covering this run applies to the whole passage.
    * Rendering tints these more lightly: a whole-passage code is a weaker,
    * broader claim than a phrase somebody deliberately dragged over, and drawing
@@ -161,11 +167,16 @@ export function highlightRuns(
       ].sort(),
     }));
 
+    const spanCodeIds = new Set(
+      covering.filter((s) => !s.wholeTurn).flatMap((s) => s.codeIds),
+    );
+
     runs.push({
       start,
       end,
       text: text.slice(start, end),
       codes: resolvedCodes,
+      spanCodes: resolvedCodes.filter((c) => spanCodeIds.has(c.id)),
       coders: [...new Set(covering.map((s) => s.coder))].sort(),
       unresolvedCount,
       codeCoders,
@@ -429,20 +440,59 @@ export function splitRunsOnMatches(
 }
 
 /**
- * Picks the underline color for a coded span.
- * Multi-code runs use the first code's color.
- * Unresolved runs use a neutral tone.
- * Plain text runs return null.
+ * The one mark a coded run carries in the text: an underline.
+ *
+ * - One span code: that code's colour.
+ * - Several span codes overlapping: a neutral line. The side bar says which
+ *   codes they are; one colour picked from several would misreport the rest.
+ * - Whole-passage codes only: no mark. The side bar runs the full height of
+ *   the passage, and underlining every word said the same thing louder.
+ * - Codes this computer cannot resolve: a neutral line.
+ *
+ * Returns null for text that gets no mark.
  */
-export function getSpanUnderlineColor(
-  run: { codes?: Code[]; unresolvedCount?: number },
-): string | null {
-  if (run.codes && run.codes.length > 0) {
-    return run.codes[0].color;
-  }
-  if (run.unresolvedCount && run.unresolvedCount > 0) {
-    return "rgba(150, 150, 150, 0.65)";
+export type InlineMark = { color: string };
+
+export const NEUTRAL_MARK = "var(--ink-4)";
+
+export function inlineMark(run: {
+  codes?: Code[];
+  spanCodes?: Code[];
+  unresolvedCount?: number;
+  wholeTurnOnly?: boolean;
+}): InlineMark | null {
+  const span = run.spanCodes ?? (run.wholeTurnOnly ? [] : run.codes ?? []);
+  if (span.length === 1) return { color: span[0].color };
+  if (span.length > 1) return { color: NEUTRAL_MARK };
+  if ((run.codes?.length ?? 0) === 0 && (run.unresolvedCount ?? 0) > 0) {
+    return { color: NEUTRAL_MARK };
   }
   return null;
+}
+
+/**
+ * The underline as a background layer rather than `text-decoration`.
+ *
+ * `text-decoration` sits just under the baseline, so descenders (p, g, y)
+ * cut it; dashed lines broke into uneven fragments and restarted their
+ * pattern at every run boundary, with dash lengths each engine picks for
+ * itself. A 2 px gradient pinned to the bottom of the inline box runs below
+ * the descenders, never breaks, and draws the same in WebKit and Chromium.
+ * Inline backgrounds lay out across line wraps as one strip, so a wrapped
+ * span stays one continuous line.
+ *
+ * Another coder's coding is the same line at reduced strength (the side bar
+ * keeps its dashes for that case).
+ */
+export const MARK_THICKNESS_PX = 2;
+
+export function underlineLayer(
+  mark: InlineMark | null,
+  otherCoder = false,
+): string | null {
+  if (!mark) return null;
+  const hex = /^#[0-9a-fA-F]{6}$/.test(mark.color);
+  const color = hex ? `${mark.color}${otherCoder ? "8c" : "e6"}` : mark.color;
+  return `linear-gradient(${color}, ${color})`;
 }
 

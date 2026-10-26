@@ -235,7 +235,7 @@ test.describe("Reading Surface PasBugs & QOL (2.4.1)", () => {
 
     const article = page.locator("article").nth(2);
     const stripes = article.locator('[data-testid="stripe-bar"]');
-    const pills = article.locator(".mt-2\\.5 button.rounded-full");
+    const pills = article.locator("button.code-chip");
 
     const stripeCount = await stripes.count();
     const pillCount = await pills.count();
@@ -322,10 +322,19 @@ test.describe("Reading Surface PasBugs & QOL (2.4.1)", () => {
     const marks = page.locator("mark[data-coding-id]");
     await expect(marks.first()).toBeVisible();
 
-    const markBoxShadow = await marks
-      .first()
-      .evaluate((el) => window.getComputedStyle(el).boxShadow);
-    expect(markBoxShadow).toContain("-2px 0px 0px inset");
+    // The underline is a 2 px background layer pinned to the bottom of the
+    // mark, so descenders never cut it.
+    const underlined = await marks.evaluateAll((els) =>
+      els
+        .map((el) => window.getComputedStyle(el))
+        .filter((cs) => cs.backgroundImage.includes("linear-gradient"))
+        .map((cs) => ({ size: cs.backgroundSize, pos: cs.backgroundPosition })),
+    );
+    expect(underlined.length).toBeGreaterThan(0);
+    for (const u of underlined) {
+      expect(u.size).toBe("100% 2px");
+      expect(u.pos).toMatch(/^0(px|%) 100%$/);
+    }
 
     // Hovering pill highlights matching span
     const article = page.locator("article").nth(2);

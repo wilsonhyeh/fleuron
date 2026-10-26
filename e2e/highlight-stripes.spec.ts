@@ -26,12 +26,18 @@ test.describe("Highlight Stripes & Margin Gutter", () => {
     const markCount = await marks.count();
     expect(markCount).toBeGreaterThan(0);
 
-    const firstMark = marks.first();
-    const bg = await firstMark.evaluate(
-      (el) => window.getComputedStyle(el).backgroundColor,
+    // The in-text mark is an underline on span codings (whole-passage
+    // codings are shown by the side bar alone), with no fill at rest.
+    await page.mouse.move(0, 0);
+    const deco = await marks.evaluateAll((els) =>
+      els.map((el) => {
+        const cs = window.getComputedStyle(el);
+        return { line: cs.backgroundImage, bg: cs.backgroundColor };
+      }),
     );
-    expect(bg).toBeTruthy();
-    expect(bg).not.toBe("rgba(0, 0, 0, 0)");
+    expect(deco.some((d) => d.line.includes("linear-gradient"))).toBe(true);
+    expect(deco.some((d) => d.line === "none")).toBe(true);
+    for (const d of deco) expect(d.bg).toBe("rgba(0, 0, 0, 0)");
 
     // Check for gutter stripes unconditionally
     const gutter = page.locator('[data-testid="stripe-gutter"]');
