@@ -8,7 +8,7 @@ release is not ready.
 > All evidence is redacted and synthetic: no real study data, participant text,
 > or account identifiers may be recorded here or in the release notes.
 
-- **Version:** 2.9.0
+- **Version:** 2.10.0
 - **Commit:** pending tag (see git log at release time)
 - **Platform / build:** macOS arm64 debug bundle (`Fleuron.app`, id `study.fleuron.desktop`); Windows unverified
 - **Date (last run):** 2026-10-26
@@ -152,3 +152,13 @@ release is not ready.
 - [x] Code palette clears 4.5:1 behind white text, every pair and the accent at least 0.06 apart in OKLab (`Last verified: 2026-10-26 — code-colors.test.ts`)
 - [x] Pinned passage-note card closes on an outside click and stays inside the transcript (`Last verified: 2026-10-26 — note-placement.test.ts; harness check against baseline 3717ba2`)
 - [x] Packaged-app selftest passes on the release tree (`Last verified: 2026-10-26 — run-selftest.mjs against a 2.9.0 debug bundle under the test identity study.fleuron.devtest: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)
+
+## 22. Relationship map and family colours (2.10.0 new)
+
+- [x] Network links two codes once per shared passage across coders and spans, and leaves retired codes out (`Last verified: 2026-10-26 — relationship-map.test.ts 4/4; ?fixture=map harness: 18 codes, applying a code raised connections 44 → 45 with a pulse, light and dark looked at`)
+- [x] Timeline places marks by transcript position and clicking a mark or detail-card passage opens it in the transcript (`Last verified: 2026-10-26 — relationship-map.test.ts timeline positions; harness: click jumped the transcript and collapsed full-window mode`)
+- [x] Structure shows themes, sub-codes and unused codes hollow without labels crossing branches (`Last verified: 2026-10-26 — harness screenshots docked and full-window, light and dark`)
+- [x] Map pane docks beside the transcript, fills the window, Esc returns, Cmd/Ctrl+Shift+M toggles, toolbar menus open above it (`Last verified: 2026-10-26 — harness at 1440×900 and 1280×800; ··· menu visible over the full-window map`)
+- [x] Colour codes by family is on by default, themes take palette colours in creation order, sub-codes share their theme's, and turning it off restores stored colours without writing any (`Last verified: 2026-10-26 — code-colors.test.ts withFamilyColors 2/2; models.rs serde default true; harness toggle on/off`)
+- [x] Codebook hide button in the header, even page inset, single review control (`Last verified: 2026-10-26 — harness screenshots light and dark`)
+- [x] Packaged-app selftest passes on the release tree (`Last verified: 2026-10-26 — run-selftest.mjs against a 2.10.0 debug bundle under the test identity study.fleuron.devtest: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)

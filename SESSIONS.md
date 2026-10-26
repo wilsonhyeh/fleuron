@@ -61,3 +61,15 @@ count each passage once (computed `rollup_count`, no schema change); one chip
 per code per passage; reading header tidy; coding bubble with fixed ⌘1–⌘9; new
 code palette; lighter frame. No Supabase migration. Gates listed in
 `RELEASE-SMOKE.md` § 21.
+
+## 2026-10-26 — Fleuron 2.10.0: relationship map and family colours
+
+Shipped branch `relationship-map` (25b2703, b79ccee, dda5c6b): a live map of
+code co-occurrence beside the transcript with Network, Timeline and Structure
+views (`src/components/RelationshipMap.tsx`, builders in
+`src/lib/relationship-map.ts`, a dependency-free force layout in
+`src/lib/force-layout.ts`); Colour codes by family, on by default and display
+only (`withFamilyColors`, `useDisplayCodes`), so stored colours are never
+rewritten; codebook hide button, page inset and review control polish. New
+`family_colors` preference with a serde default; no schema change, no Supabase
+migration. Gates listed in `RELEASE-SMOKE.md` § 22.

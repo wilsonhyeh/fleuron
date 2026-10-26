@@ -13,6 +13,7 @@ Built with **Tauri v2**, **React 19**, **TypeScript**, **Tailwind CSS**, and **S
 - **Offline-First Privacy**: Project data is stored in a local SQLite database (`.fleuron`). Collaboration sync excludes transcript text and memo fields. Shared exports and cloud-synced folders can take local files off the device.
 - **Span & Whole-Turn Coding**: Drag across words to highlight a specific phrase or click a passage to code the whole turn.
 - **Living Codebook**: Create, merge, split, recode, color-code, and organize codes hierarchically. Click any code to inspect all associated passages.
+- **Relationship Map**: One click (or Cmd/Ctrl+Shift+M) opens a live map beside the transcript: a network of codes that share passages, a timeline of where each code falls in each interview, and the theme structure. It redraws as you code, and every line opens the passages behind it.
 - **Collaboration (paused)**: Fleuron 2.8.0 turns accounts, shared studies, and sync off while the single-user experience is finished; the app makes no sync connection. A study that was already shared opens as a local study, keeps its group link, and keeps its unsent changes queued for when collaboration returns. The sync design below describes that future feature.
 - **Multi-Format Import**: Native parsing for WebVTT, SRT, plain text with speaker labels, Microsoft Word (`.docx`), and CSV transcripts.
 - **Rich Exports**: Export your project to CSV coded passages and framework matrices, standalone HTML reports, and PDF reports.

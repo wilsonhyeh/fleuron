@@ -61,6 +61,18 @@ A phrase is underlined in the code's colour; a whole-turn coding tints the turn 
 
 **The codebook is a reference.** A plain click expands the numbered, quoted list of passages that code is on. Apply and filter survive on right-click.
 
+**Colours.** With **Colour codes by family** on (Settings, on by default) each theme gets its own colour and its sub-codes share it. Turn it off to pick colours yourself; colours you picked before come back.
+
+### The map
+
+Click **Map** in the toolbar (or **⇧⌘M / Ctrl+Shift+M**) to open a live map of your coding beside the transcript. It changes the moment you apply or remove a code.
+
+- **Network:** each code is a circle sized by its passages. Two codes are joined when a passage carries both; the thicker the line, the more passages they share. **Show passages** draws each coded passage as a dot. Drag a circle to move it.
+- **Timeline:** where each code falls in each interview, from start to end.
+- **Structure:** themes around the study, sub-codes around their theme; hollow codes are not used yet.
+
+Click a code or a line for its definition, the codes it shares passages with, and the passages; click a passage to open it. The expand button fills the window for presenting; **Esc** returns. A line means two codes were applied to the same passage, nothing more: what the relationship is stays your call.
+
 On a grouped project the toolbar shows the name you confirmed when you joined — it is not a picker. Change it in **Group & sync…**.
 
 ---

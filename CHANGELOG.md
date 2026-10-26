@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.0]
+
+### Added
+
+- **Relationship map:** A Map button in the toolbar (Cmd/Ctrl+Shift+M) opens a live map of your coding beside the transcript. It updates the moment you apply or remove a code. Three views:
+  - **Network:** each code is a circle sized by its passages, and two codes are joined when a passage carries both; the line is thicker the more passages they share. Show passages draws each coded passage as a dot tied to its codes.
+  - **Timeline:** where each code falls through each interview, from start to end.
+  - **Structure:** themes around the study and sub-codes around their theme; codes not yet used are hollow.
+  Click a code or a connection to see its definition, the codes it shares passages with and the passages themselves; click a passage to open it in the transcript. The expand button fills the window for presenting; Esc returns.
+- **Colour codes by family** (Settings, on by default): each theme gets its own colour and its sub-codes share it, so you never have to pick colours. Colours you picked yourself are kept and come back when you turn the setting off.
+
+### Changed
+
+- **Codebook:** The hide button sits in the codebook header instead of on the divider, where the transcript cut it in half.
+- **Review control:** One control, "Reviewed" with a check (click to undo) or "Mark reviewed", instead of a check beside "Mark not reviewed".
+
+### Fixed
+
+- **Selected first passage:** The transcript page now has the same margin at the top as at the sides, so the first passage's outline no longer runs into the page edge.
+
+---
+
 ## [2.9.0]
 
 ### Changed
