@@ -117,10 +117,19 @@ export function cuesToSegments(
   }));
 }
 
+/**
+ * "00:02:05.000" → "2:05"; "01:05:00.000" → "1:05:00". Milliseconds are
+ * dropped for display (the stored value keeps them). The old version always
+ * cut the first field, so an hour-long interview showed 1:05:00 as "05:00.000".
+ * Anything that does not parse as a time is returned unchanged.
+ */
 export function formatTimestampDisplay(ts: string): string {
-  const parts = ts.split(":");
-  if (parts.length >= 3) {
-    return `${parts[1]}:${parts[2]}`;
-  }
-  return ts;
+  const match = /^(?:(\d+):)?(\d{1,2}):(\d{1,2})(?:[.,]\d+)?$/.exec(ts.trim());
+  if (!match) return ts;
+  const hours = Number(match[1] ?? 0);
+  const minutes = Number(match[2]);
+  const seconds = match[3].padStart(2, "0");
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${seconds}`
+    : `${minutes}:${seconds}`;
 }

@@ -217,6 +217,7 @@ pub fn run() {
             commands::create_project,
             commands::open_project,
             commands::close_project,
+            commands::save_open_project,
             commands::get_project_info,
             commands::get_live_workspace_snapshot,
             commands::list_sync_conflicts,

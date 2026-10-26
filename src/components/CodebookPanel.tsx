@@ -591,6 +591,7 @@ export function CodebookPanel() {
                       }
                       aria-expanded={isOpen}
                       aria-controls={`code-usage-${code.id}`}
+                      title={!isOpen && code.definition ? code.definition : undefined}
                       className="flex min-w-0 flex-1 items-start gap-2 py-2 pl-1 text-left"
                     >
                       <span
@@ -613,9 +614,12 @@ export function CodebookPanel() {
                         >
                           {code.name}
                         </span>
-                        {code.definition && (
+                        {/* Definitions show when the row is open (and as
+                            a tooltip otherwise): two clamped lines under
+                            every code made the codebook mostly grey prose. */}
+                        {code.definition && isOpen && (
                           <span
-                            className="mt-0.5 line-clamp-2 block text-[11.5px] leading-snug"
+                            className="mt-0.5 block text-[11.5px] leading-snug"
                             style={{ color: "var(--ink-3)" }}
                           >
                             {code.definition}

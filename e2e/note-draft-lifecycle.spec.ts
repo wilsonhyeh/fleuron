@@ -103,6 +103,28 @@ test.describe("one inline editor", () => {
     await expect(page.getByRole("textbox", { name: "Note content" })).toHaveCount(1);
   });
 
+  test("real keystrokes stay in the note: no passage shortcuts, no focus theft", async ({ page }) => {
+    // keyboard.type sends keydowns; fill() does not, which is how "n"/"c"/
+    // arrows being eaten by the passage list went unnoticed.
+    await selectFirstPassage(page);
+    await page.keyboard.press("c");
+    const bubble = page.getByRole("dialog", { name: "Code this selection" });
+    await bubble.getByRole("textbox", { name: "Find or create a code" }).fill("Waiting list");
+    await bubble.getByRole("button", { name: /^Waiting list/ }).first().click();
+    await bubble.getByRole("button", { name: "Add a note" }).click();
+    // Add a note closes the bubble; it must not sit over the editor.
+    await expect(bubble).toBeHidden();
+    const box = await openInlineNote(page);
+    // Focus lands in the editor with no extra click.
+    await expect(box).toBeFocused();
+    await page.keyboard.type("nice catch, nn cc");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.type("!");
+    await expect(box).toHaveValue("nice catch, nn c!c");
+    await expect(box).toBeFocused();
+    await expect(bubble).toBeHidden();
+  });
+
   test("empty-note Add commits through the checked contract", async ({ page }) => {
     // A fresh coding of your own with no memo: the coding menu offers Add
     // note, which flows through the same inline editor and checked commit.

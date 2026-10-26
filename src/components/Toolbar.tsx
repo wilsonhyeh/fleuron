@@ -4,15 +4,12 @@ import { listen } from "@tauri-apps/api/event";
 import { useProjectStore } from "../store/project-store";
 import { useGuideStore } from "../store/guide-store";
 import { useAppStore } from "../store/app-store";
-import { Icon } from "./ui/Icon";
 import { Menu } from "./ui/Menu";
-import { Tooltip } from "./ui/Tooltip";
 import { SyncChip } from "./SyncChip";
-import { FilterButton } from "./FilterButton";
+import { SaveStatus } from "./SaveStatus";
 import { UpdateAction, describeUpdateAction } from "./UpdateAction";
 import { useSyncStore } from "../store/sync-store";
 import { useUpdateStore } from "../store/update-store";
-import { shortcut } from "../lib/platform";
 import { useUnfinishedNotesCount } from "./NoteRecoveryPanel";
 import type { PresenceUser } from "../lib/types";
 
@@ -85,8 +82,6 @@ export function Toolbar() {
     setShowBackups,
     setShowInterviewMemo,
     setShowRecoveryPanel,
-    interviewHistory,
-    historyCursor,
     goBackInterview,
     goForwardInterview,
   } = useProjectStore(
@@ -105,15 +100,12 @@ export function Toolbar() {
       setShowBackups: s.setShowBackups,
       setShowInterviewMemo: s.setShowInterviewMemo,
       setShowRecoveryPanel: s.setShowRecoveryPanel,
-      interviewHistory: s.interviewHistory,
-      historyCursor: s.historyCursor,
       goBackInterview: s.goBackInterview,
       goForwardInterview: s.goForwardInterview,
     })),
   );
   const openGuide = useGuideStore((s) => s.openGuide);
   const updateStatus = useUpdateStore((s) => s.status);
-  const openAbout = useAppStore((s) => s.openAbout);
   const openSettings = useAppStore((s) => s.openSettings);
   const setIntent = useAppStore((s) => s.setIntent);
   const openSyncSheet = useSyncStore((s) => s.openSyncSheet);
@@ -205,54 +197,11 @@ export function Toolbar() {
         >
           {segments.study}
         </span>
-        <span className="text-[var(--ink-4)] shrink-0 select-none">›</span>
-
-        {/* Back / Forward interview history. The reading header's Current
-            interview selector is the primary switcher; these walk history. */}
-        <div
-          data-tauri-drag-region="false"
-          className="flex items-center gap-0.5 shrink-0"
-        >
-          <Tooltip content={`Back (${shortcut("mod", "[")})`}>
-            <button
-              type="button"
-              disabled={historyCursor <= 0}
-              onClick={() => void goBackInterview()}
-              aria-label="Back"
-              title={`Back (${shortcut("mod", "[")})`}
-              className="btn btn-ghost btn-sm h-6 w-6 p-0 grid place-items-center rounded disabled:opacity-30 text-[var(--ink-3)] hover:text-[var(--ink)]"
-            >
-              <Icon name="chevronLeft" size={13} />
-            </button>
-          </Tooltip>
-          <Tooltip content={`Forward (${shortcut("mod", "]")})`}>
-            <button
-              type="button"
-              disabled={historyCursor < 0 || historyCursor >= interviewHistory.length - 1}
-              onClick={() => void goForwardInterview()}
-              aria-label="Forward"
-              title={`Forward (${shortcut("mod", "]")})`}
-              className="btn btn-ghost btn-sm h-6 w-6 p-0 grid place-items-center rounded disabled:opacity-30 text-[var(--ink-3)] hover:text-[var(--ink)]"
-            >
-              <Icon name="chevronRight" size={13} />
-            </button>
-          </Tooltip>
-        </div>
-
-        {/* Participant breadcrumb: plain text, not a second switcher. The
-            reading header's Current interview selector is the only primary
-            switcher. Long titles truncate with the full title available. */}
-        <div
-          className="shrink min-w-0 max-w-[220px] truncate px-1.5 py-0.5 font-medium text-[var(--ink-2)]"
-          title={`${segments.participant.label}${segments.participant.isLinked ? "" : " (not linked)"}`}
-        >
-          <span className="truncate">
-            {segments.participant.label}
-            {!segments.participant.isLinked && " (not linked)"}
-          </span>
-        </div>
-
-        <span className="text-[var(--ink-4)] shrink-0 select-none">›</span>
+        {/* The participant and Back/Forward used to sit here too, repeating
+            the reading header's interview selector one row down. They live
+            beside that selector now; the toolbar says whose study and who
+            is coding. */}
+        <span className="text-[var(--ink-4)] shrink-0 select-none">·</span>
 
         {/* Coder segment - attribution control */}
         <div
@@ -320,9 +269,9 @@ export function Toolbar() {
         data-tauri-drag-region="false"
         className="flex shrink-0 items-center gap-2"
       >
-        <FilterButton />
+        <SaveStatus />
         <SyncChip />
-        <UpdateAction compact />
+        <UpdateAction compact hideWhenIdle />
 
         <button
           type="button"
@@ -337,72 +286,81 @@ export function Toolbar() {
         <Menu
           label="More actions"
           items={[
-            {
-              label: describeUpdateAction(updateStatus).label,
-              icon: "refresh",
-              onSelect: () => void useUpdateStore.getState().runPrimaryAction(),
-            },
+            // Grouped by what each acts on, dividers between groups. About
+            // left this menu: the app menu and Help menu both carry it.
             {
               label: "New interview…",
               icon: "plus",
+              section: "interview",
               onSelect: () => setIntent("new-interview"),
             },
             {
               label: "Import transcript…",
               icon: "import",
+              section: "interview",
               onSelect: () => setIntent("import-vtt"),
-            },
-            {
-              label: "Study files…",
-              icon: "folder",
-              onSelect: () => setShowProjectFiles(true),
-            },
-            {
-              label: "Study & sync…",
-              icon: "people",
-              onSelect: () => openSyncSheet(),
             },
             {
               label: "Notes on this interview…",
               icon: "note",
+              section: "interview",
               onSelect: () => setShowInterviewMemo(true),
             },
             {
               label: "Unfinished notes…",
               icon: "note",
               badge: unfinishedCount,
+              section: "study",
               onSelect: () => setShowRecoveryPanel(true),
+            },
+            {
+              label: "Study files…",
+              icon: "folder",
+              section: "study",
+              onSelect: () => setShowProjectFiles(true),
+            },
+            {
+              label: "Study & sync…",
+              icon: "people",
+              section: "study",
+              onSelect: () => openSyncSheet(),
             },
             {
               label: "Backups…",
               icon: "layers",
+              section: "study",
               onSelect: () => setShowBackups(true),
             },
             {
               label: "Activity log…",
               icon: "clock",
+              section: "study",
               onSelect: () => setShowActivityLog(true),
+            },
+            {
+              label: "Close study",
+              icon: "close",
+              section: "study",
+              onSelect: () => requestCloseProject(),
             },
             {
               label: "Settings…",
               icon: "settings",
+              section: "app",
               onSelect: () => openSettings(),
+            },
+            {
+              label: describeUpdateAction(updateStatus).label,
+              icon: "refresh",
+              section: "app",
+              onSelect: () => void useUpdateStore.getState().runPrimaryAction(),
             },
             {
               label: "User guide",
               icon: "book",
               shortcut: "?",
+              section: "app",
               onSelect: () => openGuide("workspace-overview"),
-            },
-            {
-              label: "About Fleuron",
-              icon: "help",
-              onSelect: () => openAbout(),
-            },
-            {
-              label: "Close study",
-              icon: "close",
-              onSelect: () => requestCloseProject(),
             },
             {
               label: "Reset coding…",

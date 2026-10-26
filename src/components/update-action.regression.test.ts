@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { UpdateCoordinatorStatus } from "../lib/types";
-import { describeUpdateAction, UpdateAction } from "./UpdateAction";
+import { describeUpdateAction, UpdateAction, updateNeedsAttention } from "./UpdateAction";
 
 const base: UpdateCoordinatorStatus = {
   phase: "idle",
@@ -51,6 +51,21 @@ describe("v0.27 visible update actions", () => {
     expect(html).toContain("data-testid=\"update-action\"");
   });
 
+  it("hideWhenIdle shows the button only when an update needs attention", () => {
+    expect(updateNeedsAttention(null, false)).toBe(false);
+    expect(updateNeedsAttention({ ...base, phase: "idle" }, true)).toBe(false);
+    // A silent background check stays silent; one the user started shows.
+    expect(updateNeedsAttention({ ...base, phase: "checking" }, false)).toBe(false);
+    expect(updateNeedsAttention({ ...base, phase: "checking" }, true)).toBe(true);
+    for (const phase of ["available", "downloading", "readyToInstall", "preparing", "installing", "failed"] as const) {
+      expect(updateNeedsAttention({ ...base, phase }, false)).toBe(true);
+    }
+    // Initial store state is idle: the toolbar renders nothing.
+    expect(
+      renderToStaticMarkup(createElement(UpdateAction, { compact: true, hideWhenIdle: true })),
+    ).toBe("");
+  });
+
   it("keeps all required entry points and removes the bottom-viewport pill", () => {
     const source = (relative: string) => readFileSync(
       fileURLToPath(new URL(relative, import.meta.url)),
@@ -61,7 +76,11 @@ describe("v0.27 visible update actions", () => {
     const settings = source("./SettingsSheet.tsx");
     const app = source("../App.tsx");
 
-    expect(toolbar.indexOf("<SyncChip />")).toBeLessThan(toolbar.indexOf("<UpdateAction compact />"));
+    // The workspace toolbar shows the button only when an update needs
+    // action; "Check for updates" is always reachable from More actions.
+    expect(toolbar.indexOf("<SyncChip />")).toBeLessThan(
+      toolbar.indexOf("<UpdateAction compact hideWhenIdle />"),
+    );
     expect(toolbar).toContain("describeUpdateAction(updateStatus).label");
     expect(home).toContain("<UpdateAction />");
     expect(settings).toContain("<UpdateStatus />");

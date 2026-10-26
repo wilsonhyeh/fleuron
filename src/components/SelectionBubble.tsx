@@ -485,6 +485,11 @@ export function SelectionBubble({
             type="button"
             onClick={() => {
               if (target.existing) {
+                // Dismiss first. Left open, the bubble sat over the new
+                // editor and its focus effect re-ran on the first keystroke,
+                // pulling focus back into the code filter — the rest of the
+                // note was typed as passage shortcuts.
+                onDismiss();
                 openNoteForCoding(target.existing.id);
               }
             }}

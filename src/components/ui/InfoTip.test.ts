@@ -38,8 +38,8 @@ describe("InfoTip component and u09 copy audit", () => {
     expect(src).toContain("Fleuron splits supported files into speaker turns.");
     expect(src).toContain("Select words to code a span, or press C for the whole turn.");
     expect(src).toContain("Right-click a turn to see the same whole-turn action.");
-    expect(src).toContain("Share coding with your group; transcript text stays local.");
-    expect(src).toContain("Coding metadata syncs. Transcript text stays on this computer.");
+    // The group-sync step left the chain: setup ends at the first coded passage.
+    expect(src).not.toContain('id: "sync"');
     expect(src).toContain("<InfoTip content={active.infoTip} />");
   });
 

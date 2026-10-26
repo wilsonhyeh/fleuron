@@ -6,6 +6,7 @@ import { useNoteDraftStore, isDraftDirty } from "./note-draft-store";
 import { useNoteDepartureStore } from "./note-departure-store";
 import { parseTranscriptFile } from "../hooks/useVttParser";
 import type { TranscriptFormat } from "../lib/transcript-parser";
+import { basename } from "../lib/format";
 
 /** What to call each format when reporting what was just read. */
 const FORMAT_LABELS: Record<TranscriptFormat, string> = {
@@ -1148,6 +1149,17 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         title,
         coders,
       });
+      // create_project rotates a fresh project key + epoch on the backend,
+      // but only openProject used to bind them here — so in a just-created
+      // study the draft store had no workspace, the inline note editor
+      // rendered nothing, and "Add a note" did nothing until a reopen.
+      const live = await api.getLiveWorkspaceSnapshot(null).catch(() => null);
+      const drafts = useNoteDraftStore.getState();
+      drafts.clearWorkspace();
+      drafts.bindWorkspace(
+        live?.project_key ?? `legacy-${project.path}`,
+        live?.workspace_epoch ?? `legacy-${Date.now()}`,
+      );
       // The only moment the app genuinely knows who is at the keyboard: they
       // just typed the coder list themselves, and by convention listed
       // themselves first. Everywhere else, ask.
@@ -2333,7 +2345,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     });
 
     get().showStatus(
-      `Imported ${count} passage(s) from ${FORMAT_LABELS[format]}.`,
+      `Imported ${count} ${count === 1 ? "passage" : "passages"} from ${basename(vttPath)}, read as ${FORMAT_LABELS[format]}.`,
       "success",
     );
 

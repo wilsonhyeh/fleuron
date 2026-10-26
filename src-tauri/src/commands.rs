@@ -736,6 +736,22 @@ pub fn close_project(app: tauri::AppHandle, state: State<'_, AppState>) -> Resul
     Ok(())
 }
 
+/// File > Save. Note drafts are committed by the frontend before this runs;
+/// this folds the WAL into `project.db` so a copy of the folder taken now is
+/// complete. Unlike the silent close/exit checkpoint, a failure here is
+/// reported: the user asked for it. Returns false when no study is open.
+#[tauri::command]
+pub fn save_open_project(state: State<'_, AppState>) -> Result<bool, String> {
+    let guard = state.db.lock().map_err(|e| e.to_string())?;
+    match guard.as_ref() {
+        Some(conn) => {
+            db::checkpoint(conn).map_err(|e| format!("Could not write the study file: {e}"))?;
+            Ok(true)
+        }
+        None => Ok(false),
+    }
+}
+
 // ── Backups ──────────────────────────────────────────────────────────────────
 
 #[tauri::command]

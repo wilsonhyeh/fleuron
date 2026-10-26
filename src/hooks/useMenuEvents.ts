@@ -5,6 +5,7 @@ import { pickProjectPath } from "../lib/open-project";
 import { useGuideStore } from "../store/guide-store";
 import { useAppStore } from "../store/app-store";
 import { useProjectStore } from "../store/project-store";
+import { useSaveStore } from "../store/save-store";
 
 /**
  * A launch path is claimed once per page load, not once per mount.
@@ -58,6 +59,10 @@ export function useMenuEvents() {
         await openProject(path).catch(() => {});
       }
     })();
+
+    listen("menu-save", () => {
+      if (useProjectStore.getState().project) void useSaveStore.getState().saveAll();
+    }).then((u) => unsubs.push(u));
 
     listen("menu-export", () => {
       requestExportProject();

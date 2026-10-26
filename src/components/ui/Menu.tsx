@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Icon, type IconName } from "./Icon";
 
 /**
@@ -66,7 +66,7 @@ export interface MenuItemSpec {
   shortcut?: string;
   /** Numeric badge (e.g. unfinished-note count). Hidden when 0/undefined. */
   badge?: number;
-  /** Section heading to group items under. */
+  /** Group key: a divider is drawn wherever consecutive items differ. */
   section?: string;
   /** Renders in the danger colour and sits below a divider. */
   destructive?: boolean;
@@ -156,8 +156,15 @@ export function Menu({
           onKeyDown={onMenuKeys}
           className="glass-pop anim-rise absolute right-0 top-[calc(100%+6px)] z-50 min-w-56 p-1.5"
         >
-          {primary.map((item) => (
-            <MenuRow key={item.label} item={item} onDone={close} />
+          {primary.map((item, index) => (
+            <Fragment key={item.label}>
+              {/* A divider wherever the section changes. Dividers, not
+                  headings: the groups only need to read as groups. */}
+              {index > 0 && item.section !== primary[index - 1].section ? (
+                <div className="divider my-1.5" role="separator" />
+              ) : null}
+              <MenuRow item={item} onDone={close} />
+            </Fragment>
           ))}
           {destructive.length > 0 && (
             <>

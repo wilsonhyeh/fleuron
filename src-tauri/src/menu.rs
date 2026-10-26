@@ -34,7 +34,7 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
                 &PredefinedMenuItem::hide_others(app, None)?,
                 &PredefinedMenuItem::show_all(app, None)?,
                 &PredefinedMenuItem::separator(app)?,
-                &PredefinedMenuItem::quit(app, Some("Quit Fleuron"))?,
+                &MenuItem::with_id(app, "app_quit", "Quit Fleuron", true, Some("CmdOrCtrl+Q"))?,
             ],
         )?);
     }
@@ -42,6 +42,9 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let new_project =
         MenuItem::with_id(app, "file_new", "New Project…", true, Some("CmdOrCtrl+N"))?;
     let open = MenuItem::with_id(app, "file_open", "Open Project…", true, Some("CmdOrCtrl+O"))?;
+    // Coding writes land as they happen; Save commits every unsaved note and
+    // folds the WAL into project.db so the folder on disk is complete.
+    let save = MenuItem::with_id(app, "file_save", "Save", true, Some("CmdOrCtrl+S"))?;
     let project_files = MenuItem::with_id(
         app,
         "file_project_files",
@@ -55,14 +58,21 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     // Declared unconditionally so they outlive the borrows in `file_items`.
     // Quit lives in the app menu on macOS, so File only carries it elsewhere.
     let sep_top = PredefinedMenuItem::separator(app)?;
+    let sep_save = PredefinedMenuItem::separator(app)?;
     let sep_quit = PredefinedMenuItem::separator(app)?;
-    let quit = PredefinedMenuItem::quit(app, Some("Quit"))?;
+    // Not PredefinedMenuItem::quit: on macOS that sends NSApp terminate:,
+    // which skips RunEvent::ExitRequested and with it the unsaved-notes
+    // guard — Quit closed the app with a note open and no prompt. A custom
+    // item routes through app.exit(0), which the guard can hold.
+    let quit = MenuItem::with_id(app, "app_quit", "Quit", true, None::<&str>)?;
 
     #[allow(unused_mut)] // only mutated off-macOS, to append Quit
     let mut file_items: Vec<&dyn tauri::menu::IsMenuItem<tauri::Wry>> = vec![
         &new_project,
         &open,
         &sep_top,
+        &save,
+        &sep_save,
         &project_files,
         &export,
         &close,
@@ -122,9 +132,15 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
 }
 
 pub fn handle_menu_event(app: &AppHandle, id: &str) {
+    if id == "app_quit" {
+        // ExitRequested runs the native departure guard (lib.rs).
+        app.exit(0);
+        return;
+    }
     let _ = match id {
         "file_new" => app.emit("menu-new-project", ()),
         "file_open" => app.emit("menu-open-project", ()),
+        "file_save" => app.emit("menu-save", ()),
         "file_project_files" => app.emit("menu-project-files", ()),
         "file_export" => app.emit("menu-export", ()),
         "file_close" => app.emit("menu-close-project", ()),

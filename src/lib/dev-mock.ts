@@ -912,6 +912,9 @@ async function handle(cmd: string, args: Record<string, unknown>): Promise<unkno
       }
       return target;
     }
+    case "save_open_project":
+      return openProject !== null;
+
     case "close_project":
       openProject = null;
       mockProjectKey = null;

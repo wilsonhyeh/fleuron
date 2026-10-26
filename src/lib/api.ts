@@ -82,6 +82,9 @@ export const api = {
 
   closeProject: () => invoke<void>("close_project"),
 
+  /** File > Save: fold the WAL into project.db. False when no study is open. */
+  saveOpenProject: () => invoke<boolean>("save_open_project"),
+
   getProjectInfo: () => invoke<ProjectInfo>("get_project_info"),
 
   /**

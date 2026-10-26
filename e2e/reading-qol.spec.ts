@@ -293,12 +293,14 @@ test.describe("Reading Surface PasBugs & QOL (2.4.1)", () => {
     // Close bubble
     await page.keyboard.press("Escape");
 
-    // Clicking explicit filter icon applies filter
-    const filterBtn = article
-      .locator('button[aria-label^="Show only passages coded"]')
-      .first();
-    await expect(filterBtn).toBeVisible();
-    await filterBtn.click();
+    // Right-click on the pill filters (the per-pill funnel icon is gone)
+    await expect(
+      article.locator('button[aria-label^="Show only passages coded"]'),
+    ).toHaveCount(0);
+    await pill.click({ button: "right" });
+    await page
+      .getByRole("menuitem", { name: /^Show only passages coded/ })
+      .click();
 
     // Filter is now active
     const filterbar = page.locator('[data-testid="transcript-filterbar"]');
@@ -350,12 +352,15 @@ test.describe("Reading Surface PasBugs & QOL (2.4.1)", () => {
     await gotoApp(page);
     await openWorkspace(page);
 
-    // Apply a code filter
-    const filterBtn = page
-      .locator('button[aria-label^="Show only passages coded"]')
-      .first();
-    await expect(filterBtn).toBeVisible();
-    await filterBtn.click();
+    // Apply a code filter from a pill's right-click menu
+    await page
+      .locator("article")
+      .nth(2)
+      .getByRole("button", { name: "Unwritten rules", exact: true })
+      .click({ button: "right" });
+    await page
+      .getByRole("menuitem", { name: /^Show only passages coded/ })
+      .click();
 
     const filterbar = page.locator('[data-testid="transcript-filterbar"]');
     await expect(filterbar).toBeVisible();

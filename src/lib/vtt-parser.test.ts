@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cuesToSegments, mergeConsecutiveSpeaker, parseVtt } from "./vtt-parser";
+import { cuesToSegments, formatTimestampDisplay, mergeConsecutiveSpeaker, parseVtt } from "./vtt-parser";
 
 const SAMPLE_VTT = `WEBVTT
 
@@ -114,5 +114,25 @@ Luci Diaz: second
     expect(segments).toHaveLength(2);
     expect(segments[0].text).toBe("first");
     expect(segments[1].text).toBe("second");
+  });
+});
+
+describe("formatTimestampDisplay", () => {
+  it("drops milliseconds and leading zero hours", () => {
+    expect(formatTimestampDisplay("00:02:05.000")).toBe("2:05");
+    expect(formatTimestampDisplay("00:12:00.500")).toBe("12:00");
+    expect(formatTimestampDisplay("00:00:06,000")).toBe("0:06");
+  });
+
+  it("keeps the hour once an interview passes 60 minutes", () => {
+    // The old formatter always cut the first field: this showed "05:00.000".
+    expect(formatTimestampDisplay("01:05:00.000")).toBe("1:05:00");
+    expect(formatTimestampDisplay("02:00:09.120")).toBe("2:00:09");
+  });
+
+  it("accepts mm:ss and returns non-times unchanged", () => {
+    expect(formatTimestampDisplay("03:07.250")).toBe("3:07");
+    expect(formatTimestampDisplay("")).toBe("");
+    expect(formatTimestampDisplay("intro")).toBe("intro");
   });
 });

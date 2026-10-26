@@ -2,7 +2,6 @@ import { useShallow } from "zustand/react/shallow";
 import { useAppStore } from "../store/app-store";
 import { useProjectStore } from "../store/project-store";
 import { useGuideStore } from "../store/guide-store";
-import { useSyncStore } from "../store/sync-store";
 import { Icon, type IconName } from "./ui/Icon";
 import { InfoTip } from "./ui/InfoTip";
 
@@ -25,8 +24,10 @@ interface Task {
  * prerequisite for the next, so showing them all at once is noise. One card,
  * one step.
  *
- * Sync comes last on purpose. It is the only step that is not required to do
- * any work at all. The × dismisses it for a solo study.
+ * The chain ends at the first coded passage: that is a working study. Group
+ * sync used to be a fourth step, so a solo coder had this card floating over
+ * the transcript until they found the ×. Sharing stays one click away in
+ * More actions → Study & sync and on the home screen.
  */
 export function NextStepCoach() {
   const { codes, segments, interviews, totalCodedCount } = useProjectStore(
@@ -41,11 +42,8 @@ export function NextStepCoach() {
   const setCoachDismissed = useAppStore((s) => s.setCoachDismissed);
   const setIntent = useAppStore((s) => s.setIntent);
   const openGuide = useGuideStore((s) => s.openGuide);
-  const openSyncSheet = useSyncStore((s) => s.openSyncSheet);
-  const syncStatus = useSyncStore((s) => s.status);
 
   const hasTranscript = interviews.length > 0 && segments.length > 0;
-  const inGroup = !!syncStatus?.inGroup;
 
   const tasks: Task[] = [
     {
@@ -74,23 +72,9 @@ export function NextStepCoach() {
       icon: "sparkle",
       guideSection: "apply-codes",
     },
-    {
-      id: "sync",
-      title: "Start a group with your coder",
-      why: "Share coding with your group; transcript text stays local.",
-      infoTip: "Coding metadata syncs. Transcript text stays on this computer.",
-      icon: "people",
-      action: { label: "Start a group", run: () => openSyncSheet() },
-      guideSection: "sync-with-your-coder",
-    },
   ];
 
-  const steps = [
-    codes.length > 0,
-    hasTranscript,
-    totalCodedCount > 0,
-    inGroup,
-  ];
+  const steps = [codes.length > 0, hasTranscript, totalCodedCount > 0];
   const doneCount = steps.filter(Boolean).length;
 
   const active =
@@ -100,9 +84,7 @@ export function NextStepCoach() {
         ? tasks[1]
           : totalCodedCount === 0
             ? tasks[2]
-            : inGroup
-              ? null
-              : tasks[3];
+            : null;
 
   if (!active || dismissed) return null;
 

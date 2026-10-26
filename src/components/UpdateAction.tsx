@@ -108,16 +108,45 @@ function useEffectiveUpdateStatus(): UpdateCoordinatorStatus | null {
   return status;
 }
 
+/**
+ * Whether an idle-hidden update button should show: anything but idle, except
+ * a background check, which stays silent like its failures do.
+ */
+export function updateNeedsAttention(
+  status: UpdateCoordinatorStatus | null,
+  lastCheckInteractive: boolean,
+): boolean {
+  if (!status || status.phase === "idle") return false;
+  if (status.phase === "checking") return lastCheckInteractive;
+  return true;
+}
+
 interface UpdateActionProps {
   /** Keep an icon affordance in narrow top chrome while hiding only its text. */
   compact?: boolean;
+  /**
+   * Render nothing until there is something to act on. The workspace toolbar
+   * used this slot for a permanent "Check for updates" that duplicated the
+   * More actions menu; it now appears only for a found update, a download,
+   * a pending restart, a failure, or a check the user started.
+   */
+  hideWhenIdle?: boolean;
   className?: string;
 }
 
-export function UpdateAction({ compact = false, className = "" }: UpdateActionProps) {
+export function UpdateAction({
+  compact = false,
+  hideWhenIdle = false,
+  className = "",
+}: UpdateActionProps) {
   const runPrimaryAction = useUpdateStore((s) => s.runPrimaryAction);
+  const lastCheckInteractive = useUpdateStore((s) => s.lastCheckInteractive);
   const status = useEffectiveUpdateStatus();
   const copy = describeUpdateAction(status);
+
+  if (hideWhenIdle && !updateNeedsAttention(status, lastCheckInteractive)) {
+    return null;
+  }
 
   return (
     <button

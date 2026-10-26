@@ -44,6 +44,8 @@ vi.mock("../lib/api", () => ({
     getAppPreferences: vi.fn(),
     setAppPreferences: vi.fn(),
     openProject: vi.fn(),
+    createProject: vi.fn(),
+    getLiveWorkspaceSnapshot: vi.fn(),
     isHandoffBundle: vi.fn().mockResolvedValue(false),
     inspectHandoffBundle: vi.fn(),
     openHandoffBundle: vi.fn(),
@@ -641,6 +643,25 @@ describe("opening and passage-note state", () => {
     });
     expect(api.listCodedSegments).not.toHaveBeenCalled();
     expect(useProjectStore.getState().codedSegments[0].memo).toBe("new note");
+  });
+});
+
+describe("creating a study binds the note workspace", () => {
+  it("binds the backend's project key and epoch so notes work before any reopen", async () => {
+    resetStore({ project: null });
+    vi.mocked(api.createProject).mockResolvedValue({ ...baseProject, path: "/tmp/new.fleuron" });
+    vi.mocked(api.getLiveWorkspaceSnapshot).mockResolvedValue({
+      project_key: "key-new",
+      workspace_epoch: "epoch-new",
+    } as never);
+    const ok = await useProjectStore
+      .getState()
+      .createProject("/tmp", "new", "New study", ["Alice"]);
+    expect(ok).toBe(true);
+    expect(useNoteDraftStore.getState().workspace).toEqual({
+      projectKey: "key-new",
+      epoch: "epoch-new",
+    });
   });
 });
 

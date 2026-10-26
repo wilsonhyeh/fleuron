@@ -10,9 +10,13 @@ test.describe("v0.27 update action visibility", () => {
     await expect(homeAction).toBeVisible();
     await expect(homeAction).toBeInViewport();
 
+    // The workspace toolbar no longer carries a permanent check button (it
+    // duplicated More actions); the check stays one menu away.
     await openWorkspace(page);
-    const workspaceAction = page.getByRole("button", { name: /Update: Check for updates/i });
-    await expect(workspaceAction).toBeVisible();
-    await expect(workspaceAction).toBeInViewport();
+    await expect(page.getByRole("button", { name: /Update: Check for updates/i })).toHaveCount(0);
+    await page.getByRole("button", { name: "More actions" }).click();
+    const menuCheck = page.getByRole("menuitem", { name: "Check for updates" });
+    await expect(menuCheck).toBeVisible();
+    await expect(menuCheck).toBeInViewport();
   });
 });

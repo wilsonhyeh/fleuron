@@ -6,7 +6,6 @@ import { useNoteDraftStore } from "../store/note-draft-store";
 import { useAppStore } from "../store/app-store";
 import { appConfirm } from "../store/confirm-store";
 import { formatTimestampDisplay } from "../lib/vtt-parser";
-import { basename } from "../lib/format";
 import { NewInterviewModal } from "./NewInterviewModal";
 import { BulkImportModal } from "./BulkImportModal";
 import { InterviewSettingsModal } from "./InterviewSettingsModal";
@@ -46,6 +45,8 @@ import { modKey } from "../lib/platform";
 import { THEME_GROUND, usePrefersDark } from "../hooks/useTheme";
 import { computeStripeLayout, type StripeLayoutResult } from "../lib/stripe-layout";
 import { Icon } from "./ui/Icon";
+import { FilterButton } from "./FilterButton";
+import { InterviewHistoryNav } from "./InterviewHistoryNav";
 import { openContextMenu } from "./ui/ContextMenu";
 import { readableOn, textOnSolid } from "../lib/code-colors";
 import {
@@ -360,11 +361,9 @@ export function TranscriptPanel() {
     if (!file || typeof file !== "string") return;
     setImporting(true);
     try {
-      const count = await importVtt(file);
-      showStatus(
-        `Imported ${count} turns from ${basename(file)}.`,
-        "success",
-      );
+      // importVtt raises the success notice itself; a second one here
+      // announced the same import twice.
+      await importVtt(file);
     } catch (err) {
       showStatus(err instanceof Error ? err.message : String(err), "error");
     } finally {
@@ -673,6 +672,20 @@ export function TranscriptPanel() {
   );
 
   const onListKeyDown = (e: React.KeyboardEvent) => {
+    // The inline note editor renders inside this list, so its keystrokes
+    // bubble here: "n" jumped to the next uncoded passage, "c" opened the
+    // code picker and the arrows moved passages instead of the caret — a
+    // passage note could not contain either letter. e2e `fill()` sends no
+    // keydowns, which is why no test saw it.
+    const target = e.target as HTMLElement;
+    if (
+      target.isContentEditable ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "INPUT" ||
+      target.tagName === "SELECT"
+    ) {
+      return;
+    }
     const ids = visibleSegments.map((seg) => seg.id);
     if (ids.length === 0) return;
     const current = selectedSegmentId ? ids.indexOf(selectedSegmentId) : -1;
@@ -898,6 +911,7 @@ export function TranscriptPanel() {
       <div className="flex h-[52px] shrink-0 items-center gap-2 border-b border-[var(--g-rim)] px-4">
         {interviews.length > 0 ? (
           <>
+            {interviews.length > 1 && <InterviewHistoryNav />}
             <select
               value={activeInterviewId ?? ""}
               onChange={(e) => selectInterview(e.target.value)}
@@ -975,6 +989,10 @@ export function TranscriptPanel() {
               </button>
             </span>
           )}
+
+          {/* Filter sits with Search: both act on this transcript, and it
+              used to live in the window toolbar a row away from it. */}
+          {segments.length > 0 && <FilterButton />}
 
           {segments.length > 0 && (
             <label className="relative flex items-center">
@@ -1401,12 +1419,28 @@ export function TranscriptPanel() {
                                           selectCoding(coding, code.id);
                                         }
                                       }}
+                                      onContextMenu={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        openContextMenu(e, [
+                                          {
+                                            label: `Show only passages coded “${code.name}”`,
+                                            icon: "filter",
+                                            onSelect: () => setCodeFilters([code.id]),
+                                          },
+                                          {
+                                            label: "Edit coding",
+                                            icon: "edit",
+                                            onSelect: () => selectCoding(coding, code.id),
+                                          },
+                                        ]);
+                                      }}
                                       onPointerEnter={() => setHoveredPillCodeId(code.id)}
                                       onPointerLeave={() => setHoveredPillCodeId(null)}
                                       title={
                                         theirs
-                                          ? `${coding.coder_name} coded this — Edit coding — “${code.name}” on passage ${seg.segment_index + 1}`
-                                          : `Edit coding — “${code.name}” on passage ${seg.segment_index + 1}`
+                                          ? `${coding.coder_name} coded this — Edit coding — “${code.name}” on passage ${seg.segment_index + 1}. Right-click to filter by this code.`
+                                          : `Edit coding — “${code.name}” on passage ${seg.segment_index + 1}. Right-click to filter by this code.`
                                       }
                                       className="rounded-full px-2 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80"
                                       style={{
@@ -1418,20 +1452,11 @@ export function TranscriptPanel() {
                                     </button>
                                   );
                                 })}
-                                {codingCodes.length > 0 && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setCodeFilters([codingCodes[0].id]);
-                                    }}
-                                    aria-label={`Show only passages coded “${codingCodes.map((c) => c.name).join(", ")}”`}
-                                    title={`Show only passages coded “${codingCodes.map((c) => c.name).join(", ")}”`}
-                                    className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-[var(--ink-4)] hover:bg-[var(--fill)] hover:text-[var(--ink)]"
-                                  >
-                                    <Icon name="filter" size={10} />
-                                  </button>
-                                )}
+                                {/* No per-pill funnel: one on every coding
+                                    repeated the same icon down the page.
+                                    Filtering by a code is right-click on the
+                                    pill or the highlight, ⌥-click, or the
+                                    Filter menu. */}
                                 {theirs && (
                                   <span
                                     className="text-[11px] truncate"
@@ -2075,6 +2100,21 @@ function InlineNoteEditor({
     // id refocuses. Committed text arrives through the store, not props.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coding.id, workspace?.projectKey, workspace?.epoch]);
+
+  // `autoFocus` alone never worked for a note whose draft was not already
+  // begun: the textarea mounts disabled until beginDraft resolves, and a
+  // disabled element ignores autoFocus — the first keystrokes went to the
+  // transcript as passage shortcuts. Focus once, when it first becomes usable.
+  const editable = entry != null;
+  const focusedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!editable || focusedFor.current === coding.id) return;
+    focusedFor.current = coding.id;
+    const el = textareaRef.current;
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, [editable, coding.id]);
 
   if (!workspace) return null;
 
