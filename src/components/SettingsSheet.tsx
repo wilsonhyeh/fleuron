@@ -45,6 +45,10 @@ export function SettingsSheet() {
   const inGroup = useSyncStore((s) => s.status?.inGroup ?? false);
   const signedIn = useSyncStore((s) => s.status?.signedIn ?? false);
   const signedInEmail = useSyncStore((s) => s.status?.signedInEmail);
+  // Until the startup session restore has answered, `status` is null and
+  // `signedIn` reads false. Showing the sign-in form in that window flashes it
+  // at a coder who is already signed in, then swaps it out from under them.
+  const accountKnown = useSyncStore((s) => s.sessionRestoreComplete);
   const signOut = useSyncStore((s) => s.signOut);
   const refreshStatus = useSyncStore((s) => s.refreshStatus);
   const [crashCopyStatus, setCrashCopyStatus] = useState<string | null>(null);
@@ -82,7 +86,11 @@ export function SettingsSheet() {
       <div className="scroll flex-1 space-y-7 px-5 py-5">
         <section>
           <h3 className="eyebrow">Account</h3>
-          {signedIn ? (
+          {!accountKnown ? (
+            <p className="hint mt-3" role="status">
+              Checking sign-in…
+            </p>
+          ) : signedIn ? (
             <div className="mt-3">
               <p className="text-[13px]">
                 Signed in

@@ -109,13 +109,17 @@ test("fixture=auth-error shows actionable copy and never advances", async ({
   const signOut = settingsContainer.getByRole("button", {
     name: "Sign out of Fleuron",
   });
-  if (await signOut.isVisible({ timeout: 2000 }).catch(() => false)) {
+  const alreadyHaveOne = settingsContainer.getByRole("button", {
+    name: "I already have one",
+  });
+  // isVisible() does not wait, so wait for the account section to settle on
+  // one state before deciding whether to sign out.
+  await expect(signOut.or(alreadyHaveOne)).toBeVisible();
+  if (await signOut.isVisible()) {
     await signOut.click();
   }
 
-  await settingsContainer.getByRole("button", {
-    name: "I already have one",
-  }).click();
+  await alreadyHaveOne.click();
   await expect(
     settingsContainer.getByRole("button", { name: "Sign in" }),
   ).toBeVisible();
