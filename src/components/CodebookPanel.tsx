@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
+import { useDisplayCodes } from "../hooks/useDisplayCodes";
 import { useAppStore } from "../store/app-store";
 import { nextCodeColor, textOnSolid } from "../lib/code-colors";
 import { Icon } from "./ui/Icon";
@@ -22,7 +23,6 @@ import type { Code } from "../lib/types";
 
 export function CodebookPanel() {
   const {
-    codes,
     selectedCodeIds,
     toggleCodeOnTarget,
     selectedSegmentId,
@@ -39,7 +39,6 @@ export function CodebookPanel() {
     loadRetiredCodes,
   } = useProjectStore(
     useShallow((s) => ({
-      codes: s.codes,
       selectedCodeIds: s.selectedCodeIds,
       toggleCodeOnTarget: s.toggleCodeOnTarget,
       selectedSegmentId: s.selectedSegmentId,
@@ -56,6 +55,9 @@ export function CodebookPanel() {
       loadRetiredCodes: s.loadRetiredCodes,
     })),
   );
+  const codes = useDisplayCodes();
+  const familyColors = useAppStore((s) => s.preferences.family_colors !== false);
+  const setCodebookCollapsed = useAppStore((s) => s.setCodebookCollapsed);
   const intent = useAppStore((s) => s.intent);
   const setIntent = useAppStore((s) => s.setIntent);
 
@@ -373,6 +375,20 @@ export function CodebookPanel() {
                 : `${codes.length}`}
             </span>
           )}
+          {/* Lives in the header, not on the divider: on the divider it
+              floated over the usage counts and the transcript pane clipped
+              half of it. */}
+          <Tooltip content="Hide codebook (Cmd/Ctrl+B)">
+            <button
+              type="button"
+              onClick={() => void setCodebookCollapsed(true)}
+              aria-label="Hide codebook"
+              data-testid="codebook-collapse-toggle"
+              className="grid h-6 w-6 place-items-center rounded-md text-[var(--ink-3)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)]"
+            >
+              <Icon name="chevronLeft" size={13} />
+            </button>
+          </Tooltip>
         </span>
       </div>
 
@@ -816,8 +832,22 @@ export function CodebookPanel() {
       <CodeEditorModal
         code={editing}
         allCodes={codes}
+        familyColors={familyColors}
         onClose={() => setEditing(null)}
-        onSave={updateCode}
+        onSave={(input) =>
+          // `codes` here carry display colours. Saving writes the stored
+          // colour back unchanged, so family colours never overwrite a choice.
+          updateCode(
+            familyColors
+              ? {
+                  ...input,
+                  color:
+                    useProjectStore.getState().codes.find((c) => c.id === input.id)?.color ??
+                    input.color,
+                }
+              : input,
+          )
+        }
         onDelete={deleteCode}
       />
 

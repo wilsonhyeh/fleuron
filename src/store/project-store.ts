@@ -18,7 +18,7 @@ const FORMAT_LABELS: Record<TranscriptFormat, string> = {
 import { debounce } from "../lib/debounce";
 import { nextCodeColor } from "../lib/code-colors";
 import { computeInterviewCodedCount } from "../lib/store-helpers";
-import { CODE_PALETTE } from "../lib/code-colors";
+import { CODE_PALETTE, withFamilyColors } from "../lib/code-colors";
 import { compareCodeNames } from "../lib/code-search";
 import { useAppStore } from "./app-store";
 import type { ExportConfig } from "../lib/export-config";
@@ -1372,8 +1372,13 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   exportWithConfig: async (targetDir: string, config: ExportConfig) => {
-    const { project, codes, activeCoder, syncConflicts } = get();
+    const { project, activeCoder, syncConflicts } = get();
     if (!project) return null;
+    // The report shows codes in the colours the app shows them in.
+    const codes =
+      useAppStore.getState().preferences.family_colors !== false
+        ? withFamilyColors(get().codes)
+        : get().codes;
 
     set({ exporting: true });
     try {

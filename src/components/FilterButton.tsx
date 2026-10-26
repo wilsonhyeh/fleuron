@@ -8,6 +8,7 @@ import {
 import { createPortal } from "react-dom";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
+import { useDisplayCodes } from "../hooks/useDisplayCodes";
 import { shortcut } from "../lib/platform";
 import { rollupCount } from "../lib/code-search";
 import { Icon } from "./ui/Icon";
@@ -19,7 +20,6 @@ export function FilterButton() {
   const showSpeaker = useSpeakerDisplay();
 
   const {
-    codes,
     codeFilterIds,
     toggleCodeFilter,
     filterMatchMode,
@@ -30,7 +30,6 @@ export function FilterButton() {
     setSpeakerFilter,
   } = useProjectStore(
     useShallow((s) => ({
-      codes: s.codes,
       codeFilterIds: s.codeFilterIds,
       toggleCodeFilter: s.toggleCodeFilter,
       filterMatchMode: s.filterMatchMode,
@@ -41,6 +40,7 @@ export function FilterButton() {
       setSpeakerFilter: s.setSpeakerFilter,
     })),
   );
+  const codes = useDisplayCodes();
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");

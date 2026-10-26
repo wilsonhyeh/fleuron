@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CODE_PALETTE, contrast, luminance, readableOn, textOnSolid } from "./code-colors";
+import { CODE_PALETTE, contrast, luminance, readableOn, textOnSolid, withFamilyColors } from "./code-colors";
 
 const LIGHT_GROUND = "#ffffff";
 const DARK_GROUND = "#0f0f0e";
@@ -124,5 +124,41 @@ describe("textOnSolid", () => {
     expect(textOnSolid("#000000")).toBe("#ffffff");
     expect(contrast(textOnSolid("#ffffff"), "#ffffff")).toBeCloseTo(21, 1);
     expect(contrast(textOnSolid("#000000"), "#000000")).toBeCloseTo(21, 1);
+  });
+});
+
+describe("withFamilyColors", () => {
+  const mk = (id: string, parent: string | null, order: number, color: string) => ({
+    id,
+    name: id,
+    definition: null,
+    inclusion_criteria: null,
+    exclusion_criteria: null,
+    example: null,
+    parent_id: parent,
+    color,
+    sort_order: order,
+    is_retired: false,
+    usage_count: 0,
+  });
+
+  it("gives themes palette colours in creation order and sub-codes their theme's", () => {
+    const out = withFamilyColors([
+      mk("b", null, 1, "#000000"),
+      mk("a", null, 0, "#111111"),
+      mk("a1", "a", 2, "#222222"),
+      mk("b1", "b", 3, "#333333"),
+    ]);
+    const colour = (id: string) => out.find((c) => c.id === id)?.color;
+    expect(colour("a")).toBe(CODE_PALETTE[0]);
+    expect(colour("b")).toBe(CODE_PALETTE[1]);
+    expect(colour("a1")).toBe(CODE_PALETTE[0]);
+    expect(colour("b1")).toBe(CODE_PALETTE[1]);
+  });
+
+  it("never mutates the stored colours", () => {
+    const input = [mk("a", null, 0, "#111111"), mk("a1", "a", 1, "#222222")];
+    withFamilyColors(input);
+    expect(input.map((c) => c.color)).toEqual(["#111111", "#222222"]);
   });
 });

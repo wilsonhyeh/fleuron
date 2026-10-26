@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createPortal } from "react-dom";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
+import { useDisplayCodes } from "../hooks/useDisplayCodes";
 import { Icon } from "./ui/Icon";
 import { hasModKey, isMac, modKey } from "../lib/platform";
 import { codebookOrder } from "../lib/code-search";
@@ -59,7 +60,6 @@ export function SelectionBubble({
   onDismiss: () => void;
 }) {
   const {
-    codes,
     pendingSelection,
     selectedSegmentId,
     segments,
@@ -70,7 +70,6 @@ export function SelectionBubble({
     openNoteForCoding,
   } = useProjectStore(
     useShallow((s) => ({
-      codes: s.codes,
       pendingSelection: s.pendingSelection,
       selectedSegmentId: s.selectedSegmentId,
       segments: s.segments,
@@ -81,6 +80,7 @@ export function SelectionBubble({
       openNoteForCoding: s.openNoteForCoding,
     })),
   );
+  const codes = useDisplayCodes();
 
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);

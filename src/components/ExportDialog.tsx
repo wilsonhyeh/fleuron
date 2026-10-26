@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../store/app-store";
 import { useProjectStore } from "../store/project-store";
+import { useDisplayCodes } from "../hooks/useDisplayCodes";
 import { useNoteDraftStore } from "../store/note-draft-store";
 import { useNoteDepartureStore } from "../store/note-departure-store";
 import { api } from "../lib/api";
@@ -33,7 +34,7 @@ export function ExportDialog({
   onClose: () => void;
 }) {
   const project = useProjectStore((s) => s.project);
-  const codes = useProjectStore((s) => s.codes);
+  const codes = useDisplayCodes();
   const interviews = useProjectStore((s) => s.interviews);
   const codedSegments = useProjectStore((s) => s.codedSegments);
   const activeCoder = useProjectStore((s) => s.activeCoder);

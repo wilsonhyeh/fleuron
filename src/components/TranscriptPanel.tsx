@@ -2,6 +2,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
+import { useDisplayCodes } from "../hooks/useDisplayCodes";
 import { isDraftDirty, useNoteDraftStore } from "../store/note-draft-store";
 import { useAutosaveMemo } from "../hooks/useAutosaveMemo";
 import { useAppStore } from "../store/app-store";
@@ -72,7 +73,6 @@ export function TranscriptPanel() {
     setSelectedSegmentId,
     selectionIntent,
     codedSegments,
-    codes,
     activeInterviewId,
     interviews,
     importVtt,
@@ -111,7 +111,6 @@ export function TranscriptPanel() {
       setSelectedSegmentId: s.setSelectedSegmentId,
       selectionIntent: s.selectionIntent,
       codedSegments: s.codedSegments,
-      codes: s.codes,
       activeInterviewId: s.activeInterviewId,
       interviews: s.interviews,
       importVtt: s.importVtt,
@@ -145,6 +144,7 @@ export function TranscriptPanel() {
       setSegmentSpeaker: s.setSegmentSpeaker,
     })),
   );
+  const codes = useDisplayCodes();
   const intent = useAppStore((s) => s.intent);
   const setIntent = useAppStore((s) => s.setIntent);
   const transcriptZoomPref = useAppStore((s) => s.preferences.transcript_zoom);
@@ -1073,7 +1073,7 @@ export function TranscriptPanel() {
               clearPassageSelection();
             }}
           >
-            <div className="reading-page mx-auto max-w-xl px-2 pb-2">
+            <div className="reading-page mx-auto max-w-xl p-2">
               {(search || isFiltered) && (
                 <div
                   data-testid="transcript-filterbar"
@@ -1344,27 +1344,35 @@ export function TranscriptPanel() {
                         >
                           {formatTimestampDisplay(seg.timestamp_start)}
                         </span>
-                        <div className="ml-auto flex items-center gap-1.5">
-                          {isReviewed && (
-                            <span
-                              data-testid="reviewed-badge"
-                              title="Reviewed"
-                              className="inline-flex items-center text-[var(--ok)]"
-                            >
-                              <Icon name="check" size={12} />
-                            </span>
-                          )}
+                        <div className="ml-auto flex items-center">
+                          {/* One control that says the state and flips it.
+                              A check beside "Mark not reviewed" read as two
+                              contradicting statements. Reviewed stays visible;
+                              "Mark reviewed" appears on hover. */}
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               void setSegmentReviewed(seg.id, !isReviewed);
                             }}
-                            aria-label={isReviewed ? "Mark not reviewed" : "Mark reviewed"}
-                            title={isReviewed ? "Mark not reviewed" : "Mark reviewed"}
-                            className="opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 rounded px-1.5 py-0.5 text-[10.5px] font-medium text-[var(--ink-3)] transition-opacity hover:bg-[var(--fill)] hover:text-[var(--ink)]"
+                            aria-label={isReviewed ? "Reviewed. Mark not reviewed" : "Mark reviewed"}
+                            title={isReviewed ? "Click to mark not reviewed" : "Mark reviewed"}
+                            className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10.5px] font-medium transition-[opacity,background-color,color] hover:bg-[var(--fill)] ${
+                              isReviewed
+                                ? "text-[var(--ink-3)] hover:text-[var(--ink)]"
+                                : "text-[var(--ink-3)] opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 hover:text-[var(--ink)]"
+                            }`}
                           >
-                            {isReviewed ? "Mark not reviewed" : "Mark reviewed"}
+                            {isReviewed ? (
+                              <>
+                                <span data-testid="reviewed-badge" className="inline-flex text-[var(--ok)]">
+                                  <Icon name="check" size={11} />
+                                </span>
+                                Reviewed
+                              </>
+                            ) : (
+                              "Mark reviewed"
+                            )}
                           </button>
                         </div>
                       </header>

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Modal } from "./ui/Surfaces";
-import { CODE_PALETTE } from "../lib/code-colors";
+import { CODE_PALETTE, withFamilyColors } from "../lib/code-colors";
 import { Icon } from "./ui/Icon";
 import type { Code, DeleteCodeMode } from "../lib/types";
 
 interface CodeEditorModalProps {
   code: Code | null;
   allCodes?: Code[];
+  /** Colours follow the code's family, so there is no colour to pick. */
+  familyColors?: boolean;
   onClose: () => void;
   onSave: (input: {
     id: string;
@@ -24,6 +26,7 @@ interface CodeEditorModalProps {
 export function CodeEditorModal({
   code,
   allCodes = [],
+  familyColors = false,
   onClose,
   onSave,
   onDelete,
@@ -252,6 +255,9 @@ export function CodeEditorModal({
       )}
 
       <p className="label mt-3.5">Colour</p>
+      {familyColors ? (
+        <FamilyColour code={code} parentId={parentId} allCodes={allCodes} />
+      ) : (
       <div className="mt-1.5 flex flex-wrap gap-2">
         {swatches.map((swatch) => (
           <button
@@ -271,6 +277,42 @@ export function CodeEditorModal({
           </button>
         ))}
       </div>
+      )}
     </Modal>
+  );
+}
+
+/**
+ * With family colours on there is nothing to choose: the swatch shows the
+ * colour this code will wear under the parent picked above, and says where
+ * to go to choose colours by hand.
+ */
+function FamilyColour({
+  code,
+  parentId,
+  allCodes,
+}: {
+  code: Code;
+  parentId: string | null;
+  allCodes: Code[];
+}) {
+  const others = allCodes.filter((c) => c.id !== code.id);
+  const preview = withFamilyColors([...others, { ...code, parent_id: parentId }]);
+  const colour = preview.find((c) => c.id === code.id)?.color ?? code.color;
+  const theme = parentId ? allCodes.find((c) => c.id === parentId) : null;
+  return (
+    <div className="mt-1.5 flex items-center gap-2.5">
+      <span
+        className="h-7 w-7 shrink-0 rounded-full"
+        style={{ backgroundColor: colour }}
+        aria-label={`Colour ${colour}`}
+      />
+      <p className="hint text-[11.5px] leading-snug">
+        {theme
+          ? `Shares the colour of its theme, ${theme.name}.`
+          : "Each theme gets its own colour; its sub-codes share it."}{" "}
+        To pick colours yourself, turn off Colour codes by family in Settings.
+      </p>
+    </div>
   );
 }

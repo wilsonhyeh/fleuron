@@ -32,6 +32,8 @@ export function SettingsSheet() {
     (s) => s.preferences.merge_same_speaker,
   );
   const coachDismissed = useAppStore((s) => s.preferences.coach_dismissed);
+  const familyColors = useAppStore((s) => s.preferences.family_colors !== false);
+  const setFamilyColors = useAppStore((s) => s.setFamilyColors);
   const automaticUpdateChecks =
     useAppStore((s) => s.preferences.automatic_update_checks) !== false;
   const setTheme = useAppStore((s) => s.setTheme);
@@ -171,6 +173,26 @@ export function SettingsSheet() {
             System follows your operating system. Light is the default —
             transcripts are long-form reading.
           </p>
+        </section>
+
+        <section>
+          <h3 className="eyebrow">Code colours</h3>
+          <label className="mt-3 flex cursor-pointer items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={familyColors}
+              onChange={(e) => void setFamilyColors(e.target.checked)}
+              className="mt-0.5"
+              style={{ accentColor: "var(--accent)" }}
+            />
+            <span>
+              <span className="block text-[13px] font-medium">Colour codes by family</span>
+              <span className="hint mt-0.5 block">
+                Each theme gets its own colour and its sub-codes share it, so you never
+                have to pick one. Turn off to use the colours you chose; they are kept.
+              </span>
+            </span>
+          </label>
         </section>
 
         <section>

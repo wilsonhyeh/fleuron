@@ -14,6 +14,7 @@ import {
 import type { CodedSegment, Interview } from "../lib/types";
 import { useMapStore, type MapView } from "../store/map-store";
 import { useProjectStore } from "../store/project-store";
+import { useDisplayCodes } from "../hooks/useDisplayCodes";
 import { Icon } from "./ui/Icon";
 
 /**
@@ -49,7 +50,7 @@ function useStudyCodings(): CodedSegment[] {
   const liveCoded = useProjectStore((s) => s.codedSegments);
   const localRevision = useProjectStore((s) => s.localRevision);
   const interviewCount = useProjectStore((s) => s.interviews.length);
-  const codes = useProjectStore((s) => s.codes);
+  const codes = useDisplayCodes();
   const [all, setAll] = useState<CodedSegment[]>([]);
   const requested = useRef(0);
   const applied = useRef(0);
@@ -133,7 +134,7 @@ export function RelationshipMap() {
   const showPassages = useMapStore((s) => s.showPassages);
   const setShowPassages = useMapStore((s) => s.setShowPassages);
 
-  const codes = useProjectStore((s) => s.codes);
+  const codes = useDisplayCodes();
   const interviews = useProjectStore((s) => s.interviews);
   const title = useProjectStore((s) => s.project?.title ?? "Study");
   const codings = useStudyCodings();
@@ -922,7 +923,7 @@ function StructureView({
   selectedCodeId: string | null;
   onSelectCode: (id: string | null) => void;
 }) {
-  const codes = useProjectStore((s) => s.codes);
+  const codes = useDisplayCodes();
   const themes = useMemo(() => buildStructure(graph, codes), [graph, codes]);
   const hasChildren = themes.some((t) => t.children.length > 0);
   const R1 = hasChildren ? 135 : 190;

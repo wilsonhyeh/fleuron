@@ -70,6 +70,7 @@ interface AppStore {
   setSyncServer: (url: string, anonKey: string) => Promise<void>;
   setTranscriptZoom: (value: number | null) => Promise<void>;
   setCodebookCollapsed: (value: boolean) => Promise<void>;
+  setFamilyColors: (value: boolean) => Promise<void>;
   setSpeakerRedaction: (interviewId: string, value: boolean) => Promise<void>;
   setAutomaticUpdateChecks: (value: boolean) => Promise<void>;
   clearAutoOpenFailed: () => void;
@@ -101,6 +102,7 @@ const defaultPrefs: AppPreferences = {
   sync_anon_key: null,
   transcript_zoom: null,
   codebook_collapsed: false,
+  family_colors: true,
   speaker_redaction: {},
 };
 
@@ -215,6 +217,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setTranscriptZoom: async (value) => {
     const prefs = { ...get().preferences, transcript_zoom: value };
+    set({ preferences: prefs });
+    try {
+      const saved = await api.setAppPreferences(prefs);
+      set({ preferences: saved });
+    } catch {
+      // Cosmetic — the choice still applies for this session.
+    }
+  },
+
+  setFamilyColors: async (value) => {
+    const prefs = { ...get().preferences, family_colors: value };
     set({ preferences: prefs });
     try {
       const saved = await api.setAppPreferences(prefs);

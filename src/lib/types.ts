@@ -425,6 +425,12 @@ export interface AppPreferences {
   /** Whether the left codebook rail is collapsed. Local-only, like widths. */
   codebook_collapsed?: boolean;
   /**
+   * Colour codes by family: each theme gets its own palette colour and its
+   * sub-codes share it. Display only — stored colours are untouched. Absent
+   * means on.
+   */
+  family_colors?: boolean;
+  /**
    * Per-interview speaker-redaction toggle, keyed by interview id.
    * Local-only view/export layer; never enters a sync payload.
    */

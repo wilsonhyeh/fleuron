@@ -524,6 +524,10 @@ pub struct AppPreferences {
     /// Whether the left codebook rail is collapsed. Local-only, like widths.
     #[serde(default)]
     pub codebook_collapsed: bool,
+    /// Colour codes by family (theme colour shared by its sub-codes). Display
+    /// only; stored code colours are untouched. On unless turned off.
+    #[serde(default = "default_family_colors")]
+    pub family_colors: bool,
     /// Per-interview speaker-redaction toggle, keyed by interview id.
     /// Local-only view/export layer: the real names stay stored, and this map
     /// never enters a sync payload (it lives in app preferences, which have
@@ -537,6 +541,10 @@ fn default_merge_same_speaker() -> bool {
 }
 
 fn default_automatic_update_checks() -> bool {
+    true
+}
+
+fn default_family_colors() -> bool {
     true
 }
 
@@ -560,6 +568,7 @@ impl Default for AppPreferences {
             sync_anon_key: None,
             transcript_zoom: None,
             codebook_collapsed: false,
+            family_colors: true,
             speaker_redaction: Default::default(),
         }
     }

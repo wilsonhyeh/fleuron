@@ -294,7 +294,7 @@ export function WorkspaceLayout() {
         {codebookCollapsed ? (
           <div
             data-testid="show-codebook-rail"
-            className="relative flex h-full w-full items-center justify-center border-r border-[var(--g-rim)] select-none"
+            className="relative flex h-full w-full justify-center border-r border-[var(--g-rim)] pt-3 select-none"
           >
             <Tooltip content="Show codebook (Cmd/Ctrl+B)">
               <button
@@ -312,26 +312,7 @@ export function WorkspaceLayout() {
         ) : (
           <>
             <CodebookPanel />
-            <Resizer
-              onGrab={() => (dragging.current = "codebook")}
-              toggleButton={
-                <Tooltip content="Hide codebook (Cmd/Ctrl+B)">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void setCodebookCollapsed(true);
-                    }}
-                    aria-label="Hide codebook"
-                    title="Hide codebook (Cmd/Ctrl+B)"
-                    data-testid="codebook-collapse-toggle"
-                    className="grid h-6 w-6 place-items-center rounded-md border border-[var(--g-rim)] bg-[var(--g2)] text-[var(--ink-3)] shadow-xs transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)] cursor-pointer"
-                  >
-                    <Icon name="chevronLeft" size={13} />
-                  </button>
-                </Tooltip>
-              }
-            />
+            <Resizer onGrab={() => (dragging.current = "codebook")} />
           </>
         )}
         <TranscriptPanel />
@@ -369,13 +350,7 @@ export function WorkspaceLayout() {
   );
 }
 
-function Resizer({
-  onGrab,
-  toggleButton,
-}: {
-  onGrab: () => void;
-  toggleButton?: React.ReactNode;
-}) {
+function Resizer({ onGrab }: { onGrab: () => void }) {
   return (
     <div
       role="separator"
@@ -389,14 +364,6 @@ function Resizer({
         className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors group-hover:w-0.5"
         style={{ background: "var(--g-rim)" }}
       />
-      {toggleButton && (
-        <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 cursor-default"
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          {toggleButton}
-        </div>
-      )}
     </div>
   );
 }

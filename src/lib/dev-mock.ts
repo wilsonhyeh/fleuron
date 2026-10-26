@@ -524,7 +524,9 @@ function generateMapFixture() {
   };
   const pick = <T,>(list: T[]) => list[Math.floor(rand() * list.length)];
 
-  const mk = (id: string, name: string, color: string, parent: string | null, order: number, definition: string | null = null): Code => ({
+  // Sub-codes get scattered hand-picked colours, so the preview shows what
+  // Colour codes by family does (on) and what it keeps (off).
+  const mk = (id: string, name: string, themeColor: string, parent: string | null, order: number, definition: string | null = null): Code => ({
     id,
     name,
     definition,
@@ -532,7 +534,7 @@ function generateMapFixture() {
     exclusion_criteria: null,
     example: null,
     parent_id: parent,
-    color,
+    color: parent ? CODE_PALETTE[(order * 4) % CODE_PALETTE.length] : themeColor,
     sort_order: order,
     is_retired: false,
     usage_count: 0,

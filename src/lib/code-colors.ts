@@ -1,3 +1,5 @@
+import type { Code } from "./types";
+
 /**
  * Code swatch palette.
  *
@@ -25,6 +27,37 @@ export const CODE_PALETTE = [
   "#676dc2", // indigo
   "#6a7683", // slate
 ] as const;
+
+/**
+ * Family colours: every theme (top-level code) takes the next palette colour
+ * in the order the themes were made, and every sub-code wears its theme's.
+ *
+ * Applied for display only. The stored colour on each code is never touched,
+ * so turning the setting off brings back exactly the colours that were
+ * chosen by hand, and nothing that saves a code can write a derived colour.
+ * Creation order (sort_order), not name order: adding a theme must not
+ * repaint the themes that already exist.
+ */
+export function withFamilyColors<T extends Code>(codes: readonly T[]): T[] {
+  const byId = new Map(codes.map((c) => [c.id, c]));
+  const rootOf = (code: T): T => {
+    let current = code;
+    const seen = new Set<string>();
+    while (current.parent_id && byId.has(current.parent_id) && !seen.has(current.id)) {
+      seen.add(current.id);
+      current = byId.get(current.parent_id)!;
+    }
+    return current;
+  };
+  const themes = codes
+    .filter((c) => rootOf(c) === c)
+    .sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name));
+  const themeColor = new Map(themes.map((t, i) => [t.id, CODE_PALETTE[i % CODE_PALETTE.length]]));
+  return codes.map((c) => {
+    const color = themeColor.get(rootOf(c).id) ?? c.color;
+    return color === c.color ? c : { ...c, color };
+  });
+}
 
 /** Next colour for a codebook that already holds `count` codes. */
 export function nextCodeColor(count: number): string {
