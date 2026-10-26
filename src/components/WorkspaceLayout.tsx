@@ -321,7 +321,9 @@ function Resizer({
       role="separator"
       aria-orientation="vertical"
       onMouseDown={onGrab}
-      className="group relative cursor-col-resize select-none"
+      // The panes' own glass fill, so the column between them reads as the
+      // 1px line alone rather than a strip of the window background.
+      className="glass-panel glass-flush group relative cursor-col-resize select-none"
     >
       <span
         className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors group-hover:w-0.5"

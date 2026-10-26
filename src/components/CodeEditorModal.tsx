@@ -50,6 +50,10 @@ export function CodeEditorModal({
   const trimmed = name.trim();
   const inUse = code.usage_count > 0;
   const hasChildren = allCodes.some((c) => c.parent_id === code.id);
+  // A code made before the palette changed keeps its colour; offer it as the
+  // first swatch so the current choice is visible and can be kept.
+  const palette: readonly string[] = CODE_PALETTE;
+  const swatches = palette.includes(code.color) ? palette : [code.color, ...palette];
   const dirty =
     trimmed !== code.name ||
     definition.trim() !== (code.definition ?? "") ||
@@ -249,7 +253,7 @@ export function CodeEditorModal({
 
       <p className="label mt-3.5">Colour</p>
       <div className="mt-1.5 flex flex-wrap gap-2">
-        {CODE_PALETTE.map((swatch) => (
+        {swatches.map((swatch) => (
           <button
             key={swatch}
             type="button"

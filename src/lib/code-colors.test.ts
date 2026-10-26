@@ -4,6 +4,27 @@ import { CODE_PALETTE, contrast, luminance, readableOn, textOnSolid } from "./co
 const LIGHT_GROUND = "#ffffff";
 const DARK_GROUND = "#0f0f0e";
 const WHITE = "#ffffff";
+const ACCENT = "#8a6410";
+
+function oklab(hex: string): [number, number, number] {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ];
+}
+
+function oklabDistance(a: string, b: string): number {
+  const [x, y] = [oklab(a), oklab(b)];
+  return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+}
 
 describe("contrast", () => {
   it("matches known WCAG pairs", () => {
@@ -28,13 +49,22 @@ describe("the palette keeps its stated promise", () => {
     }
   });
 
-  it("swatches are distinguishable from one another", () => {
-    // Not a contrast requirement — a sanity check that no two entries are so
-    // close that they would read as the same code at chip size.
+  it("no two swatches read as the same code", () => {
+    // OKLab distance. The old scale's closest pair (#1f7a5e / #2d7846) was
+    // 0.032 and looked like one green; this keeps every pair well clear of it.
     for (let i = 0; i < CODE_PALETTE.length; i++) {
       for (let j = i + 1; j < CODE_PALETTE.length; j++) {
-        expect(CODE_PALETTE[i]).not.toBe(CODE_PALETTE[j]);
+        expect(
+          oklabDistance(CODE_PALETTE[i], CODE_PALETTE[j]),
+          `${CODE_PALETTE[i]} vs ${CODE_PALETTE[j]}`,
+        ).toBeGreaterThan(0.06);
       }
+    }
+  });
+
+  it("leaves the UI accent's gold out of the scale", () => {
+    for (const color of CODE_PALETTE) {
+      expect(oklabDistance(color, ACCENT), color).toBeGreaterThan(0.06);
     }
   });
 });

@@ -87,6 +87,8 @@
   --accent: #8a6410;
   --accent-hi: #a3771a;
   --accent-soft: rgba(138, 100, 16, 0.13);
+  /* hairline around the selected passage: present, not a focus ring */
+  --accent-line: rgba(138, 100, 16, 0.36);
   --accent-ink: #ffffff;
   /* The primary button's drop shadow. Was a hardcoded rgba(10, 108, 255, 0.32)
      — a blue shadow under a gold button, left behind when the accent changed. */
@@ -205,6 +207,7 @@
     --accent: #e8b93c;
     --accent-hi: #f2cd68;
     --accent-soft: rgba(232, 185, 60, 0.17);
+    --accent-line: rgba(232, 185, 60, 0.3);
     --accent-ink: #1a1408;
     /* Black, not gold: on a dark ground a tinted shadow reads as a glow. */
     --accent-shadow: rgba(0, 0, 0, 0.45);
@@ -280,6 +283,7 @@
     --accent: #e8b93c;
     --accent-hi: #f2cd68;
     --accent-soft: rgba(232, 185, 60, 0.17);
+    --accent-line: rgba(232, 185, 60, 0.3);
     --accent-ink: #1a1408;
     /* Black, not gold: on a dark ground a tinted shadow reads as a glow. */
     --accent-shadow: rgba(0, 0, 0, 0.45);
@@ -512,6 +516,13 @@ body {
     -webkit-backdrop-filter: var(--blur-1);
     backdrop-filter: var(--blur-1);
     border-radius: var(--r-lg);
+  }
+
+  /* Workspace panes sit edge to edge under the toolbar, with the resizer as
+     the one line between them. Their own hairline drew a second (and third)
+     line beside it. */
+  .glass-flush::before {
+    box-shadow: none;
   }
 
   .glass-panel {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codeMatchesQuery, codeWithSubCodes, compareCodeNames } from "./code-search";
+import { codebookOrder, codeMatchesQuery, codeWithSubCodes, compareCodeNames } from "./code-search";
 import type { Code } from "./types";
 
 function code(overrides: Partial<Code> = {}): Code {
@@ -70,5 +70,18 @@ describe("codeWithSubCodes", () => {
     ];
     expect([...codeWithSubCodes("p", codes)].sort()).toEqual(["a", "p"]);
     expect([...codeWithSubCodes("a", codes)]).toEqual(["a"]);
+  });
+});
+
+describe("codebookOrder", () => {
+  it("lists parents by name, each followed by its sub-codes, whatever the input order", () => {
+    const codes = [
+      code({ id: "b", name: "Belonging" }),
+      code({ id: "a10", name: "Access 10", parent_id: "a" }),
+      code({ id: "a", name: "Access" }),
+      code({ id: "a2", name: "Access 2", parent_id: "a" }),
+      code({ id: "orphan", name: "Orphan", parent_id: "gone" }),
+    ];
+    expect(codebookOrder(codes).map((c) => c.id)).toEqual(["a", "a2", "a10", "b", "orphan"]);
   });
 });

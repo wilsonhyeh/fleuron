@@ -51,3 +51,18 @@ export function codeWithSubCodes(codeId: string, codes: Code[]): Set<string> {
   }
   return ids;
 }
+
+/**
+ * The codebook's own order: top-level codes by name, each followed by its
+ * sub-codes by name. The codebook panel's default view and the coding bubble's
+ * ⌘1–⌘9 both read it, so a shortcut names the same code as the Nth row of the
+ * codebook and does not move as codes are used.
+ */
+export function codebookOrder(codes: readonly Code[]): Code[] {
+  const out: Code[] = [];
+  for (const parent of codes.filter((c) => !c.parent_id).sort(compareCodeNames)) {
+    out.push(parent, ...codes.filter((c) => c.parent_id === parent.id).sort(compareCodeNames));
+  }
+  const seen = new Set(out.map((c) => c.id));
+  return [...out, ...codes.filter((c) => !seen.has(c.id))];
+}

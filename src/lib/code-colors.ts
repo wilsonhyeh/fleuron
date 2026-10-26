@@ -2,39 +2,28 @@
  * Code swatch palette.
  *
  * These are **data colours, not theme colours.** The app's chrome is grey and
- * gold; codes are a categorical scale and their whole job is to be told apart,
- * so collapsing them into shades of the accent would make the codebook
- * unreadable to buy a little visual consistency. What the retheme changes is
- * the lead — gold first, and the vivid blue/violet pair that used to open the
- * scale is gone.
+ * gold; codes are a categorical scale and their whole job is to be told apart.
+ * So the scale leaves the accent's hue out entirely: a gold code chip read as
+ * the Export button, and a gold underline read as UI rather than data.
  *
- * 🔑 Every value clears **4.5:1 against the white chip text**, verified rather
- * than eyeballed; the previous palette's comment claimed this without it being
- * true of its lighter entries. Anything brighter fails: a legible gold behind
- * white text has to be this dark, which is why the bright gold in the theme
- * appears only in dark mode where it sits on a dark ground.
+ * 🔑 Every value clears **4.5:1 against the white chip text**, and the hues are
+ * spaced in OKLab so the closest pair (blue / indigo) is twice as far apart as
+ * the old 16-swatch scale's closest pair (two greens that read as one code).
+ * Nine distinct colours that repeat beat sixteen where five are near-copies.
  *
- * Hues are spread wide enough to stay separable at chip size, and the order is
- * the order codes are created in, so the first few codes in a codebook are the
- * most distinct from each other.
+ * The order is the order codes are created in, so neighbours in the list are
+ * the most different from each other.
  */
 export const CODE_PALETTE = [
-  "#8a6410", // gold — the theme's own hue leads the scale
-  "#1f7a5e", // teal green
-  "#b03a34", // red
-  "#3d6f96", // slate blue
-  "#a35a22", // burnt orange
-  "#7a5aa0", // muted plum
-  "#5f6f28", // olive
-  "#8d3f6a", // magenta plum
-  "#2e6b7d", // deep cyan
-  "#844820", // rust
-  "#4c6491", // indigo
-  "#2d7846", // forest green
-  "#9c3b4d", // berry rose
-  "#69528e", // royal violet
-  "#736818", // dark ochre
-  "#426b52", // sage pine
+  "#3578b8", // blue
+  "#c34f4d", // red
+  "#448247", // green
+  "#9260b0", // violet
+  "#b25e22", // orange
+  "#00837e", // teal
+  "#b55386", // rose
+  "#676dc2", // indigo
+  "#6a7683", // slate
 ] as const;
 
 /** Next colour for a codebook that already holds `count` codes. */

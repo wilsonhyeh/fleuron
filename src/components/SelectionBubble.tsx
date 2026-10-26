@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
 import { Icon } from "./ui/Icon";
-import { modKey } from "../lib/platform";
+import { hasModKey, isMac, modKey } from "../lib/platform";
+import { codebookOrder } from "../lib/code-search";
 
 /**
  * The coding surface, anchored to the text being coded.
@@ -126,34 +127,42 @@ export function SelectionBubble({
       : null;
   const segment = segments.find((s) => s.id === selectedSegmentId) ?? null;
 
-  const recentCodes = recentCodeIds
-    .map((id) => codes.find((c) => c.id === id))
-    .filter((c): c is (typeof codes)[0] => Boolean(c))
-    .slice(0, 6);
+  /**
+   * ⌘1–⌘9 name the first nine codes in codebook order, applied or not (on an
+   * applied code the key removes it, like clicking its chip). They used to be
+   * numbered by recency, so ⌘2 meant a different code after every use and the
+   * keys could never become habit.
+   */
+  const ordered = useMemo(() => codebookOrder(codes), [codes]);
+  const shortcutCodes = useMemo(() => ordered.slice(0, 9), [ordered]);
+  const shortcutIndex = (codeId: string) => {
+    const i = shortcutCodes.findIndex((c) => c.id === codeId);
+    return i === -1 ? null : i + 1;
+  };
+  const shortcutFor = (codeId: string) => {
+    const n = shortcutIndex(codeId);
+    return n === null ? null : `${modKey}${n}`;
+  };
+  const ariaShortcutFor = (codeId: string) => {
+    const n = shortcutIndex(codeId);
+    return n === null ? undefined : `${isMac ? "Meta" : "Control"}+${n}`;
+  };
 
-  // ⌘1–⌘6 keyboard shortcuts to apply recent codes instantly (B6)
   useEffect(() => {
     if (!anchor) return;
     const handleNumKeys = (e: KeyboardEvent) => {
-      const isMac =
-        typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent);
-      const mod = isMac ? e.metaKey : e.ctrlKey;
-      if (!mod) return;
-      const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= 6 && num <= recentCodes.length) {
-        e.preventDefault();
-        e.stopPropagation();
-        const code = recentCodes[num - 1];
-        if (code) {
-          void toggleCodeOnTarget(code.id);
-          setQuery("");
-        }
-      }
+      if (!hasModKey(e) || e.shiftKey || e.altKey) return;
+      const code = shortcutCodes[parseInt(e.key, 10) - 1];
+      if (!code) return;
+      e.preventDefault();
+      e.stopPropagation();
+      void toggleCodeOnTarget(code.id);
+      setQuery("");
     };
 
     window.addEventListener("keydown", handleNumKeys, true);
     return () => window.removeEventListener("keydown", handleNumKeys, true);
-  }, [anchor, recentCodes, toggleCodeOnTarget]);
+  }, [anchor, shortcutCodes, toggleCodeOnTarget]);
 
   /**
    * Where the bubble goes. The one rule: never cover the text it is about.
@@ -294,10 +303,24 @@ export function SelectionBubble({
 
   const appliedCodes = codes.filter((c) => applied.includes(c.id));
   const q = query.trim().toLowerCase();
-  const matches = codes
-    .filter((c) => !applied.includes(c.id))
-    .filter((c) => !q || c.name.toLowerCase().includes(q))
-    .slice(0, 6);
+  // One list, without codes already on this target: those sit above as
+  // chips, where a click removes them. Typed, it filters the codebook. Empty,
+  // it is the codebook in order when the codebook fits, so the ⌘ hints read
+  // 1, 2, 3; a codebook too long to fit leads with the codes used most
+  // recently. (A separate Recent row used to repeat this list, cut names to
+  // seventy pixels and kept offering codes that were already applied.)
+  const LIST_ROWS = 6;
+  const unapplied = ordered.filter((c) => !applied.includes(c.id));
+  const recent = recentCodeIds
+    .map((id) => unapplied.find((c) => c.id === id))
+    .filter((c): c is (typeof codes)[0] => Boolean(c));
+  const matches = (
+    q
+      ? unapplied.filter((c) => c.name.toLowerCase().includes(q))
+      : unapplied.length <= LIST_ROWS
+        ? unapplied
+        : [...new Set([...recent, ...unapplied])]
+  ).slice(0, LIST_ROWS);
   const exact = codes.some((c) => c.name.toLowerCase() === q);
 
   return createPortal(
@@ -360,41 +383,13 @@ export function SelectionBubble({
               key={c.id}
               type="button"
               onClick={() => void toggleCodeOnTarget(c.id)}
-              title={`Remove “${c.name}”`}
+              title={`Remove “${c.name}”${shortcutFor(c.id) ? ` (${shortcutFor(c.id)})` : ""}`}
+              aria-keyshortcuts={ariaShortcutFor(c.id)}
               className="code-chip"
               style={{ "--code": c.color } as React.CSSProperties}
             >
               <span className="code-chip-name">{c.name}</span>
               <Icon name="close" size={9} />
-            </button>
-          ))}
-        </div>
-      )}
-
-      {recentCodes.length > 0 && !query && (
-        <div className="flex flex-wrap items-center gap-1 px-1 pb-2 border-b border-[var(--g-rim)]/40 mb-2">
-          <span className="text-[9.5px] uppercase font-semibold tracking-wider text-[var(--ink-4)] mr-0.5 select-none">
-            Recent:
-          </span>
-          {recentCodes.map((c, i) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => {
-                void toggleCodeOnTarget(c.id);
-                setQuery("");
-              }}
-              title={`Apply ${c.name} (${modKey}${i + 1})`}
-              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium transition-colors bg-[var(--fill)] hover:bg-[var(--fill-hi)] text-[var(--ink)]"
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full shrink-0"
-                style={{ backgroundColor: c.color }}
-              />
-              <span className="max-w-[70px] truncate">{c.name}</span>
-              <kbd className="font-mono text-[9px] opacity-60">
-                {modKey}{i + 1}
-              </kbd>
             </button>
           ))}
         </div>
@@ -428,20 +423,24 @@ export function SelectionBubble({
                 void toggleCodeOnTarget(c.id);
                 setQuery("");
               }}
+              aria-keyshortcuts={ariaShortcutFor(c.id)}
               className="flex w-full items-center gap-2 rounded-[8px] px-2 py-1.5 text-left text-[12.5px] transition-colors hover:bg-[var(--fill)]"
             >
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: c.color }}
               />
-              <span className="min-w-0 flex-1 truncate">{c.name}</span>
-              {c.usage_count > 0 && (
-                <span
-                  className="shrink-0 font-mono text-[10.5px] tabular-nums"
+              <span className="min-w-0 flex-1 truncate" title={c.name}>
+                {c.name}
+              </span>
+              {shortcutFor(c.id) && (
+                <kbd
+                  aria-hidden="true"
+                  className="shrink-0 font-mono text-[10.5px]"
                   style={{ color: "var(--ink-4)" }}
                 >
-                  {c.usage_count}
-                </span>
+                  {shortcutFor(c.id)}
+                </kbd>
               )}
             </button>
           </li>

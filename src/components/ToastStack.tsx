@@ -72,7 +72,6 @@ function ToastItem({
       style={{
         maxWidth: 340,
         width: "100%",
-        borderLeft: `3px solid ${iconColor}`,
       }}
     >
       <span className="mt-0.5 shrink-0" style={{ color: iconColor }}>

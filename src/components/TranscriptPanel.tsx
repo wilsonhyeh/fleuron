@@ -920,7 +920,7 @@ export function TranscriptPanel() {
   return (
     <main
       data-testid="transcript-panel"
-      className="@container glass-panel flex h-full min-h-0 min-w-0 flex-col overflow-hidden"
+      className="@container glass-panel glass-flush flex h-full min-h-0 min-w-0 flex-col overflow-hidden"
     >
       {/* Header bar: the interview on the left (history, picker, its actions,
           progress), tools for reading it on the right. The picker sizes to
@@ -1059,7 +1059,7 @@ export function TranscriptPanel() {
             data-testid="transcript-scroller"
             onScroll={recordScrollPlace}
             style={{ "--reading-scale": String(zoom) } as React.CSSProperties}
-            className="scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain px-6 pb-24 pt-1"
+            className="scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain px-6 pb-24 pt-6"
             onMouseDown={(e) => {
               if (!(e.target instanceof HTMLElement)) return;
               if (e.target.closest('[role="option"]')) return;
@@ -1077,7 +1077,7 @@ export function TranscriptPanel() {
               {(search || isFiltered) && (
                 <div
                   data-testid="transcript-filterbar"
-                  className="glass-bar sticky top-0 z-10 -mx-2 flex flex-wrap items-center gap-2 rounded-b-[12px] px-2 py-2"
+                  className="glass-bar sticky -top-6 z-10 -mx-2 flex flex-wrap items-center gap-2 rounded-b-[12px] px-2 py-2"
                 >
                   {search && (
                     <span className="hint text-[11.5px]">
@@ -1298,7 +1298,7 @@ export function TranscriptPanel() {
                       style={{
                         background: isSelected ? "var(--fill-on)" : "transparent",
                         boxShadow: isSelected
-                          ? "var(--shadow-1), inset 3px 0 0 0 var(--accent), inset 0 0 0 1px var(--accent)"
+                          ? "var(--shadow-1), inset 0 0 0 1px var(--accent-line)"
                           : "none",
                       }}
                       onMouseEnter={(e) => {

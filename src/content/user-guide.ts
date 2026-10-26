@@ -101,7 +101,7 @@ const ALL_GUIDE_SECTIONS: GuideSection[] = [
     title: "Keyboard shortcuts",
     whenToUse: "Navigating transcripts and coding rapidly without leaving the keyboard.",
     steps: [
-      `${shortcut("mod", "1")} to ${shortcut("mod", "6")}: Instantly apply one of your 6 recent codes to the selected text.`,
+      `${shortcut("mod", "1")} to ${shortcut("mod", "9")}: With the coding bubble open, apply or remove the first nine codes in the codebook, in the order the codebook lists them.`,
       `${shortcut("mod", "Z")}: Undo the last coding action or hierarchy drag-to-nest.`,
       `${isMac ? shortcut("mod", "shift", "Z") : shortcut("mod", "Y")}: Redo the undone action.`,
       `${shortcut("mod", "alt", "ArrowRight")}: Nest focused code under the preceding sibling.`,

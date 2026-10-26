@@ -11,7 +11,7 @@ import { NoteHoverCard, type NoteHoverCardTarget } from "./NoteHoverCard";
 import { openContextMenu } from "./ui/ContextMenu";
 import type { MenuItemSpec } from "./ui/Menu";
 import { canNest } from "../lib/code-drag";
-import { codeMatchesQuery, compareCodeNames, rollupCount } from "../lib/code-search";
+import { codebookOrder, codeMatchesQuery, compareCodeNames, rollupCount } from "../lib/code-search";
 import {
   computeDragState,
   resolveDropTarget,
@@ -204,20 +204,7 @@ export function CodebookPanel() {
     let list = codes.filter((c) => codeMatchesQuery(c, q));
 
     if (sortBy === "name") {
-      if (!q) {
-        const topLevel = list.filter((c) => !c.parent_id).sort(compareCodeNames);
-        const out: Code[] = [];
-        for (const parent of topLevel) {
-          out.push(parent);
-          const children = list.filter((c) => c.parent_id === parent.id).sort(compareCodeNames);
-          out.push(...children);
-        }
-        const seen = new Set(out.map((c) => c.id));
-        for (const code of list) {
-          if (!seen.has(code.id)) out.push(code);
-        }
-        return out;
-      }
+      if (!q) return codebookOrder(list);
       return [...list].sort(compareCodeNames);
     }
     if (sortBy === "usage") {
@@ -361,7 +348,7 @@ export function CodebookPanel() {
   return (
     <aside
       data-testid="codebook-panel"
-      className="glass-panel flex h-full min-h-0 flex-col overflow-hidden"
+      className="glass-panel glass-flush flex h-full min-h-0 flex-col overflow-hidden"
     >
       <div className="flex items-center justify-between px-3.5 pb-2 pt-3">
         <h2 className="eyebrow">Codebook</h2>
