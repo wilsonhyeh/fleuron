@@ -209,7 +209,7 @@ export function SelftestRunner() {
           const isOnlineAvailable = await invoke<boolean>("selftest_online_status");
           if (!isOnlineAvailable) {
             throw new Error(
-              "SKIP: Missing FLEURON_STAGING_* environment variables for online lifecycle suite",
+              "SKIP: Collaboration is shelved, or FLEURON_STAGING_* environment variables are missing",
             );
           }
 

@@ -73,7 +73,9 @@ pub fn is_selftest() -> bool {
 
 #[tauri::command]
 pub fn selftest_online_status() -> Result<bool, String> {
-    Ok(SelftestStagingConfig::from_env().is_some())
+    // Shelved collaboration refuses every sync command, so the online
+    // lifecycle suite has nothing to exercise.
+    Ok(crate::COLLABORATION_ENABLED && SelftestStagingConfig::from_env().is_some())
 }
 
 #[tauri::command]
