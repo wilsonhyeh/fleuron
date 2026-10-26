@@ -307,7 +307,7 @@ export function Toolbar() {
               onSelect: () => setShowInterviewMemo(true),
             },
             {
-              label: "Unfinished notes…",
+              label: "Unsaved notes…",
               icon: "note",
               badge: unfinishedCount,
               section: "study",

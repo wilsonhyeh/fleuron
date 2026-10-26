@@ -10,6 +10,7 @@ import { PROJECT_EXT } from "../../lib/open-project";
 import { api } from "../../lib/api";
 import { Icon } from "../ui/Icon";
 import { labelFromFilename } from "../../lib/transcript-parser";
+import { nextParticipantId, participantIdFromFilename } from "../../lib/study-label";
 import { StepRail, type StepSpec } from "./StepRail";
 import { StudyLabelField } from "../StudyLabelField";
 import { OptionCard } from "./OptionCard";
@@ -167,7 +168,9 @@ export function SetupWizard() {
     if (picked && !Array.isArray(picked)) {
       setVttPath(picked);
       if (!participantLabel.trim()) {
-        setParticipantLabel(labelFromFilename(picked));
+        setParticipantLabel(
+          participantIdFromFilename(labelFromFilename(picked)) ?? nextParticipantId([]),
+        );
       }
     }
   }
@@ -473,6 +476,7 @@ export function SetupWizard() {
                         id="setup-participant"
                         value={participantLabel}
                         onChange={setParticipantLabel}
+                        filenameGuess={labelFromFilename(vttPath)}
                         // A brand-new study has no roster to check against; the
                         // field still explains what the label is for, which is
                         // where the mistake gets made the first time.

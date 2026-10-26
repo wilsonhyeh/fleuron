@@ -10,7 +10,7 @@ import { Icon } from "./ui/Icon";
 import type { NoteDraftRecord } from "../lib/types";
 
 /**
- * Unfinished notes: app-local crash recovery, listed newest first.
+ * Unsaved notes: app-local crash recovery, listed newest first.
  *
  * Recovery drafts are not committed notes — they never sync and never enter
  * exports or study backups. Text and captured context render only when a
@@ -117,7 +117,7 @@ export function NoteRecoveryPanel() {
     if (unfinished.length === 0) return;
     recoveredNoticeShown = true;
     announced.current = true;
-    showStatus("Unfinished notes recovered", "info", {
+    showStatus("Unsaved notes recovered", "info", {
       label: "Review",
       onClick: () => setOpen(true),
     });
@@ -177,8 +177,8 @@ export function NoteRecoveryPanel() {
 
   async function discardRecord(record: NoteDraftRecord) {
     const ok = await appConfirm({
-      title: "Discard this unfinished note?",
-      body: "The unfinished text will be removed from this computer. Committed notes are not affected.",
+      title: "Discard this unsaved note?",
+      body: "The unsaved text will be removed from this computer. Committed notes are not affected.",
       confirmLabel: "Discard",
       cancelLabel: "Keep editing",
       destructive: true,
@@ -240,19 +240,19 @@ export function NoteRecoveryPanel() {
     <SideSheet
       open={open}
       onClose={() => setOpen(false)}
-      title="Unfinished notes"
+      title="Unsaved notes"
       subtitle="Local crash recovery on this computer — never synced, never exported"
       width="max-w-lg"
     >
       <div className="flex min-h-0 flex-1 flex-col px-5 py-4">
         {loadError ? (
           <div role="alert" className="rounded-md bg-[var(--danger,#b03a34)]/10 px-2.5 py-1.5 text-[11.5px] text-[var(--danger,#b03a34)]">
-            Could not load unfinished notes: {loadError}
+            Could not load unsaved notes: {loadError}
           </div>
         ) : records === null ? (
           <p className="hint text-[12px]">Loading…</p>
         ) : records.length === 0 ? (
-          <p className="hint text-[12px]">No unfinished notes</p>
+          <p className="hint text-[12px]">No unsaved notes</p>
         ) : (
           <ul className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
             {groups.map((group) => (

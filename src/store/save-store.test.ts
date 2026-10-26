@@ -14,7 +14,7 @@ vi.mock("../lib/api", () => ({
 }));
 
 import { api } from "../lib/api";
-import { useSaveStore } from "./save-store";
+import { deriveSaveIndicator, useSaveStore } from "./save-store";
 import { useNoteDraftStore, type NoteDraftEntry } from "./note-draft-store";
 
 function dirtyEntry(key: string, targetId: string, text = "unsaved"): NoteDraftEntry {
@@ -68,7 +68,7 @@ const key = (id: string) => `proj-1::coding::${id}`;
 beforeEach(() => {
   vi.clearAllMocks();
   useNoteDraftStore.getState().clearWorkspace();
-  useSaveStore.setState({ status: "idle", error: null, inFlight: null });
+  useSaveStore.setState({ status: "idle", error: null, inFlight: null, autosaving: {}, recovered: null });
   vi.mocked(api.saveOpenProject).mockResolvedValue(true);
   vi.mocked(api.saveNoteDraft).mockImplementation(async (input: {
     draft_id: string;
@@ -134,11 +134,80 @@ describe("save-store", () => {
     expect(useSaveStore.getState().error).toMatch(/disk I\/O/);
   });
 
-  it("skips drafts whose original is gone; they stay in Unfinished notes", async () => {
+  it("skips drafts whose original is gone; they stay in Unsaved notes", async () => {
     const orphan = { ...dirtyEntry(key("c1"), "c1"), targetMissing: true };
     seed([orphan]);
     await useSaveStore.getState().saveAll();
     expect(vi.mocked(api.saveNoteDraft)).not.toHaveBeenCalled();
     expect(useSaveStore.getState().status).toBe("saved");
+  });
+});
+
+describe("save indicator", () => {
+  const base = {
+    projectKey: "proj-1",
+    run: "idle" as const,
+    runError: null,
+    autosaving: {} as Record<string, number>,
+    recovered: null,
+  };
+  const entries = (...list: NoteDraftEntry[]) => Object.fromEntries(list.map((e) => [e.key, e]));
+
+  it("reads a dirty note with an open autosaving editor as saving, not unsaved", () => {
+    const e = dirtyEntry(key("c1"), "c1");
+    expect(
+      deriveSaveIndicator({ ...base, entries: entries(e), autosaving: { [e.key]: 1 } }),
+    ).toEqual({ kind: "saving" });
+  });
+
+  it("counts a dirty note whose editor closed before it saved", () => {
+    expect(deriveSaveIndicator({ ...base, entries: entries(dirtyEntry(key("c1"), "c1")) })).toEqual({
+      kind: "unsaved",
+      count: 1,
+      recovered: 0,
+    });
+  });
+
+  it("counts drafts recovered from a forced quit that no editor has loaded", () => {
+    const loaded = { ...dirtyEntry(key("c1"), "c1"), baseText: "x", draftText: "x", saveState: "clean" as const };
+    expect(
+      deriveSaveIndicator({
+        ...base,
+        entries: entries(loaded),
+        recovered: { projectKey: "proj-1", draftIds: ["draft-c1", "draft-old"] },
+      }),
+    ).toEqual({ kind: "unsaved", count: 1, recovered: 1 });
+  });
+
+  it("ignores recovered drafts that belong to another study", () => {
+    expect(
+      deriveSaveIndicator({
+        ...base,
+        entries: {},
+        recovered: { projectKey: "proj-2", draftIds: ["draft-x"] },
+      }),
+    ).toEqual({ kind: "saved" });
+  });
+
+  it("refreshes the recovered count from local recovery for the open study only", async () => {
+    useNoteDraftStore.getState().bindWorkspace("proj-1", "epoch-1");
+    vi.mocked(api.listNoteDrafts).mockResolvedValueOnce([
+      { draft_id: "a", project_key: "proj-1", discarded: false, draft_text: "new", base_text: "" },
+      { draft_id: "b", project_key: "proj-1", discarded: false, draft_text: "same", base_text: "same" },
+      { draft_id: "c", project_key: "proj-1", discarded: true, draft_text: "gone", base_text: "" },
+      { draft_id: "d", project_key: "proj-2", discarded: false, draft_text: "other", base_text: "" },
+    ] as never);
+    await useSaveStore.getState().refreshRecovered();
+    expect(useSaveStore.getState().recovered).toEqual({ projectKey: "proj-1", draftIds: ["a"] });
+  });
+
+  it("keeps watching until every mount of an editor lets go", () => {
+    const store = useSaveStore.getState();
+    const off1 = store.watchAutosave("k");
+    const off2 = store.watchAutosave("k");
+    off1();
+    expect(useSaveStore.getState().autosaving).toEqual({ k: 1 });
+    off2();
+    expect(useSaveStore.getState().autosaving).toEqual({});
   });
 });

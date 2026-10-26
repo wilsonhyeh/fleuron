@@ -702,7 +702,7 @@ export interface LeftStudy {
 
 export type NoteDraftKind = "coding" | "interview";
 
-/** One unfinished note generation in app-local recovery. */
+/** One unsaved note generation in app-local recovery. */
 export interface NoteDraftRecord {
   draft_id: string;
   project_key: string;

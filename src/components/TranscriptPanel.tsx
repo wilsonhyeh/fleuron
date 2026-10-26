@@ -2,7 +2,8 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
-import { useNoteDraftStore } from "../store/note-draft-store";
+import { isDraftDirty, useNoteDraftStore } from "../store/note-draft-store";
+import { useAutosaveMemo } from "../hooks/useAutosaveMemo";
 import { useAppStore } from "../store/app-store";
 import { appConfirm } from "../store/confirm-store";
 import { formatTimestampDisplay } from "../lib/vtt-parser";
@@ -1991,11 +1992,11 @@ const PassageText = memo(function PassageText({
                   ? "Collapse note"
                   : hasSaved
                     ? "Expand note"
-                    : "Expand unfinished note draft"
+                    : "Expand unsaved note draft"
               }
               className="relative grid h-6 w-6 place-items-center rounded-full text-[var(--accent)] hover:bg-[var(--fill)]"
               title={
-                hasSaved ? (coding.memo ?? "Passage note") : "Unfinished note draft"
+                hasSaved ? (coding.memo ?? "Passage note") : "Unsaved note draft"
               }
             >
               <Icon name="note" size={13} />
@@ -2037,10 +2038,11 @@ const PassageText = memo(function PassageText({
  * The one inline passage-note editor, docked below its source passage.
  *
  * Every Add/Edit route (note toggle, coding menu, selection bubble) selects
- * the shared coding identity and lands here. Explicit Save & close commits
- * through revision CAS; Collapse, Escape, switching passage or interview and
- * filtering all retain the unfinished draft without prompting, and reopening
- * restores it. Explicit Discard confirms when dirty.
+ * the shared coding identity and lands here. It autosaves through revision
+ * CAS after a typing pause (useAutosaveMemo), and Done flushes and closes;
+ * Collapse, Escape, switching passage or interview and filtering retain the
+ * draft without prompting, and reopening restores it. Discard appears only
+ * for text a save rejected, and confirms.
  */
 function InlineNoteEditor({
   coding,
@@ -2116,6 +2118,13 @@ function InlineNoteEditor({
     el.setSelectionRange(el.value.length, el.value.length);
   }, [editable, coding.id]);
 
+  // Passage notes autosave after a typing pause, like the interview note.
+  // Closing the card flushes; a conflict or a deleted coding stops it.
+  const autosave = useAutosaveMemo(
+    entryKey,
+    entry != null && !frozen && entry.saveState !== "conflict" && !entry.targetMissing,
+  );
+
   if (!workspace) return null;
 
   const dirty = entry != null && entry.draftText !== entry.baseText;
@@ -2124,16 +2133,6 @@ function InlineNoteEditor({
     entry?.targetMissing ||
     (beginError !== null && /no longer available/i.test(beginError));
   const saveFailed = entry?.saveState === "error" && !entry.targetMissing;
-  const backingUp =
-    entry != null &&
-    (entry.putInFlight || entry.queuedText !== null) &&
-    entry.recoveryState === "backing-up";
-  const backedUp =
-    entry != null &&
-    dirty &&
-    !entry.putInFlight &&
-    entry.queuedText === null &&
-    entry.recoveryState === "backed-up";
   const recoveryFailed =
     entry != null && (entry.recoveryState === "error" || entry.recoveryState === "unavailable");
 
@@ -2150,29 +2149,26 @@ function InlineNoteEditor({
     focusToggle();
   };
 
-  const saveAndClose = () => {
+  // Done saves whatever the pause timer has not reached yet, then closes —
+  // only if that exact revision is now committed. A failed save keeps the
+  // editor open on its error.
+  const done = () => {
     if (!entryKey || saving) return;
     setSaving(true);
-    void useNoteDraftStore
-      .getState()
-      .saveDraft(entryKey)
-      .then((ok) => {
-        setSaving(false);
-        if (!ok) {
-          textareaRef.current?.focus();
-          return;
-        }
-        // Close only if that exact revision is still current: typing during
-        // the save keeps the editor open with the newer draft dirty.
-        const live = useNoteDraftStore.getState().entries[entryKey];
-        if (live && live.draftText === live.baseText) {
-          closeNote();
-          focusToggle();
-        } else {
-          textareaRef.current?.focus();
-        }
-      })
-      .catch(() => setSaving(false));
+    void (async () => {
+      const store = useNoteDraftStore.getState();
+      await store.flushPending();
+      const pending = store.getEntryByKey(entryKey);
+      const ok = pending && isDraftDirty(pending) ? await store.saveDraft(entryKey) : true;
+      setSaving(false);
+      const live = useNoteDraftStore.getState().entries[entryKey];
+      if (ok && (!live || live.draftText === live.baseText)) {
+        closeNote();
+        focusToggle();
+      } else {
+        textareaRef.current?.focus();
+      }
+    })().catch(() => setSaving(false));
   };
 
   const discard = () => {
@@ -2194,7 +2190,7 @@ function InlineNoteEditor({
       className="note-card relative w-full p-3 shadow-xl z-10"
       onClick={(event) => event.stopPropagation()}
     >
-      <div className="flex items-center justify-between pb-2">
+      <div className="flex items-start justify-between gap-3 pb-2">
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-medium leading-tight">Passage {segmentIndex + 1}</div>
           {codeItems.length > 0 && (
@@ -2217,9 +2213,13 @@ function InlineNoteEditor({
           ) : null}
         </div>
         <div className="flex items-center gap-2">
-          {dirty && !conflicted ? (
-            <span className="text-[11px] font-medium text-[var(--accent)]" role="status">
-              Editing · unsaved
+          {!conflicted && !saveFailed && !missing ? (
+            <span className="hint text-[11px]" role="status">
+              {dirty || saving || autosave.status === "saving"
+                ? "Saving…"
+                : autosave.status === "saved"
+                  ? "Saved"
+                  : null}
             </span>
           ) : null}
           <button
@@ -2246,8 +2246,8 @@ function InlineNoteEditor({
           role="alert"
           className="mb-2 rounded-md bg-[var(--danger,#b03a34)]/10 px-2.5 py-1.5 text-[11.5px] text-[var(--danger,#b03a34)]"
         >
-          The original coding is no longer available. Your unfinished text is kept in
-          Unfinished notes — copy it before discarding.
+          The original coding is no longer available. Your unsaved text is kept in
+          Unsaved notes — copy it before discarding.
         </div>
       ) : null}
 
@@ -2261,7 +2261,7 @@ function InlineNoteEditor({
           const mod = e.metaKey || e.ctrlKey;
           if (mod && e.key === "Enter") {
             e.preventDefault();
-            if (!frozen) saveAndClose();
+            if (!frozen) done();
             return;
           }
           if (e.key === "Escape" && !e.nativeEvent.isComposing) {
@@ -2306,26 +2306,18 @@ function InlineNoteEditor({
         </div>
       ) : null}
 
-      <div className="mt-2 flex min-h-[18px] items-center gap-2 text-[11px] text-[var(--ink-3)]">
-        {backingUp ? (
-          <span role="status">Backing up draft…</span>
-        ) : backedUp ? (
-          <span role="status">Draft backed up locally</span>
-        ) : recoveryFailed && entry ? (
-          <>
-            <span role="alert">Draft not backed up — Retry</span>
-            <button
-              type="button"
-              className="btn btn-ghost btn-xs"
-              onClick={() => useNoteDraftStore.getState().retryRecovery(entry.key)}
-            >
-              Retry
-            </button>
-          </>
-        ) : saving ? (
-          <span role="status">Saving…</span>
-        ) : null}
-      </div>
+      {recoveryFailed && entry ? (
+        <div className="mt-2 flex items-center gap-2 text-[11px] text-[var(--ink-3)]">
+          <span role="alert">Draft not backed up — Retry</span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs"
+            onClick={() => useNoteDraftStore.getState().retryRecovery(entry.key)}
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
 
       <div className="mt-2.5 pt-2 border-t border-[var(--g-rim)]/60">
         {confirmingDiscard ? (
@@ -2352,27 +2344,28 @@ function InlineNoteEditor({
         ) : (
           <div className="flex items-center justify-between gap-2">
             <span className="hint text-[10.5px]">
-              {modKey}↵ to save · Esc to close
+              Saves as you type · Esc to close
             </span>
             <div className="flex items-center gap-1.5">
+              {/* Autosave leaves nothing to discard, except text a save rejected. */}
+              {saveFailed && dirty ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDiscard(true)}
+                  disabled={saving}
+                  className="btn btn-ghost btn-sm text-[var(--danger,#b03a34)] hover:bg-[var(--danger,#b03a34)]/10"
+                >
+                  Discard
+                </button>
+              ) : null}
               <button
                 type="button"
-                onClick={() => {
-                  if (dirty) setConfirmingDiscard(true);
-                  else collapse();
-                }}
-                disabled={saving}
-                className="btn btn-ghost btn-sm text-[var(--danger,#b03a34)] hover:bg-[var(--danger,#b03a34)]/10"
-              >
-                Discard
-              </button>
-              <button
-                type="button"
-                onClick={saveAndClose}
-                disabled={saving || !dirty || frozen}
+                onClick={done}
+                disabled={saving || frozen}
+                title={`Done (${modKey}↵)`}
                 className="btn btn-primary btn-sm"
               >
-                {saving ? "Saving…" : "Save & close"}
+                Done
               </button>
             </div>
           </div>

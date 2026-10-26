@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { checkStudyLabel, nextParticipantId, normalizeLabel } from "./study-label";
+import {
+  checkStudyLabel,
+  nextParticipantId,
+  normalizeLabel,
+  participantIdFromFilename,
+} from "./study-label";
 
 const KNOWN = ["P07", "P12", "P03-2"];
 
@@ -120,5 +125,19 @@ describe("nextParticipantId", () => {
   it("returns empty string when there is no discernible numerical pattern", () => {
     expect(nextParticipantId(["Pilot", "Followup"])).toBe("");
     expect(nextParticipantId(["Alpha", "Beta", "Gamma"])).toBe("");
+  });
+});
+
+describe("participantIdFromFilename", () => {
+  it("finds an ID that is its own token", () => {
+    expect(participantIdFromFilename("P07_interview")).toBe("P07");
+    expect(participantIdFromFilename("2026-10-01 s12 zoom")).toBe("S12");
+    expect(participantIdFromFilename("study.P3")).toBe("P3");
+  });
+
+  it("never returns the file name when it names no ID", () => {
+    expect(participantIdFromFilename("zz-fleuron-save-test")).toBeNull();
+    expect(participantIdFromFilename("Zoom_Interview_2026-10-01")).toBeNull();
+    expect(participantIdFromFilename("GMT20261001-170045_Recording")).toBeNull();
   });
 });

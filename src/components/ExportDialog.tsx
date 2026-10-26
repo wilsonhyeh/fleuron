@@ -265,8 +265,8 @@ export function ExportDialog({
       {orphanExcludedCount > 0 && (
         <p className="hint mb-5 text-[12.5px]">
           {orphanExcludedCount === 1
-            ? "1 recovered draft has no coding and will remain in Unfinished notes; it is excluded from this export."
-            : `${orphanExcludedCount} recovered drafts have no coding and will remain in Unfinished notes; they are excluded from this export.`}
+            ? "1 recovered draft has no coding and will remain in Unsaved notes; it is excluded from this export."
+            : `${orphanExcludedCount} recovered drafts have no coding and will remain in Unsaved notes; they are excluded from this export.`}
         </p>
       )}
       {redactedCount > 0 && (

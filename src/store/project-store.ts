@@ -1234,7 +1234,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       workspaceKey &&
       drafts.dirtyEntries(workspaceKey).length > 0
     ) {
-      throw new Error("Unfinished notes need review before closing.");
+      throw new Error("Unsaved notes need review before closing.");
     }
     set({ closeDraftApproved: false });
     persistWorkspaceDebounced.cancel();
@@ -1361,7 +1361,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     if (gate.keptOrphanCount > 0 && gate.choice !== "saved-only") {
       // Save-all path with orphans that cannot be committed: report, don't drop.
       get().showStatus(
-        `${gate.keptOrphanCount} recovered draft${gate.keptOrphanCount === 1 ? " has" : "s have"} no coding and will remain in Unfinished notes; ${gate.keptOrphanCount === 1 ? "it is" : "they are"} excluded from this export.`,
+        `${gate.keptOrphanCount} recovered draft${gate.keptOrphanCount === 1 ? " has" : "s have"} no coding and will remain in Unsaved notes; ${gate.keptOrphanCount === 1 ? "it is" : "they are"} excluded from this export.`,
         "info",
       );
     }

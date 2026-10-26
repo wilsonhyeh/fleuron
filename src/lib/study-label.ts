@@ -114,6 +114,17 @@ export function checkStudyLabel(
 }
 
 /**
+ * A participant ID named in a transcript's file name, as its own token —
+ * "P07_interview.vtt" → "P07", "2026-10-01 S12 zoom.vtt" → "S12". Null when
+ * the name carries none, so a caller never offers the file name itself as the
+ * ID (the field's own hint says not to use one).
+ */
+export function participantIdFromFilename(fileStem: string): string | null {
+  const match = /(?:^|[\s._-])([A-Za-z]{1,3}\d{1,4})(?=$|[\s._-])/.exec(fileStem.trim());
+  return match ? match[1].toUpperCase() : null;
+}
+
+/**
  * Detects the participant ID numbering pattern across existing labels and
  * produces the next logical ID.
  *

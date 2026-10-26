@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { checkStudyLabel } from "../lib/study-label";
 import { Icon } from "./ui/Icon";
 
@@ -31,6 +32,18 @@ export function StudyLabelField({
 }) {
   const verdict = checkStudyLabel(value, knownLabels, filenameGuess);
 
+  // A suggested ID is there to be typed over. Selecting on focus alone lost
+  // the race twice: a mouse click's mouseup put the caret back, and autoFocus
+  // ran before the modal filled in its suggestion, so typing appended
+  // ("P01P01"). Keep the suggestion selected until the user edits it.
+  const inputRef = useRef<HTMLInputElement>(null);
+  const edited = useRef(false);
+  const focusedByClick = useRef(false);
+  useEffect(() => {
+    const el = inputRef.current;
+    if (el && !edited.current && document.activeElement === el) el.select();
+  }, [value]);
+
   return (
     <>
       <label className="label" htmlFor={id}>
@@ -63,8 +76,22 @@ export function StudyLabelField({
       <input
         id={id}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        ref={inputRef}
+        onChange={(e) => {
+          edited.current = true;
+          onChange(e.target.value);
+        }}
+        onMouseDown={(e) => {
+          focusedByClick.current = document.activeElement !== e.currentTarget;
+        }}
         onFocus={(e) => e.target.select()}
+        onBlur={() => {
+          edited.current = false;
+        }}
+        onMouseUp={(e) => {
+          if (focusedByClick.current) e.preventDefault();
+          focusedByClick.current = false;
+        }}
         placeholder="P07"
         className="field"
         autoFocus={autoFocus}

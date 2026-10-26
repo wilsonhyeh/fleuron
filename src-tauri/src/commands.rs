@@ -1394,7 +1394,7 @@ pub fn note_recovery_status(
     state: State<'_, AppState>,
 ) -> Result<RecoveryStatus, String> {
     // A status probe that initializes recovery when it has never run: the
-    // first paint of the Unfinished notes badge must reflect reality, and a
+    // first paint of the Unsaved notes badge must reflect reality, and a
     // lazy open here is indistinguishable from one on first draft use.
     let probe = state.with_recovery(&app, |conn| {
         crate::note_recovery::list_active_drafts(conn).map(|_| ())
@@ -1617,7 +1617,7 @@ pub fn resolve_note_draft_target(
 ) -> Result<ResolveNoteDraftTargetResult, String> {
     let draft = state.with_recovery(&app, |recovery| {
         crate::note_recovery::get_draft_by_id(recovery, &draft_id)?
-            .ok_or_else(|| "That unfinished note is no longer in local recovery.".to_string())
+            .ok_or_else(|| "That unsaved note is no longer in local recovery.".to_string())
     })?;
     let (open_key, _) = state.current_workspace();
     match open_key {
@@ -1896,7 +1896,7 @@ pub(crate) fn enforce_update_departure_approval(
         return Ok(());
     }
     let token = approval.filter(|t| !t.is_empty()).ok_or_else(|| {
-        "This study has unfinished notes. Save or discard them before installing the update."
+        "This study has unsaved notes. Save or discard them before installing the update."
             .to_string()
     })?;
     let mut slot = state

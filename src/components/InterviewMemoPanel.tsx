@@ -113,8 +113,8 @@ export function InterviewMemoPanel() {
           ) : null}
           {missing ? (
             <div role="alert" className="mt-2 rounded-md bg-[var(--danger,#b03a34)]/10 px-2.5 py-1.5 text-[11.5px] text-[var(--danger,#b03a34)]">
-              This interview is no longer available. Your unfinished text is kept in
-              Unfinished notes — copy it before discarding.
+              This interview is no longer available. Your unsaved text is kept in
+              Unsaved notes — copy it before discarding.
             </div>
           ) : null}
           {conflicted ? (

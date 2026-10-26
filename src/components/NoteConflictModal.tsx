@@ -58,13 +58,13 @@ export function NoteConflictModal({
         <Modal open={open} onClose={close} title="This note changed elsewhere" width="max-w-2xl">
           <div className="flex min-h-0 flex-1 flex-col gap-3 px-5 py-4">
             <p className="hint text-[11.5px]">
-              {contextLabel}. Your unfinished draft is on the left and stays
+              {contextLabel}. Your unsaved draft is on the left and stays
               editable; the current saved note is on the right and is read-only.
               Nothing is overwritten until you choose.
             </p>
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2">
               <label className="flex min-h-0 flex-col gap-1">
-                <span className="text-[11px] font-medium">Your unfinished draft</span>
+                <span className="text-[11px] font-medium">Your unsaved draft</span>
                 <textarea
                   ref={draftRef}
                   value={entry.draftText}
@@ -76,7 +76,7 @@ export function NoteConflictModal({
                       close();
                     }
                   }}
-                  aria-label="Your unfinished draft"
+                  aria-label="Your unsaved draft"
                   className="field min-h-[160px] flex-1 text-[13px]"
                 />
               </label>

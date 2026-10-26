@@ -1545,7 +1545,7 @@ async function handle(cmd: string, args: Record<string, unknown>): Promise<unkno
       }
       const input = args.input as { draft_id: string };
       const draft = mockDrafts.get(input.draft_id);
-      if (!draft) throw new Error("That unfinished note is no longer in local recovery.");
+      if (!draft) throw new Error("That unsaved note is no longer in local recovery.");
       draft.discarded = true;
       draft.draft_text = "";
       draft.base_text = "";
@@ -1621,7 +1621,7 @@ async function handle(cmd: string, args: Record<string, unknown>): Promise<unkno
     case "resolve_note_draft_target": {
       const draft = mockDrafts.get(args.draftId as string);
       if (!draft || draft.discarded) {
-        throw new Error("That unfinished note is no longer in local recovery.");
+        throw new Error("That unsaved note is no longer in local recovery.");
       }
       if (!openProject || !mockProjectKey) {
         return { status: "missing", draft_id: draft.draft_id, reason: "no-project" };

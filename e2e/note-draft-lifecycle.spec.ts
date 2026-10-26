@@ -64,7 +64,11 @@ async function openInlineNote(page: import("@playwright/test").Page) {
 }
 
 async function waitForBackedUp(page: import("@playwright/test").Page) {
-  await expect(page.getByText("Draft backed up locally")).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => ipcCount(page, "put_note_draft"), { timeout: 15_000 }).toBeGreaterThan(0);
+}
+
+async function waitForAutosaved(page: import("@playwright/test").Page) {
+  await expect(page.getByRole("status").filter({ hasText: /^Saved$/ })).toBeVisible({ timeout: 15_000 });
 }
 
 test.describe("one inline editor", () => {
@@ -140,7 +144,7 @@ test.describe("one inline editor", () => {
     const box = await openInlineNote(page);
     await expect(box).toHaveValue("");
     await box.fill("Span-level reading, committed inline.");
-    await page.getByRole("button", { name: "Save & close" }).click();
+    await page.getByRole("button", { name: "Done" }).click();
     await expect(page.getByRole("textbox", { name: "Note content" })).toBeHidden();
     await expect.poll(() => ipcCount(page, "save_note_draft"), { timeout: 15_000 }).toBeGreaterThan(0);
   });
@@ -149,7 +153,7 @@ test.describe("one inline editor", () => {
     await passage(page, 3).getByRole("button", { name: "Expand note" }).click();
     const box = await openInlineNote(page);
     await box.fill("distinct collapse draft 7f3a");
-    await waitForBackedUp(page);
+    await waitForAutosaved(page);
     await passage(page, 3).getByRole("button", { name: "Collapse note" }).click();
     await expect(box).toBeHidden();
     // No discard prompt appeared.
@@ -189,6 +193,18 @@ test.describe("one inline editor", () => {
     await expect(restored).toHaveValue("distinct filter draft 4d2e");
   });
 
+  test("a passage note saves itself after a typing pause and stays open", async ({ page }) => {
+    await passage(page, 3).getByRole("button", { name: "Expand note" }).click();
+    const box = await openInlineNote(page);
+    await box.fill("autosaved passage reading 5e1b");
+    await waitForAutosaved(page);
+    await expect.poll(() => ipcCount(page, "save_note_draft"), { timeout: 15_000 }).toBeGreaterThan(0);
+    await expect(box).toBeVisible();
+    // Nothing unsaved left to discard, and the toolbar agrees.
+    await expect(page.getByRole("button", { name: "Discard" })).toHaveCount(0);
+    await expect(page.getByRole("status").filter({ hasText: "Saved" }).first()).toBeVisible();
+  });
+
   test("Mod+Enter saves and closes from the keyboard", async ({ page }) => {
     await passage(page, 3).getByRole("button", { name: "Expand note" }).click();
     const box = await openInlineNote(page);
@@ -206,7 +222,7 @@ test.describe("truthful status and recovery", () => {
     await passage(page, 3).getByRole("button", { name: "Expand note" }).click();
     const box = await openInlineNote(page);
     await box.fill("words that must not be lost");
-    await page.getByRole("button", { name: "Save & close" }).click();
+    await page.getByRole("button", { name: "Done" }).click();
     await expect(page.getByText(/Could not save note/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
     // Still open, text intact, no false Saved.
@@ -224,11 +240,11 @@ test.describe("truthful status and recovery", () => {
     await passage(page, 3).getByRole("button", { name: "Expand note" }).click();
     const box = await openInlineNote(page);
     await box.fill("my version of the reading");
-    await page.getByRole("button", { name: "Save & close" }).click();
+    await page.getByRole("button", { name: "Done" }).click();
     await page.getByRole("button", { name: "Compare" }).click();
     const dialog = page.getByRole("dialog", { name: "This note changed elsewhere" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("textbox", { name: "Your unfinished draft" })).toHaveValue(
+    await expect(dialog.getByRole("textbox", { name: "Your unsaved draft" })).toHaveValue(
       "my version of the reading",
     );
     await expect(dialog.getByRole("textbox", { name: "Current saved note" })).not.toHaveValue(
@@ -262,9 +278,10 @@ test.describe("truthful status and recovery", () => {
   });
 });
 
-test.describe("unfinished notes and departure", () => {
+test.describe("unsaved notes and departure", () => {
+  // Autosave would commit these drafts before the test reaches the dialog.
   test.beforeEach(async ({ page }) => {
-    await gotoApp(page);
+    await gotoApp(page, "/?fixture=note-autosave-hold");
     await openWorkspace(page);
   });
 
@@ -272,11 +289,11 @@ test.describe("unfinished notes and departure", () => {
     await passage(page, 3).getByRole("button", { name: "Expand note" }).click();
     const box = await openInlineNote(page);
     await box.fill("recoverable draft c81d");
-    await expect(page.getByText("Draft backed up locally")).toBeVisible({ timeout: 15_000 });
+    await waitForBackedUp(page);
 
     await page.getByRole("button", { name: "More actions" }).click();
-    await page.getByRole("menuitem", { name: /Unfinished notes/ }).click();
-    const panel = page.getByRole("dialog", { name: "Unfinished notes" });
+    await page.getByRole("menuitem", { name: /Unsaved notes/ }).click();
+    const panel = page.getByRole("dialog", { name: "Unsaved notes" });
     await expect(panel).toBeVisible();
     await panel.getByRole("button", { name: /Passage 3/ }).click();
     await expect(panel.getByText("recoverable draft c81d")).toBeVisible();
@@ -288,7 +305,7 @@ test.describe("unfinished notes and departure", () => {
     await expect(notices.getByRole("status")).toHaveCount(1);
     await panel.getByRole("button", { name: "Discard" }).click();
     await page.getByRole("button", { name: "Discard", exact: true }).last().click();
-    await expect(panel.getByText("No unfinished notes")).toBeVisible({ timeout: 15_000 });
+    await expect(panel.getByText("No unsaved notes")).toBeVisible({ timeout: 15_000 });
   });
 
   test("closing with a draft offers save, discard and cancel", async ({ page }) => {
@@ -298,7 +315,7 @@ test.describe("unfinished notes and departure", () => {
     // Cancel keeps everything open.
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Close study" }).click();
-    const dialog = page.getByRole("dialog", { name: "Unfinished notes" });
+    const dialog = page.getByRole("dialog", { name: "Unsaved notes" });
     await expect(dialog).toBeVisible({ timeout: 15_000 });
     await dialog.getByRole("button", { name: "Cancel" }).click();
     await expect(page.getByRole("listbox", { name: "Transcript passages" })).toBeVisible();
@@ -321,7 +338,7 @@ test.describe("unfinished notes and departure", () => {
 
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Close study" }).click();
-    const dialog = page.getByRole("dialog", { name: "Unfinished notes" });
+    const dialog = page.getByRole("dialog", { name: "Unsaved notes" });
     await expect(dialog).toBeVisible({ timeout: 15_000 });
     await dialog.getByRole("button", { name: "Save all" }).click();
     await expect(

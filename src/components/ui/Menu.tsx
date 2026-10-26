@@ -235,7 +235,7 @@ export function MenuRow({
           <span
             className="grid min-h-5 min-w-5 place-items-center rounded-full px-1 text-[10.5px] font-semibold"
             style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
-            aria-label={`${item.badge} unfinished`}
+            aria-label={`${item.badge} unsaved`}
           >
             {item.badge}
           </span>

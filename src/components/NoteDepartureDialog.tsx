@@ -75,16 +75,16 @@ export function NoteDepartureDialog() {
         {prompt.orphanLabels.length > 0 ? (
           <p className="hint text-[12px]">
             {prompt.orphanLabels.length === 1
-              ? "1 recovered draft has no coding and will remain in Unfinished notes."
-              : `${prompt.orphanLabels.length} recovered drafts have no coding and will remain in Unfinished notes.`}{" "}
+              ? "1 recovered draft has no coding and will remain in Unsaved notes."
+              : `${prompt.orphanLabels.length} recovered drafts have no coding and will remain in Unsaved notes.`}{" "}
             {isExport ? "They are excluded from this export." : "They are kept, not deleted."}
           </p>
         ) : null}
         {prompt.missingKept > 0 ? (
           <p className="hint text-[12px]">
             {prompt.missingKept === 1
-              ? "1 note's original is gone; its text stays in Unfinished notes."
-              : `${prompt.missingKept} notes' originals are gone; their text stays in Unfinished notes.`}
+              ? "1 note's original is gone; its text stays in Unsaved notes."
+              : `${prompt.missingKept} notes' originals are gone; their text stays in Unsaved notes.`}
           </p>
         ) : null}
         <div className="flex flex-wrap items-center justify-end gap-1.5">

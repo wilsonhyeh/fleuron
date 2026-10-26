@@ -771,7 +771,7 @@ export function WelcomeScreen() {
                     className="btn btn-outline btn-sm gap-1.5"
                   >
                     <Icon name="note" size={13} />
-                    Unfinished notes ({unfinishedCount})
+                    Unsaved notes ({unfinishedCount})
                   </button>
                 )}
               </div>

@@ -1,13 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useNoteDraftStore } from "../store/note-draft-store";
+import { useSaveStore } from "../store/save-store";
 
 /** A typing pause, not a keystroke — long enough not to save mid-word. */
 export const AUTOSAVE_PAUSE_MS = 900;
 
+/**
+ * Browser harness only: `?fixture=note-autosave-hold` turns the pause timer
+ * off, so e2e tests can hold a draft unsaved and reach the departure dialog
+ * and Unsaved notes. Closing an editor still flushes.
+ */
+function autosaveHeld(): boolean {
+  if (!import.meta.env.DEV || typeof window === "undefined") return false;
+  return (window.location.search + window.location.hash).includes("fixture=note-autosave-hold");
+}
+
 export type AutosaveStatus = "idle" | "saving" | "saved" | "error";
 
 /**
- * Automatic saving for one interview draft entry.
+ * Automatic saving for one draft entry: the interview note and, since the
+ * save-model unification, the inline passage note.
  *
  * Extracted from MemoPanel so removing the editing rail does not remove the
  * interview autosave with it. Truthful by construction: `saved` means the
@@ -37,7 +49,7 @@ export function useAutosaveMemo(entryKey: string | null, enabled: boolean): {
   const dirty = entryKey != null && draftText !== undefined && baseText !== undefined && draftText !== baseText;
 
   useEffect(() => {
-    if (!enabled || !entryKey || !dirty) return;
+    if (!enabled || !entryKey || !dirty || autosaveHeld()) return;
     setStatus((previous) => (previous === "error" ? previous : "idle"));
     const timer = setTimeout(() => {
       setStatus("saving");
@@ -74,7 +86,14 @@ export function useAutosaveMemo(entryKey: string | null, enabled: boolean): {
       const { entryKey: key, enabled: on } = latest.current;
       if (!key || !on) return;
       const entry = useNoteDraftStore.getState().entries[key];
-      if (entry && entry.draftText !== entry.baseText && entry.saveState !== "saving") {
+      if (!entry || entry.draftText === entry.baseText) return;
+      if (entry.saveInFlight) {
+        // Queues the newer words behind the save already running, so typing
+        // during a save and then closing still commits them.
+        void useNoteDraftStore.getState().saveDraft(key);
+        return;
+      }
+      if (entry.saveState !== "saving") {
         setStatus("saving");
         void useNoteDraftStore
           .getState()
@@ -94,6 +113,14 @@ export function useAutosaveMemo(entryKey: string | null, enabled: boolean): {
       flush();
     };
   }, []);
+
+  // Tells the toolbar indicator this entry has a pause timer behind it, so a
+  // dirty draft here reads as "Saving…", not unsaved work. Declared after the
+  // flush effect so, on unmount, the flush has started before this lets go.
+  useEffect(() => {
+    if (!enabled || !entryKey) return;
+    return useSaveStore.getState().watchAutosave(entryKey);
+  }, [entryKey, enabled]);
 
   useEffect(() => {
     // Error/saving mirror the entry; "saved" is earned only by a completed

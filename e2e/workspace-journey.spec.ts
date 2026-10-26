@@ -103,7 +103,7 @@ test("codebook filters passages and passage notes open inline", async ({ page })
   const inlineBox = passages.getByRole("textbox", { name: "Note content" });
   await expect(inlineBox).toBeVisible();
   await inlineBox.fill("Updated from the inline note.");
-  await passages.getByRole("button", { name: "Save & close" }).click();
+  await passages.getByRole("button", { name: "Done" }).click();
   // Inline passage notes commit through the checked write contract, not the
   // legacy memo command.
   await expect

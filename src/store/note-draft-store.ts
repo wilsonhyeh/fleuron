@@ -312,7 +312,7 @@ export const useNoteDraftStore = create<NoteDraftStore>()((set, get) => {
           patchEntry(key, {
             recoveryState: "unavailable",
             recoveryError:
-              "Saved, but the local backup is still unavailable. Retry the backup from Unfinished notes.",
+              "Saved, but the local backup is still unavailable. Retry the backup from Unsaved notes.",
           });
         } else if (!result.recovery_cleared && live && live.revision !== capturedRevision) {
           // Newer edits survived cleanup by design; make sure their backup
@@ -340,7 +340,7 @@ export const useNoteDraftStore = create<NoteDraftStore>()((set, get) => {
       if (result.status === "missing-target") {
         patchEntry(key, {
           saveState: "error",
-          saveError: "The original coding is no longer available. Your text is kept in Unfinished notes.",
+          saveError: "The original coding is no longer available. Your text is kept in Unsaved notes.",
           targetMissing: true,
           saveInFlight: false,
           saveQueued: false,
@@ -592,7 +592,7 @@ export const useNoteDraftStore = create<NoteDraftStore>()((set, get) => {
         saveError: null,
         conflictText: null,
       });
-      // Explicitly drop the unfinished draft from recovery after the local
+      // Explicitly drop the unsaved draft from recovery after the local
       // state already reflects the saved version.
       try {
         await api.discardNoteDraft({ draft_id: entry.draftId });
@@ -657,7 +657,7 @@ export const useNoteDraftStore = create<NoteDraftStore>()((set, get) => {
               saveState: "error",
               saveError:
                 begun.status === "missing-target"
-                  ? "The original coding is no longer available. Your text is kept in Unfinished notes."
+                  ? "The original coding is no longer available. Your text is kept in Unsaved notes."
                   : friendlySaveError("STALE_WORKSPACE"),
               targetMissing: begun.status === "missing-target",
             });
