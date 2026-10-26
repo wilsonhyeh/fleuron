@@ -8,10 +8,10 @@ release is not ready.
 > All evidence is redacted and synthetic: no real study data, participant text,
 > or account identifiers may be recorded here or in the release notes.
 
-- **Version:** 2.7.0
+- **Version:** 2.8.0
 - **Commit:** pending tag (see git log at release time)
 - **Platform / build:** macOS arm64 debug bundle (`Fleuron.app`, id `study.fleuron.desktop`); Windows unverified
-- **Date (last run):** 2026-09-06
+- **Date (last run):** 2026-10-25
 - **Verifier:** implementation agent (source + local stack + packaged-app selftest); **Wilson for every Windows row**
 
 ## 1. Offline / accountless local path
@@ -128,3 +128,18 @@ release is not ready.
 
 - [x] Manage Speakers renames all matching turns across active interview with turn counts and undo support (`Last verified: 2026-09-06 — cargo test db::tests::rename_interview_speaker; e2e manage-speakers.spec.ts PASS`)
 - [x] Speaker changes apply locally on this computer; empty/invalid names rejected (`Last verified: 2026-09-06 — TranscriptPanel.menu.test.ts; e2e manage-speakers.spec.ts PASS`)
+
+## 20. Save workflow and single-user focus (2.8.0 new)
+
+> Collaboration is shelved in 2.8.0 (`COLLABORATION_ENABLED = false`). The
+> collaboration rows in §§ 2–6, 13 and 16 cover code this build ships but never
+> reaches; their dated evidence is from the release that last exercised it.
+
+- [x] File > Save commits unsaved notes and the toolbar save status reports Saved / Saving… / Not saved / unsaved count truthfully (`Last verified: 2026-10-25 — save-store.test.ts deriveSaveIndicator tests; e2e note-draft-lifecycle.spec.ts PASS; real study opened in the 2.8.0 branch build showed Saved`)
+- [x] Passage notes autosave after a typing pause and stay open; Done flushes and closes (`Last verified: 2026-10-25 — e2e note-draft-lifecycle.spec.ts "a passage note saves itself after a typing pause and stays open" PASS`)
+- [x] Clicking Saved shows the study folder with Show in Finder/File Explorer and Copy path (`Last verified: 2026-10-25 — format.test.ts friendlyLocation 4/4; panel inspected in browser harness`)
+- [x] macOS Quit routes through the unsaved-notes guard (`Last verified: 2026-10-25 — menu.rs custom Quit item routed through app.exit(0), replacing PredefinedMenuItem::quit; defect found and fixed while testing a built bundle`)
+- [x] No sign-in, join, share, or sync surface is reachable; the app makes no sync connection (`Last verified: 2026-10-25 — e2e single-user.spec.ts 2/2 PASS; sync-store.shelved.test.ts 2/2 PASS; Rust guards refuse every session/join/sync command`)
+- [x] A group-bound study opens as a local study with its data and queued changes intact (`Last verified: 2026-10-25 — real bound study opened in the 2.8.0 branch build: listed under Studies, no sync chip, codes/passages/codings unchanged, outbox count unchanged`)
+- [x] Packaged-app selftest passes with the online group suite skipped (`Last verified: 2026-10-25 — run-selftest.mjs against a debug bundle under the test identity: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)
+

@@ -45,3 +45,9 @@ Implemented HQ plan `fleuron-project-lifecycle.md` across Tauri Rust core, React
 - Fixed macOS dock reopen behavior when all windows are closed.
 - Version bumped to 2.7.0 across manifests, lockfiles, release smoke, and trust documentation.
 
+## 2026-10-25 — Fleuron 2.8.0: save workflow, single-user focus
+
+- File > Save (Cmd/Ctrl+S), toolbar save status, "where is my work saved" panel, passage-note autosave, "Unsaved notes" wording, participant ID from file name, workspace declutter.
+- Fixed: macOS Quit skipped the unsaved-notes guard; note keystrokes hijacked by passage shortcuts; Add a note dead in new studies; hour dropped from timestamps; Settings sign-in flash.
+- Collaboration shelved behind `COLLABORATION_ENABLED` (`src/lib/features.ts` + `src-tauri/src/lib.rs`); collaboration e2e cases and the online selftest suite skip while it is off.
+- Version bumped to 2.8.0 across manifests, lockfiles, release smoke, install docs, and trust documentation.

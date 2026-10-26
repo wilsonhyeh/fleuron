@@ -1,5 +1,7 @@
 # User guide — Fleuron
 
+> **Collaboration is paused in Fleuron 2.8.0.** Accounts, shared studies, and sync are turned off, and the app makes no sync connection; it goes online only to check for and download updates. The collaboration material in this document describes how the feature works when it returns.
+
 Current as of **v1.0.0**. In-app help is the same content: press **Help** on the welcome screen or toolbar, or **`?`** / **Cmd+/** anytime.
 
 ---

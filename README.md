@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Offline-first desktop application for **reflexive thematic analysis**. Import transcripts, code passages (whole turns or phrase selections) with a living codebook, write reflexive memos, and collaborate with your research team across machines.
+Offline-first desktop application for **reflexive thematic analysis**. Import transcripts, code passages (whole turns or phrase selections) with a living codebook, and write reflexive memos, all on your own computer.
 
 Built with **Tauri v2**, **React 19**, **TypeScript**, **Tailwind CSS**, and **SQLite**.
 
@@ -13,7 +13,7 @@ Built with **Tauri v2**, **React 19**, **TypeScript**, **Tailwind CSS**, and **S
 - **Offline-First Privacy**: Project data is stored in a local SQLite database (`.fleuron`). Collaboration sync excludes transcript text and memo fields. Shared exports and cloud-synced folders can take local files off the device.
 - **Span & Whole-Turn Coding**: Drag across words to highlight a specific phrase or click a passage to code the whole turn.
 - **Living Codebook**: Create, merge, split, recode, color-code, and organize codes hierarchically. Click any code to inspect all associated passages.
-- **Collaborative Sync (Optional)**: Connect via self-hosted or managed Supabase using Sync Protocol v2. Coded spans, codebook structure, memberships, and your de-identified labels sync over encrypted transport; transcript text and memo fields are excluded. Offline coding is free forever. Hosted collaboration is optional and free during beta. Paid plans and terms for beta users will be announced before charging begins. There is no Fleuron software fee for self-hosting; you are responsible for infrastructure and administration costs.
+- **Collaboration (paused)**: Fleuron 2.8.0 turns accounts, shared studies, and sync off while the single-user experience is finished; the app makes no sync connection. A study that was already shared opens as a local study, keeps its group link, and keeps its unsent changes queued for when collaboration returns. The sync design below describes that future feature.
 - **Multi-Format Import**: Native parsing for WebVTT, SRT, plain text with speaker labels, Microsoft Word (`.docx`), and CSV transcripts.
 - **Rich Exports**: Export your project to CSV coded passages and framework matrices, standalone HTML reports, and PDF reports.
 - **Native Experience**: Native desktop app for macOS 14+ (Universal / Apple Silicon & Intel) and Windows 11 x64. macOS 10.15–13 and Windows 10 are best effort; see the [support matrix](docs/IT-DEPLOYMENT.md).
@@ -52,6 +52,8 @@ For detailed usage instructions and workflow tips, see the [User Guide](docs/USE
 ## Architecture & Privacy Model
 
 Fleuron separates **local research data** from **collaborative synchronization metadata**:
+
+(Collaboration is paused in 2.8.0, so today only the local half applies.)
 
 ```
 Project Folder (my-study.fleuron/)

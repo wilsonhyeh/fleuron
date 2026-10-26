@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.0]
+
+### Changed
+
+- **Collaboration is paused:** Accounts, shared studies, and sync are turned off while the single-user experience is finished. The app no longer signs in, syncs, or opens a live connection, and every sign-in, join, share, and sync control is gone. A study that was already shared opens as a local study under "Studies", keeps its group link, and keeps its unsent changes queued for when collaboration returns. Fleuron now goes online only to check for and download updates.
+- **"Unfinished notes" is now "Unsaved notes"** everywhere: menus, home screen, quit dialog, and errors.
+- **Calmer workspace:** The toolbar reads "Study · coding as you"; Back and Forward sit beside the interview selector and Filter beside Search; More actions is grouped by what each item acts on; the Update button appears only when an update needs you; one notice per transcript import.
+
+### Added
+
+- **File > Save (Cmd/Ctrl+S):** Commits every unsaved note at once and writes the study to disk.
+- **Save status in the toolbar:** Saved, Saving…, Not saved, or a count of unsaved notes, including drafts recovered after a crash.
+- **Where your work is saved:** Click Saved in the toolbar to see the study folder, open it in Finder or File Explorer, or copy its path. The Study files panel names the location too.
+- **Passage notes save themselves:** Like interview notes, passage notes save after a short typing pause. Done (or Cmd/Ctrl+Enter) saves anything pending and closes.
+- **Participant ID from the file name:** Setup and Add participant suggest an ID found in the transcript's file name (for example P07) and keep it selected until you type.
+
+### Fixed
+
+- **macOS Quit with unsaved notes:** Quitting from the menu or Cmd+Q now asks to save unsaved notes; before, it closed without asking.
+- **Typing in a note:** Keys typed in a passage note no longer jump passages or open the code picker.
+- **Add a note in a new study:** Works immediately in a study you just created, and the editor takes focus.
+- **Timestamps past an hour:** Shown as 1:05:00 instead of dropping the hour.
+- **Settings sign-in flash:** Settings no longer shows the sign-in form before the session is known.
+
+---
+
 ## [2.7.0]
 
 ### Fixed

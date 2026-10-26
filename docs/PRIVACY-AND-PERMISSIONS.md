@@ -1,5 +1,7 @@
 # Privacy and permissions
 
+> **Collaboration is paused in Fleuron 2.8.0.** Accounts, shared studies, and sync are turned off, and the app makes no sync connection; it goes online only to check for and download updates. The collaboration material in this document describes how the feature works when it returns.
+
 **Short version: collaboration sync excludes transcript text and memo fields. It shares account, study, codebook, and coding metadata over encrypted HTTPS/WSS. Quotes copied into codebook fields sync as written; exports may leave your device through sharing or a synced folder.**
 
 This page is the exact disclosure. The in-app **Trust & permissions** panel and `src/content/trust-and-permissions.ts` carry the same content; contract tests fail if any of the three drifts.
