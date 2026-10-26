@@ -165,6 +165,7 @@ export function Toolbar() {
   const groupedName = inGroup ? me?.coderName || activeCoder : activeCoder;
   const lockIdentity = inGroup;
   const coders = project.coders.length > 0 ? project.coders : [groupedName];
+  const showCoder = lockIdentity || coders.length > 1;
 
   const activeInterview = interviews.find((i) => i.id === activeInterviewId);
   const segments = breadcrumbSegments({
@@ -195,7 +196,7 @@ export function Toolbar() {
     >
       <div className="min-w-0 flex-1 flex items-center gap-1.5 text-[13px]">
         <span
-          className="min-w-0 max-w-[200px] truncate font-semibold leading-tight text-[var(--ink)]"
+          className="min-w-0 truncate font-semibold leading-tight text-[var(--ink)]"
           title={segments.study}
         >
           {segments.study}
@@ -204,39 +205,44 @@ export function Toolbar() {
             the reading header's interview selector one row down. They live
             beside that selector now; the toolbar says whose study and who
             is coding. */}
-        <span className="text-[var(--ink-4)] shrink-0 select-none">·</span>
-
-        {/* Coder segment - attribution control */}
-        <div
-          data-tauri-drag-region="false"
-          className="shrink-0 flex items-center gap-1 text-[12px] text-[var(--ink-3)]"
-        >
-          <span>coding as</span>
-          {lockIdentity || coders.length <= 1 ? (
-            <span className="font-medium text-[var(--ink)]">
-              {segments.coder.name}
-            </span>
-          ) : (
-            <select
-              className="field field-sm w-auto py-0.5 px-1 font-medium text-[var(--ink)] bg-transparent border-none shadow-none cursor-pointer"
-              value={activeCoder}
-              onChange={(e) => setActiveCoder(e.target.value)}
-              aria-label="Active coder"
-              title="Codes you apply are stamped with this name"
+        {/* Coder segment - attribution control. Only shown when there is a
+            choice or a shared roster to answer to: in a study one person
+            codes alone, "coding as <your own name>" tells them nothing. */}
+        {showCoder && (
+          <>
+            <span className="text-[var(--ink-4)] shrink-0 select-none">·</span>
+            <div
+              data-tauri-drag-region="false"
+              className="shrink-0 flex items-center gap-1 text-[12px] text-[var(--ink-3)]"
             >
-              {!activeCoder && (
-                <option value="" disabled>
-                  Who&apos;s coding?
-                </option>
+              <span>coding as</span>
+              {lockIdentity || coders.length <= 1 ? (
+                <span className="font-medium text-[var(--ink)]">
+                  {segments.coder.name}
+                </span>
+              ) : (
+                <select
+                  className="field field-sm w-auto py-0.5 px-1 font-medium text-[var(--ink)] bg-transparent border-none shadow-none cursor-pointer"
+                  value={activeCoder}
+                  onChange={(e) => setActiveCoder(e.target.value)}
+                  aria-label="Active coder"
+                  title="Codes you apply are stamped with this name"
+                >
+                  {!activeCoder && (
+                    <option value="" disabled>
+                      Who&apos;s coding?
+                    </option>
+                  )}
+                  {coders.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
               )}
-              {coders.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Live presence chips for other teammates in this study */}
         {presenceUsers.length > 0 && (

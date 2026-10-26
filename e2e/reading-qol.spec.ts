@@ -112,6 +112,7 @@ test.describe("Reading QOL (2.4.0)", () => {
         .first()
         .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
 
+    await page.getByRole("button", { name: "Text size" }).click();
     await expect(page.getByRole("button", { name: /Reset passage text size/ })).toHaveText("100%");
     expect(await sizeOfFirstPassage()).toBeCloseTo(15.5, 1);
 

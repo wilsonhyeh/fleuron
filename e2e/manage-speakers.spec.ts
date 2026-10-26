@@ -18,7 +18,7 @@ test("manage speakers modal opens from interview menu and displays speakers", as
   await openWorkspace(page);
 
   // Click the interview actions menu
-  const interviewMenuBtn = page.getByRole("button", { name: /Interview actions|Options for interview/i }).first();
+  const interviewMenuBtn = page.getByRole("button", { name: "Current interview" });
   if (await interviewMenuBtn.isVisible()) {
     await interviewMenuBtn.click();
     const manageSpeakersItem = page.getByRole("menuitem", { name: /Manage speakers/i });

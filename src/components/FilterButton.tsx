@@ -153,16 +153,11 @@ export function FilterButton() {
           onClick={toggleOpen}
           aria-expanded={open}
           aria-label="Filter passages"
-          className={`flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] font-medium transition-colors ${
-            badgeCount > 0
-              ? "bg-[var(--fill-on)] text-[var(--accent)] font-medium shadow-xs border border-[var(--g-rim)]"
-              : "btn-ghost text-[var(--ink-3)] hover:text-[var(--ink)]"
-          }`}
+          className={`header-icon-btn relative ${badgeCount > 0 ? "text-[var(--accent)]" : ""}`}
         >
-          <Icon name="filter" size={13} />
-          <span>Filter</span>
+          <Icon name="filter" size={14} />
           {badgeCount > 0 && (
-            <span className="rounded-full bg-[var(--accent)] px-1.5 py-0.2 text-[10px] font-bold text-white tabular-nums">
+            <span className="absolute -right-0.5 -top-0.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[var(--accent)] px-0.5 text-[9px] font-bold leading-none text-white tabular-nums">
               {badgeCount}
             </span>
           )}

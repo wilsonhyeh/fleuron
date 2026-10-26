@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { ForceSim, type SimLink } from "../lib/force-layout";
+import { wrapLines } from "../lib/wrap-lines";
 import {
   buildRelationshipGraph,
   buildStructure,
@@ -971,6 +972,7 @@ function StructureView({
   const pos = (angle: number, r: number) => ({ x: Math.cos(angle) * r, y: Math.sin(angle) * r });
   const extent = (hasChildren ? R2 : R1) + 165;
   const nodeR = (n: MapNode) => (n.count > 0 ? 5 + Math.sqrt(n.count) * 3.2 : 4.5);
+  const centreLines = useMemo(() => wrapLines(title, 15, 3), [title]);
 
   const label = (n: MapNode, angle: number, r: number) => {
     const deg = (angle * 180) / Math.PI;
@@ -1066,9 +1068,19 @@ function StructureView({
             </g>
           );
         })}
-        <circle r={44} fill="var(--map-ground)" stroke="var(--g-rim)" />
-        <text textAnchor="middle" dy="0.33em" fontSize={13} fill="var(--ink-2)" className="font-serif">
-          {truncate(title, 16)}
+        <circle r={58} fill="var(--map-ground)" stroke="var(--g-rim)" />
+        <text textAnchor="middle" fontSize={12} fill="var(--ink-2)" className="font-serif">
+          {centreLines.map((line, i) => (
+            <tspan
+              key={i}
+              x={0}
+              y={(i - (centreLines.length - 1) / 2) * 14}
+              dy="0.33em"
+            >
+              {line}
+            </tspan>
+          ))}
+          <title>{title}</title>
         </text>
         {placed.map(({ theme, angle, children }) => {
           const a = pos(angle, R1);

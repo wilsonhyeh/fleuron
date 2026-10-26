@@ -10,6 +10,8 @@ const SAFE_CONTROLS = [
   "System",
   "Search transcript",
   "Active interview",
+  "Current interview",
+  "Text size",
 ];
 
 let consoleLines: ReturnType<typeof watchPageDiagnostics>;

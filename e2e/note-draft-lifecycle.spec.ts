@@ -49,6 +49,11 @@ async function ipcCount(page: import("@playwright/test").Page, cmd: string) {
   }, cmd);
 }
 
+async function pickInterview(page: import("@playwright/test").Page, label: string) {
+  await page.getByRole("button", { name: "Current interview" }).click();
+  await page.getByRole("menuitem", { name: label }).click();
+}
+
 function passage(page: import("@playwright/test").Page, n: number) {
   return page.getByRole("option", { name: new RegExp(`^Passage ${n}\\b`) });
 }
@@ -170,8 +175,8 @@ test.describe("one inline editor", () => {
     await passage(page, 3).getByRole("button", { name: "Expand note" }).click();
     const box = await openInlineNote(page);
     await box.fill("distinct interview-switch draft 9b1c");
-    await page.getByRole("combobox", { name: "Current interview" }).selectOption("iv-2");
-    await page.getByRole("combobox", { name: "Current interview" }).selectOption("iv-1");
+    await pickInterview(page, "P07-2026-04-02");
+    await pickInterview(page, "P04-2026-03-11");
     // Navigation never closes the editor and never reseeds it: the same
     // draft is still open with the unfinished words intact.
     const reopened = page.getByRole("textbox", { name: "Note content" });

@@ -684,6 +684,31 @@ body {
     width: 100%;
   }
 
+  /* The reading header's tools: search, filter, text size. One size and one
+     quiet resting state, so the row reads as a set rather than three
+     differently built controls. */
+  .header-icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    color: var(--ink-3);
+    transition:
+      background-color var(--dur-fast) var(--ease-glass),
+      color var(--dur-fast) var(--ease-glass);
+  }
+  .header-icon-btn:hover:not(:disabled),
+  .header-icon-btn[aria-expanded="true"] {
+    background: var(--fill);
+    color: var(--ink);
+  }
+  .header-icon-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
   /* Fields */
   .field {
     width: 100%;
