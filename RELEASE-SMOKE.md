@@ -8,10 +8,10 @@ release is not ready.
 > All evidence is redacted and synthetic: no real study data, participant text,
 > or account identifiers may be recorded here or in the release notes.
 
-- **Version:** 2.8.0
+- **Version:** 2.9.0
 - **Commit:** pending tag (see git log at release time)
 - **Platform / build:** macOS arm64 debug bundle (`Fleuron.app`, id `study.fleuron.desktop`); Windows unverified
-- **Date (last run):** 2026-10-25
+- **Date (last run):** 2026-10-26
 - **Verifier:** implementation agent (source + local stack + packaged-app selftest); **Wilson for every Windows row**
 
 ## 1. Offline / accountless local path
@@ -143,3 +143,12 @@ release is not ready.
 - [x] A group-bound study opens as a local study with its data and queued changes intact (`Last verified: 2026-10-25 — real bound study opened in the 2.8.0 branch build: listed under Studies, no sync chip, codes/passages/codings unchanged, outbox count unchanged`)
 - [x] Packaged-app selftest passes with the online group suite skipped (`Last verified: 2026-10-25 — run-selftest.mjs against a debug bundle under the test identity: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)
 
+## 21. UI polish pass (2.9.0 new)
+
+- [x] Coded text shows one underline per span plus the side bar; whole-passage codes show only as the bar; no fill at rest (`Last verified: 2026-10-26 — highlight.test.ts inlineMark 5/5; e2e highlight-stripes + reading-qol PASS; harness screenshots light and dark looked at`)
+- [x] Codebook sorts names numerically, clamps long names to two lines, and a parent's count includes its sub-codes with each passage counted once (`Last verified: 2026-10-26 — code-search.test.ts; cargo test rollup_count_counts_each_passage_once_across_sub_codes; report-html + framework-matrix passage-count tests; stress fixture screenshots`)
+- [x] One chip per code per passage with a ×N count; clicking cycles its spans (`Last verified: 2026-10-26 — passage-chips.test.ts 5/5; browser harness: two spans give "Waiting list ×2", clicks open span 1, 2, 1, 2`)
+- [x] Coding bubble lists codes not yet applied; Cmd/Ctrl+1–9 follow codebook order and remove an applied code (`Last verified: 2026-10-26 — code-search.test.ts codebookOrder; harness: ⌘1 applied the first code and it left the list; e2e workspace-journey 3/3`)
+- [x] Code palette clears 4.5:1 behind white text, every pair and the accent at least 0.06 apart in OKLab (`Last verified: 2026-10-26 — code-colors.test.ts`)
+- [x] Pinned passage-note card closes on an outside click and stays inside the transcript (`Last verified: 2026-10-26 — note-placement.test.ts; harness check against baseline 3717ba2`)
+- [x] Packaged-app selftest passes on the release tree (`Last verified: 2026-10-26 — run-selftest.mjs against a 2.9.0 debug bundle under the test identity study.fleuron.devtest: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)

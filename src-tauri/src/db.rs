@@ -2948,7 +2948,9 @@ fn live_children_by_parent(conn: &Connection) -> rusqlite::Result<HashMap<String
         "SELECT id, parent_id FROM codebook
          WHERE parent_id IS NOT NULL AND is_retired = 0 AND deleted = 0",
     )?;
-    let rows = stmt.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?;
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+    })?;
     let mut out: HashMap<String, Vec<String>> = HashMap::new();
     for row in rows {
         let (id, parent) = row?;

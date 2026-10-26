@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0]
+
+### Changed
+
+- **Coding marks:** Coded text carries one underline in the code's colour plus the side bar. Codes applied to a whole passage show only as the side bar. Code labels under a passage are quiet chips with a colour dot.
+- **One chip per code:** A code applied to two spans of a passage shows once with a ×2 count; clicking it steps through its spans. Another coder's codes sit on their own line after yours.
+- **Code bubble:** One list instead of a Recent row plus a list. Codes already on the selection are left out of the list (they show above it; click to remove). Cmd/Ctrl+1 to 9 now always mean the first nine codes in codebook order instead of changing with each use.
+- **Code colours:** A new nine-colour palette with no colours that look alike and none in the app's gold. Existing codes keep their colour.
+- **Codebook at real name lengths:** Names sort 1, 2, 10 instead of 1, 10, 2; long names stop at two lines with the full name on hover; one count per code, and a parent's count includes its sub-codes, each passage counted once. Filtering by a parent includes its sub-codes. The report and framework matrix count passages the same way.
+- **Calmer frame:** The bar above the transcript is regrouped and Export is an outlined button. The selected passage has a thin outline; one line separates the codebook and the transcript; the transcript page no longer sits against the header.
+- **One control style:** Checkboxes, fields, selects and cards share one style; side sheets come in two widths; text is in sentence case; "project" is "study" throughout; the Activity log reads in words.
+
+### Fixed
+
+- **Card borders:** Study cards and several tables drew near-black borders because they used colour names the app never defined.
+- **Passage note cards:** A pinned note card now closes when you click outside it, a long code name no longer pushes its close button out of reach, and the card stays inside the transcript instead of covering the toolbar.
+- **Wrong icons and names:** Several actions had the wrong icon (Study files Export showed refresh); "Import transcript…" on an open interview is now "Replace transcript…".
+
+---
+
 ## [2.8.0]
 
 ### Changed

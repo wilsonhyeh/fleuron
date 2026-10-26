@@ -53,7 +53,7 @@ For detailed usage instructions and workflow tips, see the [User Guide](docs/USE
 
 Fleuron separates **local research data** from **collaborative synchronization metadata**:
 
-(Collaboration is paused in 2.8.0, so today only the local half applies.)
+(Collaboration is paused since 2.8.0, so today only the local half applies.)
 
 ```
 Project Folder (my-study.fleuron/)

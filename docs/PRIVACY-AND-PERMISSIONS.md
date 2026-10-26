@@ -1,6 +1,6 @@
 # Privacy and permissions
 
-> **Collaboration is paused in Fleuron 2.8.0.** Accounts, shared studies, and sync are turned off, and the app makes no sync connection; it goes online only to check for and download updates. The collaboration material in this document describes how the feature works when it returns.
+> **Collaboration is paused (since Fleuron 2.8.0).** Accounts, shared studies, and sync are turned off, and the app makes no sync connection; it goes online only to check for and download updates. The collaboration material in this document describes how the feature works when it returns.
 
 **Short version: collaboration sync excludes transcript text and memo fields. It shares account, study, codebook, and coding metadata over encrypted HTTPS/WSS. Quotes copied into codebook fields sync as written; exports may leave your device through sharing or a synced folder.**
 
