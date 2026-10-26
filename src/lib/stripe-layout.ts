@@ -1,4 +1,5 @@
 import type { Code, CodedSegment } from "./types";
+import { compareCodeNames } from "./code-search";
 
 export const MAX_STRIPE_COLUMNS = 5;
 export const STRIPE_WIDTH_PX = 3;
@@ -88,7 +89,7 @@ export function computeStripeLayout({
     .sort((a, b) => {
       const orderDiff = (a.sort_order ?? 0) - (b.sort_order ?? 0);
       if (orderDiff !== 0) return orderDiff;
-      return a.name.localeCompare(b.name);
+      return compareCodeNames(a, b);
     });
 
   // 3. Assign columns up to MAX_STRIPE_COLUMNS

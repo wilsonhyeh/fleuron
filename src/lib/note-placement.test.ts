@@ -102,7 +102,7 @@ describe("computeNotePlacement", () => {
     expect(result.top).toBeGreaterThanOrEqual(wideRow.bottom);
   });
 
-  it("clamps top at top of viewport when row is at the very top", () => {
+  it("clamps top to the transcript area when the row is at the very top", () => {
     const topRow: PlacementRect = {
       top: 0,
       bottom: 40,
@@ -121,10 +121,10 @@ describe("computeNotePlacement", () => {
     });
 
     expect(result.placement).toBe("beside");
-    expect(result.top).toBe(8); // clamped to 8
+    expect(result.top).toBe(58); // scroller top (50) + 8, not over the toolbar
   });
 
-  it("clamps top at bottom of viewport when row is at the very bottom", () => {
+  it("clamps top to the transcript area when the row is at the very bottom", () => {
     const bottomRow: PlacementRect = {
       top: 860,
       bottom: 900,
@@ -143,7 +143,7 @@ describe("computeNotePlacement", () => {
     });
 
     expect(result.placement).toBe("beside");
-    // viewportHeight (900) - cardHeight (160) - 8 = 732
-    expect(result.top).toBe(732);
+    // scroller bottom (850) - cardHeight (160) - 8 = 682
+    expect(result.top).toBe(682);
   });
 });

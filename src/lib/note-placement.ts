@@ -41,6 +41,15 @@ export function computeNotePlacement({
   viewportHeight = typeof window !== "undefined" ? window.innerHeight : 800,
   viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1200,
 }: NotePlacementInput): NotePlacementOutput {
+  // Keep the card inside the transcript area: a pinned note whose passage has
+  // scrolled away used to stick to the window edge, over the toolbar.
+  const minTop = Math.max(NOTE_CARD_VIEWPORT_PADDING, scrollerRect.top + NOTE_CARD_VIEWPORT_PADDING);
+  const maxTop = Math.max(
+    minTop,
+    Math.min(viewportHeight, scrollerRect.bottom) - cardHeight - NOTE_CARD_VIEWPORT_PADDING,
+  );
+  const clampTop = (top: number) => Math.max(minTop, Math.min(maxTop, top));
+
   const isNarrow = scrollerRect.width < MIN_READING_COLUMN_BESIDE;
   const besideLeft = scrollerRect.right - (cardWidth + NOTE_CARD_GUTTER_MARGIN);
 
@@ -50,13 +59,7 @@ export function computeNotePlacement({
 
   if (isNarrow || wouldOverlapRow) {
     // Below the row instead of beside it. Never place over the row's text rect.
-    const top = Math.max(
-      NOTE_CARD_VIEWPORT_PADDING,
-      Math.min(
-        viewportHeight - cardHeight - NOTE_CARD_VIEWPORT_PADDING,
-        rowRect.bottom + 8,
-      ),
-    );
+    const top = clampTop(rowRect.bottom + 8);
     const left = Math.max(
       NOTE_CARD_VIEWPORT_PADDING,
       Math.min(
@@ -72,11 +75,7 @@ export function computeNotePlacement({
   }
 
   // Default: beside in the right gutter, vertically centered on row
-  let top = rowRect.top + rowRect.height / 2 - cardHeight / 2;
-  top = Math.max(
-    NOTE_CARD_VIEWPORT_PADDING,
-    Math.min(viewportHeight - cardHeight - NOTE_CARD_VIEWPORT_PADDING, top),
-  );
+  const top = clampTop(rowRect.top + rowRect.height / 2 - cardHeight / 2);
   const left = Math.max(
     NOTE_CARD_VIEWPORT_PADDING,
     Math.min(

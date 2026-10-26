@@ -90,7 +90,9 @@ export function buildFrameworkMatrix(
       cells[col.codeId] = {
         codeId: col.codeId,
         codeName: col.codeName,
-        count: matchingSegments.length,
+        // Passages, not coding rows: parent + sub-code, or two coders, on one
+        // passage counts once.
+        count: new Set(matchingSegments.map((cs) => cs.segment_id)).size,
         snippets,
       };
     }

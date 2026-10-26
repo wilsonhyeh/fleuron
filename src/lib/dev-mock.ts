@@ -502,6 +502,31 @@ function generateStressFixture() {
   };
 }
 
+/**
+ * Usage and rollup counts the way `read_codes` computes them in Rust:
+ * distinct passages, and for a parent, distinct passages across it and its
+ * live sub-codes. The fixtures' hard-coded counts drift from their codings.
+ */
+function withCounts(list: Code[]): Code[] {
+  const passagesByCode = new Map<string, Set<string>>();
+  for (const coding of codedSegments) {
+    for (const id of coding.code_ids) {
+      const set = passagesByCode.get(id) ?? new Set<string>();
+      set.add(coding.segment_id);
+      passagesByCode.set(id, set);
+    }
+  }
+  return list.map((code) => {
+    const own = passagesByCode.get(code.id) ?? new Set<string>();
+    const rollup = new Set(own);
+    for (const child of codes) {
+      if (child.parent_id !== code.id || child.is_retired) continue;
+      for (const seg of passagesByCode.get(child.id) ?? []) rollup.add(seg);
+    }
+    return { ...code, usage_count: own.size, rollup_count: rollup.size };
+  });
+}
+
 let interviews: Interview[] = [];
 let segments: TranscriptSegment[] = [];
 let codes: Code[] = [];
@@ -651,7 +676,7 @@ function buildSnapshot(): ProjectOpenSnapshot {
 
   return {
     project: (openProject ?? DEMO) as unknown as ProjectInfo,
-    codes: [...codes],
+    codes: withCounts(codes),
     interviews: [...interviews],
     workspace: {
       active_interview_id: activeInterviewId,
@@ -880,8 +905,8 @@ async function handle(cmd: string, args: Record<string, unknown>): Promise<unkno
       return {
         project: openProject ?? DEMO,
         interviews: [...interviews],
-        codes: codes.filter((code) => !code.is_retired),
-        retired_codes: codes.filter((code) => code.is_retired),
+        codes: withCounts(codes.filter((code) => !code.is_retired)),
+        retired_codes: withCounts(codes.filter((code) => code.is_retired)),
         active_interview_id: activeInterviewId,
         selected_segment_id: activeSegments[0]?.id ?? null,
         segments: activeSegments,
@@ -986,9 +1011,9 @@ async function handle(cmd: string, args: Record<string, unknown>): Promise<unkno
       return `/fake/projects/restored-${Date.now()}`;
 
     case "list_codes":
-      return codes.filter((c) => !c.is_retired);
+      return withCounts(codes.filter((c) => !c.is_retired));
     case "list_retired_codes":
-      return codes.filter((c) => c.is_retired);
+      return withCounts(codes.filter((c) => c.is_retired));
     case "create_code": {
       const input = args.input as { name: string; color?: string; definition?: string };
       const created = {

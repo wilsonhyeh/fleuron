@@ -90,8 +90,10 @@ export function NoteHoverCard({
     };
   }, [target, place]);
 
-  // Dismiss listeners: pinned notes stay open across scroll and background mousedown;
-  // Esc closes pinned note and returns focus to the usage row.
+  // Dismiss listeners: pinned notes stay open across scroll, and close on Esc
+  // (focus returns to the usage row) or on a click anywhere outside the card.
+  // Esc alone left mouse users stuck when a long code name pushed the close
+  // button out of the card.
   useEffect(() => {
     if (!target) return;
 
@@ -103,8 +105,16 @@ export function NoteHoverCard({
           target.element.focus();
         }
       };
+      const handleMouseDown = (e: MouseEvent) => {
+        if (cardRef.current?.contains(e.target as Node)) return;
+        onDismiss();
+      };
       window.addEventListener("keydown", handleKeyDown, true);
-      return () => window.removeEventListener("keydown", handleKeyDown, true);
+      window.addEventListener("mousedown", handleMouseDown, true);
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown, true);
+        window.removeEventListener("mousedown", handleMouseDown, true);
+      };
     }
 
     // Preview mode: dismiss on scroll or background click
@@ -144,13 +154,14 @@ export function NoteHoverCard({
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5 min-w-0">
           <span
-            className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium text-white shadow-sm shrink-0"
-            style={{ backgroundColor: target.code.color }}
+            className="code-chip"
+            title={target.code.name}
+            style={{ "--code": target.code.color } as React.CSSProperties}
           >
-            {target.code.name}
+            <span className="code-chip-name">{target.code.name}</span>
           </span>
           {isOthers && (
-            <span className="text-[10.5px] font-medium text-[var(--ink-3)] truncate">
+            <span className="shrink-0 whitespace-nowrap text-[10.5px] font-medium text-[var(--ink-3)]">
               {target.coder}
             </span>
           )}

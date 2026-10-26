@@ -146,6 +146,18 @@ describe("framework-matrix", () => {
     expect(matrix.rows[1].cells["c2"].snippets[0].quote).toBe("By Friday I collapse.");
   });
 
+  it("counts a passage once when it carries the parent and a sub-code, or two coders", () => {
+    const overlapping: CodedSegment[] = [
+      ...codedSegments,
+      // seg-1 again: Rehearsal (a sub-code of c1) from a second coder.
+      { ...codedSegments[0], id: "cs4", code_ids: ["c1_1"], coder_name: "Luci Diaz", memo: null },
+      // seg-2 again: the parent and the sub-code together.
+      { ...codedSegments[1], id: "cs5", code_ids: ["c1", "c1_1"], coder_name: "Luci Diaz" },
+    ];
+    const matrix = buildFrameworkMatrix(codes, interviews, overlapping);
+    expect(matrix.rows[0].cells["c1"].count).toBe(2);
+  });
+
   it("generates Excel-compatible CSV with UTF-8 BOM", () => {
     const matrix = buildFrameworkMatrix(codes, interviews, codedSegments);
     const csv = generateFrameworkMatrixCsv(matrix);

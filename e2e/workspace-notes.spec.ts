@@ -17,23 +17,27 @@ test.describe("Workspace Notes inline editor", () => {
     const passage = page.locator("article").nth(2);
     await passage.click();
 
+    // Passage 3 is coded, so the note button must be there. This used to sit
+    // behind `if (isVisible)`, and when the click missed the coded text the
+    // whole test passed without checking anything.
     const noteBtn = page.getByRole("button", { name: /Edit note|Add a note/i });
-    if (await noteBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await noteBtn.click();
-      const box = page.getByRole("textbox", { name: "Note content" });
-      await expect(box).toBeVisible();
+    await expect(noteBtn).toBeVisible();
+    await noteBtn.click();
+    const box = page.getByRole("textbox", { name: "Note content" });
+    // The textarea is disabled until its draft loads; Escape goes to it once
+    // it has focus, as it would for a person.
+    await expect(box).toBeFocused();
 
-      // Collapse via Escape: retained, not discarded, rail never appears.
-      await page.keyboard.press("Escape");
-      await expect(box).toBeHidden();
-      await expect(page.locator('[data-testid="memo-panel"]')).toHaveCount(0);
+    // Collapse via Escape: retained, not discarded, rail never appears.
+    await page.keyboard.press("Escape");
+    await expect(box).toBeHidden();
+    await expect(page.locator('[data-testid="memo-panel"]')).toHaveCount(0);
 
-      // Navigating passages must NOT reopen the editor automatically.
-      await selectFirstPassage(page);
-      await page.waitForTimeout(200);
-      await expect(box).toBeHidden();
-      await expect(page.locator('[data-testid="memo-panel"]')).toHaveCount(0);
-    }
+    // Navigating passages must NOT reopen the editor automatically.
+    await selectFirstPassage(page);
+    await page.waitForTimeout(200);
+    await expect(box).toBeHidden();
+    await expect(page.locator('[data-testid="memo-panel"]')).toHaveCount(0);
   });
 
   test("exactly one Notifications host, mounted only while notices exist", async ({ page }) => {

@@ -11,7 +11,7 @@ import { NoteHoverCard, type NoteHoverCardTarget } from "./NoteHoverCard";
 import { openContextMenu } from "./ui/ContextMenu";
 import type { MenuItemSpec } from "./ui/Menu";
 import { canNest } from "../lib/code-drag";
-import { codeMatchesQuery } from "../lib/code-search";
+import { codeMatchesQuery, compareCodeNames, rollupCount } from "../lib/code-search";
 import {
   computeDragState,
   resolveDropTarget,
@@ -179,6 +179,7 @@ export function CodebookPanel() {
         row.char_start != null && row.char_end != null
           ? seg.text.slice(row.char_start, row.char_end)
           : seg.text;
+      const text = span.trim();
       for (const codeId of row.code_ids) {
         const list = out.get(codeId) ?? [];
         list.push({
@@ -186,7 +187,7 @@ export function CodebookPanel() {
           segmentId: seg.id,
           codingId: row.id,
           number: seg.segment_index + 1,
-          quote: span.length > 90 ? span.slice(0, 90).trimEnd() + "…" : span,
+          quote: text.length > 90 ? text.slice(0, 90).trimEnd() + "…" : text,
           coder: row.coder_name,
           memo: row.memo ?? "",
         });
@@ -197,16 +198,6 @@ export function CodebookPanel() {
     return out;
   })();
 
-  const rollupUsageCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const code of codes) {
-      const selfCount = code.usage_count;
-      const children = codes.filter((c) => c.parent_id === code.id);
-      const childCount = children.reduce((sum, c) => sum + c.usage_count, 0);
-      counts.set(code.id, selfCount + childCount);
-    }
-    return counts;
-  }, [codes]);
 
   const filteredAndSortedCodes = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -214,11 +205,11 @@ export function CodebookPanel() {
 
     if (sortBy === "name") {
       if (!q) {
-        const topLevel = list.filter((c) => !c.parent_id).sort((a, b) => a.name.localeCompare(b.name));
+        const topLevel = list.filter((c) => !c.parent_id).sort(compareCodeNames);
         const out: Code[] = [];
         for (const parent of topLevel) {
           out.push(parent);
-          const children = list.filter((c) => c.parent_id === parent.id).sort((a, b) => a.name.localeCompare(b.name));
+          const children = list.filter((c) => c.parent_id === parent.id).sort(compareCodeNames);
           out.push(...children);
         }
         const seen = new Set(out.map((c) => c.id));
@@ -227,10 +218,10 @@ export function CodebookPanel() {
         }
         return out;
       }
-      return [...list].sort((a, b) => a.name.localeCompare(b.name));
+      return [...list].sort(compareCodeNames);
     }
     if (sortBy === "usage") {
-      return [...list].sort((a, b) => (rollupUsageCounts.get(b.id) ?? b.usage_count) - (rollupUsageCounts.get(a.id) ?? a.usage_count));
+      return [...list].sort((a, b) => rollupCount(b) - rollupCount(a));
     }
     if (sortBy === "recent") {
       return [...list].sort((a, b) => {
@@ -242,7 +233,7 @@ export function CodebookPanel() {
       });
     }
     return list;
-  }, [codes, searchQuery, sortBy, recentCodeIds, rollupUsageCounts]);
+  }, [codes, searchQuery, sortBy, recentCodeIds]);
 
   const [newCodeName, setNewCodeName] = useState("");
   const [showAdd, setShowAdd] = useState(false);
@@ -519,7 +510,7 @@ export function CodebookPanel() {
                 const selected = selectedCodeIds.includes(code.id);
                 const isOpen = expanded === code.id;
                 const usage = usageByCode.get(code.id) ?? [];
-                const rollup = rollupUsageCounts.get(code.id) ?? code.usage_count;
+                const rollup = rollupCount(code);
                 const isChild = !!code.parent_id;
                 const isDragTarget = activeDrag?.targetCodeId === code.id;
                 const isBeingDragged = activeDrag?.draggedCode.id === code.id;
@@ -545,7 +536,7 @@ export function CodebookPanel() {
                     onKeyDown={(e) => handleRowKeyDown(e, code)}
                     onContextMenu={(e) => openContextMenu(e, codeMenu(code))}
                     className={`group flex flex-col rounded-[11px] transition-all outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent)] ${
-                      isChild ? "ml-3.5 pl-1.5 border-l-2 border-[var(--g-rim)]/40" : ""
+                      isChild ? "ml-4" : ""
                     }`}
                     style={{
                       opacity: isBeingDragged ? 0.35 : 1,
@@ -576,12 +567,12 @@ export function CodebookPanel() {
                       onPointerUp={handlePointerUp}
                       onPointerCancel={handlePointerCancel}
                       aria-label={`Reorder "${code.name}" — drag onto another code to nest it`}
-                      className={`mt-1.5 ml-1 grid h-6 w-6 shrink-0 place-items-center rounded touch-none select-none transition-colors ${
-                        isBeingDragged ? "cursor-grabbing" : "cursor-grab"
+                      className={`mt-1.5 grid h-6 w-4 shrink-0 place-items-center rounded touch-none select-none transition-opacity focus-visible:opacity-100 group-hover:opacity-100 ${
+                        isBeingDragged ? "cursor-grabbing opacity-100" : "cursor-grab opacity-0"
                       }`}
                       style={{ color: "var(--ink-2)" }}
                     >
-                      <Icon name="grip" size={14} />
+                      <Icon name="grip" size={12} />
                     </button>
 
                     <button
@@ -591,7 +582,13 @@ export function CodebookPanel() {
                       }
                       aria-expanded={isOpen}
                       aria-controls={`code-usage-${code.id}`}
-                      title={!isOpen && code.definition ? code.definition : undefined}
+                      title={
+                        isOpen
+                          ? undefined
+                          : code.definition
+                            ? `${code.name}\n\n${code.definition}`
+                            : code.name
+                      }
                       className="flex min-w-0 flex-1 items-start gap-2 py-2 pl-1 text-left"
                     >
                       <span
@@ -609,7 +606,7 @@ export function CodebookPanel() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span
-                          className="block text-[13px] leading-snug"
+                          className={`text-[13px] leading-snug ${isOpen ? "block" : "line-clamp-2"}`}
                           style={{ fontWeight: selected ? 600 : 450 }}
                         >
                           {code.name}
@@ -628,26 +625,21 @@ export function CodebookPanel() {
                       </span>
                     </button>
 
-                    {/* Static count reporting & Edit button */}
-                    <span className="flex shrink-0 items-center gap-1.5 py-2 pr-2">
-                      {code.usage_count > 0 && rollup > code.usage_count ? (
-                        <Tooltip content={`Directly on ${code.usage_count} ${code.usage_count === 1 ? "passage" : "passages"}, ${rollup} including sub-codes`}>
-                          <span
-                            className="font-mono text-[10.5px] tabular-nums"
-                            style={{ color: "var(--ink-4)" }}
-                          >
-                            {code.usage_count} <span className="opacity-60">({rollup})</span>
-                          </span>
-                        </Tooltip>
-                      ) : code.usage_count > 0 ? (
+                    {/* One number per row: passages coded, including sub-codes on
+                        a parent (the open row splits it). The edit button takes
+                        the number's place on hover, so the name keeps the width. */}
+                    <span className="relative flex min-w-[22px] shrink-0 justify-end py-2 pr-2 pl-1">
+                      {rollup > 0 && (
                         <span
-                          className="font-mono text-[10.5px] tabular-nums"
+                          data-testid="code-usage-count"
+                          className="mt-[2px] font-mono text-[10.5px] tabular-nums transition-opacity group-hover:opacity-0 group-has-[:focus-visible]:opacity-0"
                           style={{ color: "var(--ink-4)" }}
                         >
-                          {code.usage_count}
+                          {rollup}
+                          <span className="sr-only">{rollup === 1 ? " passage" : " passages"}</span>
                         </span>
-                      ) : null}
-                      <Tooltip content="Edit, recolour or delete this code">
+                      )}
+                      <Tooltip content="Edit, recolour or delete this code" className="absolute right-1 top-1.5">
                         <button
                           type="button"
                           onClick={() => setEditing(code)}
@@ -664,10 +656,15 @@ export function CodebookPanel() {
                   {isOpen && (
                     <div
                       id={`code-usage-${code.id}`}
-                      className="px-2.5 pb-2"
+                      className="pb-2 pl-1.5 pr-2"
                     >
+                      {rollup > code.usage_count && (
+                        <p className="hint mb-1 px-1.5 text-[11px]">
+                          {code.usage_count} here · {rollup} with sub-codes
+                        </p>
+                      )}
                       {usage.length === 0 ? (
-                        <p className="hint text-[11.5px]">
+                        rollup > 0 ? null : <p className="hint text-[11.5px]">
                           Not applied anywhere yet. Select text in the
                           transcript to code it.
                         </p>
@@ -742,7 +739,7 @@ export function CodebookPanel() {
                                 className="flex w-full gap-2 rounded-[8px] px-1.5 py-1 text-left transition-colors hover:bg-[var(--fill)]"
                               >
                                 <span
-                                  className="shrink-0 font-mono text-[11px] tabular-nums"
+                                  className="w-6 shrink-0 text-right font-mono text-[11px] tabular-nums"
                                   style={{ color: "var(--ink-4)" }}
                                 >
                                   {u.number}

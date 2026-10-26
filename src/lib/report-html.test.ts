@@ -114,6 +114,28 @@ describe("report-html", () => {
     expect(html).toContain("Framework Analysis Matrix (Case × Code)");
   });
 
+  it("counts passages, not coding rows, in frequencies and rollups", () => {
+    const sub: Code = { ...codes[0], id: "c1a", name: "Rehearsal", parent_id: "c1", sort_order: 2 };
+    const html = generateHtmlReport({
+      project,
+      config: getDefaultConfig("framework-analysis"),
+      codes: [...codes, sub],
+      interviews,
+      codedSegments: [
+        ...codedSegments,
+        // Same passage: a second coder, and the parent with its sub-code.
+        { ...codedSegments[0], id: "cs2", coder_name: "Luci Diaz" },
+        { ...codedSegments[0], id: "cs3", code_ids: ["c1", "c1a"] },
+      ],
+      exportedBy: "Ada Lovelace",
+      exportedAt: "2026-08-22T12:00:00Z",
+    });
+    const row = html.slice(html.indexOf("<strong>Unwritten rules</strong>"));
+    const cells = [...row.matchAll(/font-family: var\(--font-mono\);">([^<]+)</g)].slice(0, 2).map((m) => m[1]);
+    expect(cells).toEqual(["1", "1"]);
+    expect(html).toContain("(1 passage)");
+  });
+
   it("discloses unresolved conflict count without including proposal content", () => {
     const html = generateHtmlReport({
       project,

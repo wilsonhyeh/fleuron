@@ -34,6 +34,8 @@ export interface Code {
   is_retired: boolean;
   /** Distinct passages carrying this code, across all interviews and coders. */
   usage_count: number;
+  /** Distinct passages with this code or any live sub-code (from the backend). */
+  rollup_count?: number;
 }
 
 /** Retiring keeps existing coding intact; purging strips the code from it. */

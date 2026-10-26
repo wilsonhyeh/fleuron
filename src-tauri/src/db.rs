@@ -2921,9 +2921,7 @@ pub fn list_activity(conn: &Connection) -> rusqlite::Result<Vec<ActivityLogEntry
 /// Counting in Rust also lets us count *segments* rather than rows, which is
 /// the number a coder means by "this code is on 12 passages" — two coders
 /// tagging the same passage is one passage.
-fn code_usage_counts(conn: &Connection) -> rusqlite::Result<HashMap<String, i32>> {
-    use std::collections::HashSet;
-
+fn code_usage_segments(conn: &Connection) -> rusqlite::Result<HashMap<String, HashSet<String>>> {
     let mut stmt =
         conn.prepare("SELECT segment_id, code_ids FROM coded_segments WHERE deleted = 0")?;
     let rows = stmt.query_map([], |row| {
@@ -2941,14 +2939,27 @@ fn code_usage_counts(conn: &Connection) -> rusqlite::Result<HashMap<String, i32>
         }
     }
 
-    Ok(seen
-        .into_iter()
-        .map(|(code_id, segments)| (code_id, segments.len() as i32))
-        .collect())
+    Ok(seen)
+}
+
+/// Live sub-codes per parent, for rollup counts.
+fn live_children_by_parent(conn: &Connection) -> rusqlite::Result<HashMap<String, Vec<String>>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, parent_id FROM codebook
+         WHERE parent_id IS NOT NULL AND is_retired = 0 AND deleted = 0",
+    )?;
+    let rows = stmt.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?;
+    let mut out: HashMap<String, Vec<String>> = HashMap::new();
+    for row in rows {
+        let (id, parent) = row?;
+        out.entry(parent).or_default().push(id);
+    }
+    Ok(out)
 }
 
 fn read_codes(conn: &Connection, retired: bool) -> rusqlite::Result<Vec<Code>> {
-    let usage = code_usage_counts(conn)?;
+    let usage = code_usage_segments(conn)?;
+    let children = live_children_by_parent(conn)?;
     let mut stmt = conn.prepare(
         "SELECT id, name, definition, inclusion_criteria, exclusion_criteria, example,
                 parent_id, color, sort_order, is_retired
@@ -2956,7 +2967,13 @@ fn read_codes(conn: &Connection, retired: bool) -> rusqlite::Result<Vec<Code>> {
     )?;
     let rows = stmt.query_map(params![retired as i32], |row| {
         let id: String = row.get(0)?;
-        let usage_count = usage.get(&id).copied().unwrap_or(0);
+        let own = usage.get(&id);
+        let usage_count = own.map_or(0, |set| set.len() as i32);
+        let mut rollup: HashSet<&String> = own.into_iter().flatten().collect();
+        for child in children.get(&id).into_iter().flatten() {
+            rollup.extend(usage.get(child).into_iter().flatten());
+        }
+        let rollup_count = rollup.len() as i32;
         Ok(Code {
             id,
             name: row.get(1)?,
@@ -2969,6 +2986,7 @@ fn read_codes(conn: &Connection, retired: bool) -> rusqlite::Result<Vec<Code>> {
             sort_order: row.get(8)?,
             is_retired: row.get::<_, i32>(9)? != 0,
             usage_count,
+            rollup_count,
         })
     })?;
     rows.collect()
@@ -3332,6 +3350,7 @@ fn create_code_in_tx(tx: &Transaction<'_>, input: &CreateCodeInput) -> rusqlite:
         sort_order: max_order + 1,
         is_retired: false,
         usage_count: 0,
+        rollup_count: 0,
     })
 }
 
@@ -4569,6 +4588,7 @@ pub fn ensure_code_and_apply(
                 sort_order: row.get(8)?,
                 is_retired: row.get::<_, i64>(9)? != 0,
                 usage_count: 0,
+                rollup_count: 0,
             })
         })?;
         rows.collect::<rusqlite::Result<Vec<_>>>()?
@@ -8334,6 +8354,44 @@ mod tests {
         let listed = list_codes(&conn).unwrap();
         let found = listed.iter().find(|c| c.id == a.id).unwrap();
         assert_eq!(found.usage_count, 2);
+    }
+
+    #[test]
+    fn rollup_count_counts_each_passage_once_across_sub_codes() {
+        let (_dir, _path, conn) = make_project();
+        let (iv, segs) = seeded_interview(&conn, 3);
+        let parent = make_code(&conn, "Parent");
+        let sub = |name: &str| {
+            create_code(
+                &conn,
+                &CreateCodeInput {
+                    name: name.into(),
+                    definition: None,
+                    inclusion_criteria: None,
+                    exclusion_criteria: None,
+                    example: None,
+                    parent_id: Some(parent.id.clone()),
+                    color: None,
+                },
+            )
+            .unwrap()
+        };
+        let a = sub("A");
+        let b = sub("B");
+
+        // Passage 0: parent and a sub-code. Passage 1: both sub-codes, by two
+        // coders. Passage 2: one sub-code. Three passages, not five.
+        code_with(&conn, &iv.id, &segs[0], &[&parent.id, &a.id], "Alice");
+        code_with(&conn, &iv.id, &segs[1], &[&a.id], "Alice");
+        code_with(&conn, &iv.id, &segs[1], &[&b.id], "Bob");
+        code_with(&conn, &iv.id, &segs[2], &[&b.id], "Alice");
+
+        let listed = list_codes(&conn).unwrap();
+        let get = |id: &str| listed.iter().find(|c| c.id == id).unwrap();
+        assert_eq!(get(&parent.id).usage_count, 1);
+        assert_eq!(get(&parent.id).rollup_count, 3);
+        assert_eq!(get(&a.id).rollup_count, 2);
+        assert_eq!(get(&b.id).rollup_count, 2);
     }
 
     #[test]

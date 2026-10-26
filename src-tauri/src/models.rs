@@ -25,6 +25,10 @@ pub struct Code {
     /// Distinct passages carrying this code, across every interview and coder.
     /// Counted per segment, not per row, matching `handoff_digest`.
     pub usage_count: i32,
+    /// Distinct passages carrying this code or any of its sub-codes. A passage
+    /// with the parent and a sub-code, or two sub-codes, counts once.
+    #[serde(default)]
+    pub rollup_count: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

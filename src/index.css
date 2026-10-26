@@ -790,6 +790,11 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .code-chip > .code-chip-count {
+    flex-shrink: 0;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
   button.code-chip {
     cursor: pointer;
     transition:

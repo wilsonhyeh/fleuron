@@ -50,6 +50,9 @@ export function generateHtmlReport(options: HtmlReportOptions): string {
   }
 
   const activeCodes = codes.filter((c) => !c.is_retired);
+  // Counts are passages, not coding rows: two coders on one passage, or a
+  // parent and its sub-code on one passage, is one passage.
+  const passageCount = (rows: CodedSegment[]) => new Set(rows.map((cs) => cs.segment_id)).size;
   const retiredCodes = codes.filter((c) => c.is_retired);
 
   const topLevelCodes = activeCodes
@@ -392,7 +395,7 @@ export function generateHtmlReport(options: HtmlReportOptions): string {
       </div>
       <div class="meta-item">
         <div class="label">Coded Passages</div>
-        <div class="value">${activeSegments.length}</div>
+        <div class="value">${passageCount(activeSegments)}</div>
       </div>
       <div class="meta-item">
         <div class="label">Active Codes</div>
@@ -531,8 +534,8 @@ export function generateHtmlReport(options: HtmlReportOptions): string {
       <thead>
         <tr>
           <th>Code Name</th>
-          <th style="text-align: right;">Direct Occurrences</th>
-          <th style="text-align: right;">Rollup (with sub-codes)</th>
+          <th style="text-align: right;">Passages</th>
+          <th style="text-align: right;">With Sub-codes</th>
           <th style="text-align: right;">Participants</th>
         </tr>
       </thead>
@@ -556,8 +559,8 @@ export function generateHtmlReport(options: HtmlReportOptions): string {
                 <strong>${escapeHtml(parent.name)}</strong>
               </span>
             </td>
-            <td style="text-align: right; font-family: var(--font-mono);">${directSegments.length}</td>
-            <td style="text-align: right; font-family: var(--font-mono);">${rollupSegments.length}</td>
+            <td style="text-align: right; font-family: var(--font-mono);">${passageCount(directSegments)}</td>
+            <td style="text-align: right; font-family: var(--font-mono);">${passageCount(rollupSegments)}</td>
             <td style="text-align: right; font-family: var(--font-mono);">${rollupParticipants} / ${activeInterviews.length}</td>
           </tr>
           ${subCodes
@@ -572,7 +575,7 @@ export function generateHtmlReport(options: HtmlReportOptions): string {
                   ${escapeHtml(sub.name)}
                 </span>
               </td>
-              <td style="text-align: right; font-family: var(--font-mono);">${subSegs.length}</td>
+              <td style="text-align: right; font-family: var(--font-mono);">${passageCount(subSegs)}</td>
               <td style="text-align: right; font-family: var(--font-mono); color: var(--ink-3);">—</td>
               <td style="text-align: right; font-family: var(--font-mono);">${subParts} / ${activeInterviews.length}</td>
             </tr>`;
@@ -678,7 +681,7 @@ export function generateHtmlReport(options: HtmlReportOptions): string {
             ${escapeHtml(parent.name)}
           </span>
           <span style="font-size: 12px; color: var(--ink-3); font-weight: normal; margin-left: 8px;">
-            (${extracts.length} ${extracts.length === 1 ? "passage" : "passages"})
+            (${passageCount(extracts)} ${passageCount(extracts) === 1 ? "passage" : "passages"})
           </span>
         </h3>
 

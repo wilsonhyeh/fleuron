@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { useShallow } from "zustand/react/shallow";
 import { useProjectStore } from "../store/project-store";
 import { shortcut } from "../lib/platform";
+import { rollupCount } from "../lib/code-search";
 import { Icon } from "./ui/Icon";
 import { Tooltip } from "./ui/Tooltip";
 import { useMenuKeys } from "./ui/Menu";
@@ -60,11 +61,12 @@ export function FilterButton() {
     return [...set];
   }, [segments]);
 
-  // Filterable codes: usage_count > 0, sorted by usage descending
+  // Filterable codes: used directly or through a sub-code, most used first.
+  // A parent with only coded sub-codes must still be offered.
   const filterableCodes = useMemo(() => {
     return codes
-      .filter((c) => c.usage_count > 0)
-      .sort((a, b) => b.usage_count - a.usage_count);
+      .filter((c) => rollupCount(c) > 0)
+      .sort((a, b) => rollupCount(b) - rollupCount(a));
   }, [codes]);
 
   const displayedCodes = useMemo(() => {
@@ -338,7 +340,7 @@ export function FilterButton() {
                         {code.name}
                       </span>
                       <span className="font-mono text-[10.5px] opacity-60 tabular-nums shrink-0">
-                        {code.usage_count}
+                        {rollupCount(code)}
                       </span>
                     </button>
                   );

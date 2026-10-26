@@ -19,6 +19,7 @@ import { debounce } from "../lib/debounce";
 import { nextCodeColor } from "../lib/code-colors";
 import { computeInterviewCodedCount } from "../lib/store-helpers";
 import { CODE_PALETTE } from "../lib/code-colors";
+import { compareCodeNames } from "../lib/code-search";
 import { useAppStore } from "./app-store";
 import type { ExportConfig } from "../lib/export-config";
 import { generateHtmlReport } from "../lib/report-html";
@@ -1740,7 +1741,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   addCode: async (name, color, definition) => {
     const created = await api.createCode({ name, color, definition });
     const codes = [...get().codes.filter((code) => code.id !== created.id), created].sort(
-      (left, right) => left.sort_order - right.sort_order || left.name.localeCompare(right.name),
+      (left, right) => left.sort_order - right.sort_order || compareCodeNames(left, right),
     );
     set({ codes });
     return created;
@@ -1776,7 +1777,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         result.code,
       ].sort(
         (left, right) =>
-          left.sort_order - right.sort_order || left.name.localeCompare(right.name),
+          left.sort_order - right.sort_order || compareCodeNames(left, right),
       );
       set({ codes, recentCodeIds: pushRecentCode(get().recentCodeIds, result.code.id) });
       reconcileCodingTarget(

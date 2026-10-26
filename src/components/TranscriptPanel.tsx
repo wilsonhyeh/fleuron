@@ -13,6 +13,8 @@ import { InterviewSettingsModal } from "./InterviewSettingsModal";
 import { ManageSpeakersModal } from "./ManageSpeakersModal";
 import { TranscriptLinkPanel } from "./TranscriptLinkPanel";
 import { api } from "../lib/api";
+import { codeWithSubCodes } from "../lib/code-search";
+import { groupPassageChips, nextCoding } from "../lib/passage-chips";
 import {
   highlightRuns,
   selectionOffsets,
@@ -428,8 +430,13 @@ export function TranscriptPanel() {
 
   const search = transcriptSearch.trim();
   const visibleSegments = useMemo(() => {
+    // A filter on a parent also matches its sub-codes: a sub-code never
+    // requires the parent on the passage.
+    const filterSets = codeFilterIds.map((id) => codeWithSubCodes(id, codes));
+    const matches = (turnCodes: Set<string>, ids: Set<string>) =>
+      [...ids].some((id) => turnCodes.has(id));
     return segments.filter((seg) => {
-      if (codeFilterIds.length > 0) {
+      if (filterSets.length > 0) {
         const here = codedBySegment.get(seg.id) ?? [];
         const turnCodes = new Set<string>();
         for (const c of here) {
@@ -438,9 +445,9 @@ export function TranscriptPanel() {
           }
         }
         if (filterMatchMode === "all") {
-          if (!codeFilterIds.every((id) => turnCodes.has(id))) return false;
+          if (!filterSets.every((ids) => matches(turnCodes, ids))) return false;
         } else {
-          if (!codeFilterIds.some((id) => turnCodes.has(id))) return false;
+          if (!filterSets.some((ids) => matches(turnCodes, ids))) return false;
         }
       }
       if (speakerFilter) {
@@ -448,7 +455,7 @@ export function TranscriptPanel() {
       }
       return true;
     });
-  }, [segments, codeFilterIds, filterMatchMode, speakerFilter, codedBySegment]);
+  }, [segments, codes, codeFilterIds, filterMatchMode, speakerFilter, codedBySegment]);
 
   const allMatches = useMemo(() => {
     const q = search;
@@ -644,6 +651,10 @@ export function TranscriptPanel() {
     anchorRef.current = null;
     window.getSelection()?.removeAllRanges();
   };
+
+  // Which span a passage chip opened last, so the next click on the same chip
+  // opens the following span.
+  const lastChipCodingRef = useRef<{ chipKey: string; codingId: string } | null>(null);
 
   const selectCoding = useCallback(
     (coding: CodedSegment, codeId?: string) => {
@@ -1386,79 +1397,87 @@ export function TranscriptPanel() {
                         isReviewed={isReviewed}
                       />
 
-                      {/* Coding Pills Footer */}
+                      {/* Code chips: one per code per coder. A code on two
+                          spans of this passage is one chip with a count, and
+                          clicking it steps through the spans. */}
                       {segCodings.length > 0 && (
-                        <div className="mt-2.5 flex min-w-0 flex-wrap items-center gap-1.5 pl-8 pt-1">
-                          {segCodings.map((coding) => {
-                            const theirs = coding.coder_name !== activeCoder;
-                            const codingCodes = coding.code_ids
-                              .map((id) => codesById.get(id))
-                              .filter((c): c is Code => Boolean(c));
-                            return (
-                              <span
-                                key={coding.id}
-                                className="inline-flex min-w-0 items-center gap-1"
-                              >
-                                {codingCodes.map((code) => {
-                                  return (
-                                    <button
-                                      key={code.id}
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (e.altKey) {
-                                          setCodeFilters([code.id]);
-                                        } else {
-                                          selectCoding(coding, code.id);
-                                        }
-                                      }}
-                                      onContextMenu={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        openContextMenu(e, [
-                                          {
-                                            label: `Show only passages coded “${code.name}”`,
-                                            icon: "filter",
-                                            onSelect: () => setCodeFilters([code.id]),
-                                          },
-                                          {
-                                            label: "Edit coding",
-                                            icon: "edit",
-                                            onSelect: () => selectCoding(coding, code.id),
-                                          },
-                                        ]);
-                                      }}
-                                      onPointerEnter={() => setHoveredPillCodeId(code.id)}
-                                      onPointerLeave={() => setHoveredPillCodeId(null)}
-                                      title={
-                                        theirs
-                                          ? `${coding.coder_name} coded this — Edit coding — “${code.name}” on passage ${seg.segment_index + 1}. Right-click to filter by this code.`
-                                          : `Edit coding — “${code.name}” on passage ${seg.segment_index + 1}. Right-click to filter by this code.`
-                                      }
-                                      className="code-chip"
-                                      data-active={hoveredPillCodeId === code.id || undefined}
-                                      style={{ "--code": code.color } as React.CSSProperties}
-                                    >
-                                      <span className="code-chip-name">{code.name}</span>
-                                    </button>
+                        <div className="mt-2.5 flex min-w-0 flex-col gap-1.5 pl-8 pt-1">
+                          {groupPassageChips(segCodings, activeCoder, codesById).map((group) => (
+                            // Another coder's chips get their own line, the
+                            // name in front, so a wrapped chip stays under
+                            // that name instead of reading as yours.
+                            <div key={group.coder} className="flex min-w-0 items-start gap-2">
+                              {group.theirs && (
+                                <span
+                                  className="shrink-0 whitespace-nowrap pt-[3px] text-[11px]"
+                                  style={{ color: "var(--ink-3)" }}
+                                >
+                                  {group.coder}
+                                </span>
+                              )}
+                              <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+                              {group.chips.map(({ code, codings }) => {
+                                const chipKey = `${seg.id}|${group.coder}|${code.id}`;
+                                const openNext = () => {
+                                  const last = lastChipCodingRef.current;
+                                  const next = nextCoding(
+                                    codings,
+                                    last?.chipKey === chipKey ? last.codingId : null,
                                   );
-                                })}
-                                {/* No per-pill funnel: one on every coding
-                                    repeated the same icon down the page.
-                                    Filtering by a code is right-click on the
-                                    pill or the highlight, ⌥-click, or the
-                                    Filter menu. */}
-                                {theirs && (
-                                  <span
-                                    className="text-[11px] truncate"
-                                    style={{ color: "var(--ink-3)" }}
+                                  lastChipCodingRef.current = { chipKey, codingId: next.id };
+                                  selectCoding(next, code.id);
+                                };
+                                const where =
+                                  codings.length > 1
+                                    ? `on ${codings.length} spans of passage ${seg.segment_index + 1}; click to step through them`
+                                    : `on passage ${seg.segment_index + 1}`;
+                                return (
+                                  <button
+                                    key={code.id}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (e.altKey) {
+                                        setCodeFilters([code.id]);
+                                      } else {
+                                        openNext();
+                                      }
+                                    }}
+                                    onContextMenu={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      openContextMenu(e, [
+                                        {
+                                          label: `Show only passages coded “${code.name}”`,
+                                          icon: "filter",
+                                          onSelect: () => setCodeFilters([code.id]),
+                                        },
+                                        {
+                                          label: "Edit coding",
+                                          icon: "edit",
+                                          onSelect: openNext,
+                                        },
+                                      ]);
+                                    }}
+                                    onPointerEnter={() => setHoveredPillCodeId(code.id)}
+                                    onPointerLeave={() => setHoveredPillCodeId(null)}
+                                    title={`${group.theirs ? `${group.coder} coded this. ` : ""}“${code.name}” ${where}. Right-click to filter by this code.`}
+                                    className="code-chip"
+                                    data-active={hoveredPillCodeId === code.id || undefined}
+                                    style={{ "--code": code.color } as React.CSSProperties}
                                   >
-                                    {coding.coder_name}
-                                  </span>
-                                )}
+                                    <span className="code-chip-name">{code.name}</span>
+                                    {codings.length > 1 && (
+                                      <span className="code-chip-count" aria-label={`${codings.length} spans`}>
+                                        ×{codings.length}
+                                      </span>
+                                    )}
+                                  </button>
+                                );
+                              })}
                               </span>
-                            );
-                          })}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </article>
@@ -1853,8 +1872,9 @@ const PassageText = memo(function PassageText({
           const hasActiveHover = activeHoverId !== null;
           const isStripeOrPillHighlighted =
             hasActiveHover && run.codes.some((c) => c.id === activeHoverId);
-          const isFilterHighlighted =
-            Boolean(codeFilter) && run.codes.some((c) => c.id === codeFilter);
+          // A parent filter tints its sub-codes' text too.
+          const matchesFilter = (c: Code) => c.id === codeFilter || c.parent_id === codeFilter;
+          const isFilterHighlighted = Boolean(codeFilter) && run.codes.some(matchesFilter);
           const isFlashed = Boolean(
             flashCodeId && run.codes.some((c) => c.id === flashCodeId),
           );
@@ -1869,7 +1889,7 @@ const PassageText = memo(function PassageText({
               bg = `${matchedCode.color}${dark ? "40" : "2e"}`;
             }
           } else if (isFilterHighlighted) {
-            const matchedCode = run.codes.find((c) => c.id === codeFilter);
+            const matchedCode = run.codes.find(matchesFilter);
             if (matchedCode) {
               bg = `${matchedCode.color}${dark ? "40" : "2e"}`;
             }

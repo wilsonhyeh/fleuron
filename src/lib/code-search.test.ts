@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codeMatchesQuery } from "./code-search";
+import { codeMatchesQuery, codeWithSubCodes, compareCodeNames } from "./code-search";
 import type { Code } from "./types";
 
 function code(overrides: Partial<Code> = {}): Code {
@@ -49,5 +49,26 @@ describe("codeMatchesQuery", () => {
     });
     expect(codeMatchesQuery(bare, "trust")).toBe(true);
     expect(codeMatchesQuery(bare, "notes")).toBe(false);
+  });
+});
+
+describe("compareCodeNames", () => {
+  it("orders numbered names numerically, ignoring case", () => {
+    const names = ["Concept 10", "concept 2", "Concept 1", "Barrier", "Concept 11"];
+    const sorted = names.map((name) => code({ name })).sort(compareCodeNames).map((c) => c.name);
+    expect(sorted).toEqual(["Barrier", "Concept 1", "concept 2", "Concept 10", "Concept 11"]);
+  });
+});
+
+describe("codeWithSubCodes", () => {
+  it("includes live sub-codes and skips retired ones", () => {
+    const codes = [
+      code({ id: "p" }),
+      code({ id: "a", parent_id: "p" }),
+      code({ id: "b", parent_id: "p", is_retired: true }),
+      code({ id: "x" }),
+    ];
+    expect([...codeWithSubCodes("p", codes)].sort()).toEqual(["a", "p"]);
+    expect([...codeWithSubCodes("a", codes)]).toEqual(["a"]);
   });
 });
