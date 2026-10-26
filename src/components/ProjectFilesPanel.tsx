@@ -5,6 +5,7 @@ import { openPath } from "@tauri-apps/plugin-opener";
 import { api } from "../lib/api";
 import type { ProjectFileEntry } from "../lib/types";
 import { fileManagerName } from "../lib/platform";
+import { friendlyLocation } from "../lib/format";
 import { useProjectStore } from "../store/project-store";
 import { SideSheet } from "./ui/Surfaces";
 import { Icon } from "./ui/Icon";
@@ -108,8 +109,12 @@ export function ProjectFilesPanel() {
     <SideSheet
       open={showProjectFiles}
       onClose={() => setShowProjectFiles(false)}
-      title="Project files"
-      subtitle="Exported CSV, HTML reports, and matrix"
+      title="Study files"
+      subtitle={
+        project
+          ? `Saved in ${friendlyLocation(project.path).join(" › ")}. Exports are below.`
+          : "Exported CSV, HTML reports, and matrix"
+      }
       width="max-w-2xl"
       actions={
         <>
@@ -126,8 +131,9 @@ export function ProjectFilesPanel() {
             type="button"
             onClick={() => handleRevealExports()}
             className="btn btn-ghost btn-sm"
+            title={`Open the exports folder in ${fileManagerName}`}
           >
-            {fileManagerName}
+            Show in {fileManagerName}
           </button>
         </>
       }

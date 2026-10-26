@@ -31,3 +31,16 @@ export function basename(path: string): string {
   const parts = path.split(/[/\\]/).filter(Boolean);
   return parts[parts.length - 1] || path;
 }
+
+/**
+ * A study folder's location in words a researcher reads at a glance: the
+ * user's home folder becomes "Home", and the parts are separate so the UI can
+ * lay them out as a trail ("Home › Fleuron › Study.fleuron"). Paths outside a
+ * home folder keep every part.
+ */
+export function friendlyLocation(path: string): string[] {
+  const home = /^(\/Users\/(?!Shared(?:[/]|$))[^/]+|\/home\/[^/]+|[A-Za-z]:\\Users\\[^\\]+)(?=[/\\]|$)/.exec(path);
+  const rest = home ? path.slice(home[0].length) : path;
+  const parts = rest.split(/[/\\]/).filter(Boolean);
+  return home ? ["Home", ...parts] : parts;
+}

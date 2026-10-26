@@ -1,15 +1,17 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Icon } from "./ui/Icon";
 import { hasModKey, isMac, shortcut } from "../lib/platform";
 import { useProjectStore } from "../store/project-store";
 import { useNoteDraftStore } from "../store/note-draft-store";
 import { useSaveIndicator, useSaveStore } from "../store/save-store";
+import { StudyLocationPopover } from "./StudyLocationPopover";
 
 /**
  * Toolbar save indicator, and the webview half of ⌘S.
  *
  * Quiet when everything is saved — a muted check, no chip — because that is
- * the state the app is in almost all the time. It only becomes a button when
+ * the state the app is in almost all the time. Clicking it says where the
+ * work is saved (StudyLocationPopover). It only becomes a button when
  * there is something to do: unsaved notes (click saves them, or opens Unsaved
  * notes when they are drafts left from an earlier session) or a note that
  * could not be saved (click opens Unsaved notes to compare or retry).
@@ -23,6 +25,9 @@ export function SaveStatus() {
   const indicator = useSaveIndicator();
   const saveAll = useSaveStore((s) => s.saveAll);
   const setShowRecoveryPanel = useProjectStore((s) => s.setShowRecoveryPanel);
+  const projectPath = useProjectStore((s) => s.project?.path);
+  const [showLocation, setShowLocation] = useState(false);
+  const closeLocation = useCallback(() => setShowLocation(false), []);
   const showRecoveryPanel = useProjectStore((s) => s.showRecoveryPanel);
   const refreshRecovered = useSaveStore((s) => s.refreshRecovered);
   const epoch = useNoteDraftStore((s) => s.workspace?.epoch);
@@ -49,24 +54,25 @@ export function SaveStatus() {
 
   const key = shortcut("mod", "S");
 
-  if (indicator.kind === "saved") {
+  if (indicator.kind === "saved" || indicator.kind === "saving") {
+    const saved = indicator.kind === "saved";
     return (
-      <span
-        role="status"
-        className="inline-flex items-center gap-1 px-1 text-[11.5px] text-[var(--ink-3)]"
-        title="Everything is saved to the study file. Coding saves as you go."
-      >
-        <Icon name="check" size={12} />
-        Saved
-      </span>
-    );
-  }
-
-  if (indicator.kind === "saving") {
-    return (
-      <span role="status" className="inline-flex items-center gap-1 px-1 text-[11.5px] text-[var(--ink-3)]">
-        <Icon name="clock" size={12} />
-        Saving…
+      <span className="relative inline-flex" data-tauri-drag-region="false">
+        <button
+          type="button"
+          onClick={() => setShowLocation((open) => !open)}
+          aria-expanded={showLocation}
+          aria-haspopup="dialog"
+          aria-label={saved ? "Saved" : "Saving…"}
+          className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11.5px] text-[var(--ink-3)] transition-colors hover:bg-[var(--fill)] hover:text-[var(--ink)]"
+          title={saved ? "Everything is saved. Click to see where." : "Saving. Click to see where."}
+        >
+          <Icon name={saved ? "check" : "clock"} size={12} />
+          <span role="status">{saved ? "Saved" : "Saving…"}</span>
+        </button>
+        {showLocation && projectPath ? (
+          <StudyLocationPopover path={projectPath} onClose={closeLocation} />
+        ) : null}
       </span>
     );
   }
@@ -92,9 +98,10 @@ export function SaveStatus() {
   }
 
   return (
+    // Not role="alert": the editor holding the failed note already announces
+    // it, and a second live region would read every failure out twice.
     <button
       type="button"
-      role="alert"
       className="chip chip-warn"
       onClick={() => setShowRecoveryPanel(true)}
       title={`${indicator.message} Click to review.`}

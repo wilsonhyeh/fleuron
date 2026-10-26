@@ -68,7 +68,9 @@ async function waitForBackedUp(page: import("@playwright/test").Page) {
 }
 
 async function waitForAutosaved(page: import("@playwright/test").Page) {
-  await expect(page.getByRole("status").filter({ hasText: /^Saved$/ })).toBeVisible({ timeout: 15_000 });
+  // The card's own status; the toolbar says "Saved" too.
+  const card = page.locator(".note-card", { has: page.getByRole("textbox", { name: "Note content" }) });
+  await expect(card.getByRole("status").filter({ hasText: /^Saved$/ })).toBeVisible({ timeout: 15_000 });
 }
 
 test.describe("one inline editor", () => {
@@ -202,7 +204,7 @@ test.describe("one inline editor", () => {
     await expect(box).toBeVisible();
     // Nothing unsaved left to discard, and the toolbar agrees.
     await expect(page.getByRole("button", { name: "Discard" })).toHaveCount(0);
-    await expect(page.getByRole("status").filter({ hasText: "Saved" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Saved$/ })).toBeVisible();
   });
 
   test("Mod+Enter saves and closes from the keyboard", async ({ page }) => {
