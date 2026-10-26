@@ -21,6 +21,8 @@ export type IconName =
   | "code"
   | "dots"
   | "edit"
+  | "expand"
+  | "collapse"
   | "export"
   | "eye"
   | "filter"
@@ -30,6 +32,7 @@ export type IconName =
   | "import"
   | "layers"
   | "minus"
+  | "network"
   | "note"
   | "people"
   | "plus"
@@ -54,6 +57,8 @@ const PATHS: Record<IconName, string> = {
   close: "M6 6l12 12M18 6 6 18",
   code: "M8.5 4.8 4 12l4.5 7.2M15.5 4.8 20 12l-4.5 7.2",
   dots: "M6 12h.01M12 12h.01M18 12h.01",
+  expand: "M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5",
+  collapse: "M20 4l-6 6m0-5v5h5M4 20l6-6m0 5v-5H5",
   edit: "M17 3.5a2.1 2.1 0 0 1 3 3L8.5 18 4 19.5 5.5 15 17 3.5Z",
   export: "M12 15.5V3.5m0 0L7.8 7.8M12 3.5l4.2 4.3M4 15v3.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V15",
   eye: "M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Zm12 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z",
@@ -67,6 +72,8 @@ const PATHS: Record<IconName, string> = {
   people: "M15.5 20v-1.6a3.4 3.4 0 0 0-3.4-3.4H6.4A3.4 3.4 0 0 0 3 18.4V20M12.2 7.9a3.2 3.2 0 1 1-6.4 0 3.2 3.2 0 0 1 6.4 0ZM21 20v-1.6a3.4 3.4 0 0 0-2.6-3.3M15.6 4.7a3.2 3.2 0 0 1 0 6.2",
   plus: "M12 5.5v13M5.5 12h13",
   minus: "M5.5 12h13",
+  network:
+    "M3.5 6a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0ZM15.5 8a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0ZM8.5 18a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0ZM8.5 6.4l7 1.2M7 8.3l3.2 7.5M16.9 10.2l-4.4 5.7",
   refresh: "M20 11.5a8 8 0 1 0-.6 4M20 5.5V12h-6",
   search: "m20 20-3.6-3.6M18.5 11a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z",
   settings:

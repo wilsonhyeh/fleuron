@@ -149,6 +149,7 @@
   --g3: #ffffff; /* sheets, popovers, modals */
   --reading-bg: #ffffff; /* transcript page — opaque paper, never a wash */
   --note-bg: #ffffff; /* passage notes & codebook previews — solid card */
+  --map-ground: #fcfaf5; /* relationship map canvas: opaque, so label halos read */
   --g-hairline: rgba(40, 36, 28, 0.14);
   --g-rim: rgba(40, 36, 28, 0.15);
 
@@ -240,6 +241,7 @@
     --g3: rgba(38, 38, 46, 0.74);
     --reading-bg: rgba(255, 255, 255, 0.08);
     --note-bg: #1c1c1f;
+    --map-ground: #18181a; /* relationship map canvas: opaque, so label halos read */
     --g-hairline: rgba(255, 255, 255, 0.12);
     --g-rim: rgba(0, 0, 0, 0.4);
 
@@ -316,6 +318,7 @@
     --g3: rgba(38, 38, 46, 0.74);
     --reading-bg: rgba(255, 255, 255, 0.08);
     --note-bg: #1c1c1f;
+    --map-ground: #18181a; /* relationship map canvas: opaque, so label halos read */
     --g-hairline: rgba(255, 255, 255, 0.12);
     --g-rim: rgba(0, 0, 0, 0.4);
 
@@ -957,4 +960,33 @@ html[data-no-transitions] *::after {
 .wordmark {
   font-weight: 600;
   letter-spacing: -0.022em;
+}
+
+/* Relationship map: a ring that swells out of a code when coding changes it. */
+.map-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: map-pulse 1.7s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  pointer-events: none;
+}
+@keyframes map-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  to {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+.map-label {
+  paint-order: stroke;
+  stroke: var(--map-ground);
+  stroke-linejoin: round;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-pulse {
+    animation: none;
+    opacity: 0;
+  }
 }

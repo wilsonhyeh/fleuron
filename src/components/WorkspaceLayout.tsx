@@ -16,6 +16,8 @@ import { CloseProjectModal } from "./CloseProjectModal";
 import { ResetWorkspaceModal } from "./ResetWorkspaceModal";
 import { ExportDialog } from "./ExportDialog";
 import { ContextMenuHost } from "./ui/ContextMenu";
+import { RelationshipMap } from "./RelationshipMap";
+import { useMapStore } from "../store/map-store";
 
 const DEFAULT_CODEBOOK = 248;
 const MIN_PANEL = 190;
@@ -38,6 +40,22 @@ const TRANSCRIPT_MIN = 512;
 /** Width of the slim expand rail shown while the codebook is collapsed. */
 const COLLAPSED_RAIL = 24;
 
+/** The docked relationship map takes this share of the workspace, clamped. */
+const MAP_SHARE = 0.42;
+const MAP_MIN = 320;
+const MAP_MAX = 720;
+
+/**
+ * Width of the docked map beside the transcript. It yields to the
+ * transcript's reading floor first, but never below MAP_MIN: at that point
+ * the map is still legible and Fill the window is one click away.
+ */
+export function mapWidth(gridWidth: number, leftRail: number): number {
+  const want = Math.min(MAP_MAX, Math.max(MAP_MIN, Math.round(gridWidth * MAP_SHARE)));
+  const room = gridWidth - leftRail - TRANSCRIPT_MIN;
+  return Math.max(MAP_MIN, Math.min(want, room));
+}
+
 /**
  * Grid columns for the workspace rails (T04).
  *
@@ -51,11 +69,14 @@ const COLLAPSED_RAIL = 24;
 export function workspaceColumns(opts: {
   collapsed: boolean;
   codebook: number;
+  /** Width of the docked relationship map, when it is showing. */
+  map?: number;
 }): string {
+  const map = opts.map ? ` ${opts.map}px` : "";
   if (opts.collapsed) {
-    return `${COLLAPSED_RAIL}px minmax(0, 1fr)`;
+    return `${COLLAPSED_RAIL}px minmax(0, 1fr)${map}`;
   }
-  return `${opts.codebook}px ${RESIZER}px minmax(0, 1fr)`;
+  return `${opts.codebook}px ${RESIZER}px minmax(0, 1fr)${map}`;
 }
 
 /**
@@ -140,6 +161,10 @@ export function WorkspaceLayout() {
     panelWidths?.memos ?? 0,
     gridWidth,
   );
+  const mapOpen = useMapStore((s) => s.open);
+  const mapExpanded = useMapStore((s) => s.expanded);
+  const leftRail = codebookCollapsed ? COLLAPSED_RAIL : rails.codebook + RESIZER;
+  const dockedMap = mapOpen && !mapExpanded ? mapWidth(gridWidth, leftRail) : 0;
   const dragging = useRef<"codebook" | null>(null);
   const gridWidthRef = useRef(gridWidth);
   gridWidthRef.current = gridWidth;
@@ -189,6 +214,30 @@ export function WorkspaceLayout() {
     };
   }, [onMouseMove, onMouseUp]);
 
+  // Relationship map: Cmd/Ctrl+Shift+M opens and closes it from anywhere in
+  // the workspace except a text field or a dialog.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!hasModKey(e) || !e.shiftKey || e.altKey) return;
+      if (e.key !== "m" && e.key !== "M") return;
+      if (document.querySelector('[role="dialog"]')) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      useMapStore.getState().toggle();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // Codebook collapse toggle (T04): Cmd/Ctrl+B, never while typing or in a
   // dialog. The stored width is untouched while collapsed, so expanding
   // restores exactly what was there.
@@ -230,6 +279,7 @@ export function WorkspaceLayout() {
             gridTemplateColumns: workspaceColumns({
               collapsed: codebookCollapsed,
               codebook: rails.codebook,
+              map: dockedMap,
             }),
             gridTemplateRows: "minmax(0, 1fr)",
             // Published so NextStepCoach can sit over the transcript column
@@ -237,7 +287,7 @@ export function WorkspaceLayout() {
             "--rail-l": codebookCollapsed
               ? `${COLLAPSED_RAIL}px`
               : `${rails.codebook + RESIZER}px`,
-            "--rail-r": "0px",
+            "--rail-r": `${dockedMap}px`,
           } as React.CSSProperties
         }
       >
@@ -285,7 +335,17 @@ export function WorkspaceLayout() {
           </>
         )}
         <TranscriptPanel />
-        <NextStepCoach />
+        {mapOpen && !mapExpanded && <RelationshipMap />}
+        {!(mapOpen && mapExpanded) && <NextStepCoach />}
+        {/* Filled, the map covers the rails rather than replacing them, so
+            Esc puts the transcript back exactly as it was. z-20, under the
+            toolbar's z-30: at an equal z the later overlay wins and buries
+            the toolbar's menus. */}
+        {mapOpen && mapExpanded && (
+          <div className="absolute inset-0 z-20">
+            <RelationshipMap />
+          </div>
+        )}
       </div>
 
       {/* No footer hint bar. It spent 28 permanent pixels repeating five

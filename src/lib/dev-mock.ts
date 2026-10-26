@@ -502,6 +502,148 @@ function generateStressFixture() {
   };
 }
 
+function isMapFixture(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    (window.location.search.includes("fixture=map") ||
+      window.location.hash.includes("fixture=map"))
+  );
+}
+
+/**
+ * Dev-only fixture for the relationship map: four synthetic interviews from
+ * the same invented garden study as the standard fixture, coded densely
+ * enough that the map has structure to show. Written for this harness — no
+ * real study data. Seeded, so screenshots are repeatable.
+ */
+function generateMapFixture() {
+  let seed = 7;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  const pick = <T,>(list: T[]) => list[Math.floor(rand() * list.length)];
+
+  const mk = (id: string, name: string, color: string, parent: string | null, order: number, definition: string | null = null): Code => ({
+    id,
+    name,
+    definition,
+    inclusion_criteria: null,
+    exclusion_criteria: null,
+    example: null,
+    parent_id: parent,
+    color,
+    sort_order: order,
+    is_retired: false,
+    usage_count: 0,
+  });
+  const mapCodes: Code[] = [
+    mk("t1", "Unwritten rules", "#3578b8", null, 0, "Norms that govern the site but exist nowhere in writing."),
+    mk("t1a", "The real list", "#3578b8", "t1", 1),
+    mk("t1b", "Kettle-time decisions", "#3578b8", "t1", 2),
+    mk("t1c", "Water by favour", "#3578b8", "t1", 3),
+    mk("t2", "Threshold of belonging", "#9260b0", null, 4, "Informal admission granted by existing members, separate from formal membership."),
+    mk("t2a", "Being adopted", "#9260b0", "t2", 5),
+    mk("t2b", "The offered mug", "#9260b0", "t2", 6),
+    mk("t2c", "Never let in", "#9260b0", "t2", 7),
+    mk("t3", "Learning by transgression", "#c34f4d", null, 8, "Discovering a rule by breaking it and being corrected."),
+    mk("t3a", "Corrected in public", "#c34f4d", "t3", 9),
+    mk("t3b", "Quiet withdrawal", "#c34f4d", "t3", 10),
+    mk("t4", "Formal structures", "#448247", null, 11, "The constitution, committee and waiting list as written."),
+    mk("t4a", "Waiting list", "#448247", "t4", 12),
+    mk("t4b", "Committee on paper", "#448247", "t4", 13),
+    mk("t5", "Reciprocity", "#c07a1e", null, 14, "Help given and owed between plot holders."),
+    mk("t6", "Seasonal rhythm", "#2f8f8a", null, 15),
+    mk("t7", "Newcomer confusion", "#b0507e", null, 16),
+    mk("t8", "Leaving the garden", "#6d6f78", null, 17),
+  ];
+  // Codes that tend to travel together, so the network has real clusters.
+  const clusters = [
+    ["t1", "t1a", "t1b", "t4b", "t5"],
+    ["t2", "t2a", "t2b", "t5", "t1"],
+    ["t3", "t3a", "t3b", "t7", "t1"],
+    ["t4", "t4a", "t4b", "t7", "t2c"],
+    ["t1c", "t5", "t6", "t1"],
+    ["t2c", "t8", "t3b", "t7"],
+  ];
+
+  const pool = [
+    ...TRANSCRIPT.filter(([sp]) => sp !== "Interviewer").map(([, t]) => t),
+    "It starts at nine, though the same four people have been there since eight. There is a list on the shed door, and there is the real list.",
+    "When the water is rationed in July the allocation is supposed to be strictly per plot, and in practice it follows who has helped whom.",
+    "Most of it is settled well before any meeting, in the ten minutes while the kettle boils.",
+    "Somebody adopts you, or nobody does. There is no middle version of it.",
+    "I was told for years that the waiting list was strictly chronological.",
+    "I left my barrow on the main path once. Nobody said anything to me; they said it to each other, loudly.",
+    "After that I came on Tuesdays instead, when it was quieter, and I stopped asking for things.",
+    "In spring everyone is generous. By August it is about who watered whose beans in June.",
+    "The committee minutes say one thing. The people at the shed say another, and the shed wins.",
+    "I still do not know who decides who gets the corner plots.",
+    "I gave my plot up in the end. It was easier than standing outside the circle every Saturday.",
+    "Bring cake to the autumn work day and you are halfway in. Nobody tells you that either.",
+  ];
+  const participants = ["P02-2026-02-19", "P04-2026-03-11", "P07-2026-04-02", "P09-2026-04-23"];
+  const mapInterviews: Interview[] = [];
+  const mapSegments: TranscriptSegment[] = [];
+  const mapCoded: CodedSegment[] = [];
+  participants.forEach((label, ivIdx) => {
+    const ivId = `iv-${ivIdx + 1}`;
+    const count = 26 + ivIdx * 4;
+    mapInterviews.push({
+      id: ivId,
+      participant_label: label,
+      interview_date: label.slice(4),
+      modality: "zoom",
+      diagnosis_notes: null,
+      interviewers: ["Ada Lovelace"],
+      hub_memo: null,
+      audio_path: null,
+      segment_count: count,
+      remote_segment_count: null,
+    });
+    const speaker = label.slice(0, 3);
+    for (let i = 0; i < count; i++) {
+      const interviewer = i % 3 === 0;
+      const segId = `${ivId}-seg-${i}`;
+      const seg: TranscriptSegment = {
+        id: segId,
+        interview_id: ivId,
+        segment_index: i,
+        speaker: interviewer ? "Interviewer" : speaker,
+        timestamp_start: `00:${String(1 + i * 2).padStart(2, "0")}:${String((i * 23) % 60).padStart(2, "0")}.000`,
+        timestamp_end: null,
+        text: interviewer ? "Could you say a little more about that?" : pick(pool),
+        block_id: null,
+        section_tag: null,
+      };
+      mapSegments.push(seg);
+      if (interviewer || rand() < 0.35) continue;
+      // Each interview leans on a couple of clusters, the way a participant
+      // keeps returning to their own preoccupations.
+      const cluster = clusters[(ivIdx + (rand() < 0.6 ? 0 : rand() < 0.5 ? 2 : 4)) % clusters.length];
+      const n = rand() < 0.35 ? 1 : rand() < 0.75 ? 2 : 3;
+      const ids = new Set<string>();
+      while (ids.size < n) ids.add(pick(cluster));
+      if (rand() < 0.12) ids.add(pick(mapCodes).id);
+      mapCoded.push({
+        id: `cs-map-${ivId}-${i}`,
+        interview_id: ivId,
+        segment_id: segId,
+        code_ids: [...ids],
+        coder_name: "Ada Lovelace",
+        memo: null,
+        char_start: null,
+        char_end: null,
+        quote_text: seg.text,
+        block_id: null,
+        timestamp_start: seg.timestamp_start,
+        participant_label: label,
+      });
+    }
+  });
+  return { interviews: mapInterviews, segments: mapSegments, codes: mapCodes, codedSegments: mapCoded };
+}
+
 /**
  * Usage and rollup counts the way `read_codes` computes them in Rust:
  * distinct passages, and for a parent, distinct passages across it and its
@@ -536,7 +678,9 @@ let reviewedSegmentIds = new Set<string>();
 function resetFixture() {
   const f = isStressFixture()
     ? generateStressFixture()
-    : {
+    : isMapFixture()
+      ? generateMapFixture()
+      : {
         interviews: standardInterviews.map((x) => ({ ...x })),
         segments: standardSegments.map((x) => ({ ...x })),
         codes: standardCodes.map((x) => ({ ...x })),
@@ -1207,7 +1351,7 @@ async function handle(cmd: string, args: Record<string, unknown>): Promise<unkno
       return null;
     }
     case "get_segments":
-      return args.interviewId === "iv-1" ? segments.map((s) => ({ ...s })) : [];
+      return segments.filter((s) => s.interview_id === args.interviewId).map((s) => ({ ...s }));
     case "list_segment_reviews":
       return segments
         .filter((s) => reviewedSegmentIds.has(s.id))
@@ -1310,9 +1454,9 @@ async function handle(cmd: string, args: Record<string, unknown>): Promise<unkno
       return null;
     }
     case "list_coded_segments":
-      return args.interviewId && args.interviewId !== "iv-1"
-        ? []
-        : codedSegments.map((c) => ({ ...c, code_ids: [...c.code_ids] }));
+      return codedSegments
+        .filter((c) => !args.interviewId || c.interview_id === args.interviewId)
+        .map((c) => ({ ...c, code_ids: [...c.code_ids] }));
     case "apply_codes": {
       // 🔑 Mirrors the real upsert: one row per (passage, coder, span) — the
       // row key includes the char offsets, NULL-safe. It previously keyed on

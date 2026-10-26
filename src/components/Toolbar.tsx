@@ -12,6 +12,7 @@ import { SaveStatus } from "./SaveStatus";
 import { UpdateAction, describeUpdateAction } from "./UpdateAction";
 import { useSyncStore } from "../store/sync-store";
 import { useUpdateStore } from "../store/update-store";
+import { useMapStore } from "../store/map-store";
 import { useUnfinishedNotesCount } from "./NoteRecoveryPanel";
 import type { PresenceUser } from "../lib/types";
 
@@ -275,6 +276,8 @@ export function Toolbar() {
         {COLLABORATION_ENABLED && <SyncChip />}
         <UpdateAction compact hideWhenIdle />
 
+        <MapButton />
+
         <button
           type="button"
           onClick={() => requestExportProject()}
@@ -381,5 +384,26 @@ export function Toolbar() {
         />
       </div>
     </header>
+  );
+}
+
+/** Opens the live relationship map beside the transcript. */
+function MapButton() {
+  const open = useMapStore((s) => s.open);
+  const toggle = useMapStore((s) => s.toggle);
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-pressed={open}
+      data-testid="map-toggle"
+      className={`btn btn-outline btn-sm ${
+        open ? "border-[var(--accent-line)] bg-[var(--accent-soft)] text-[var(--accent-chip-ink)]" : ""
+      }`}
+      title="See how your codes connect, live (Cmd/Ctrl+Shift+M)"
+    >
+      <Icon name="network" size={13} />
+      Map
+    </button>
   );
 }
