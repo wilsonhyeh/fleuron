@@ -73,3 +73,13 @@ only (`withFamilyColors`, `useDisplayCodes`), so stored colours are never
 rewritten; codebook hide button, page inset and review control polish. New
 `family_colors` preference with a serde default; no schema change, no Supabase
 migration. Gates listed in `RELEASE-SMOKE.md` § 22.
+
+## 2026-10-26 — Fleuron 2.11.0: reading header
+
+Shipped branch `reading-header` (fe4185c): the interview name became one menu
+(`src/components/InterviewMenu.tsx`) holding the interview list, review count
+and interview actions; review progress as a header hairline; search, filter and
+text size (`src/components/TextSizeButton.tsx`) as matching icon buttons;
+toolbar title uncapped and "coding as" shown only with 2+ coders; Structure map
+centre wraps the title (`src/lib/wrap-lines.ts`). Frontend only; no schema
+change, no Supabase migration.

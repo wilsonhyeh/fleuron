@@ -63,6 +63,8 @@ A phrase is underlined in the code's colour; a whole-turn coding tints the turn 
 
 **Colours.** With **Colour codes by family** on (Settings, on by default) each theme gets its own colour and its sub-codes share it. Turn it off to pick colours yourself; colours you picked before come back.
 
+**The reading header.** One row above the transcript. **‹ ›** move between passages; the interview's name opens a menu with the interview list, how many passages you have reviewed, and this interview's actions (edit details, manage speakers, replace the transcript, delete). Then **search** (⌘F / Ctrl+F), **Filter**, and **Aa** for text size. How far you have got through an interview is the thin line along the bottom of the header. The toolbar above shows the study's name in full; **coding as** appears only when there is more than one coder to tell apart.
+
 ### The map
 
 Click **Map** in the toolbar (or **⇧⌘M / Ctrl+Shift+M**) to open a live map of your coding beside the transcript. It changes the moment you apply or remove a code.
@@ -113,12 +115,12 @@ Every codebook field syncs word-for-word: names, definitions, colours, inclusion
 ```
 ┌─────────────┬──────────────────────────┬─────────────┐
 │  Codebook   │   Transcript             │   Note      │
-│  click =    │   search · import        │   (when a   │
+│  click =    │   interview ⌄ ⌕ ⏚ Aa     │   (when a   │
 │  passages   │   drag or click to code  │    note     │
 │  right-click│   bubble names it        │    exists)  │
 │  = apply    │                          │             │
 ├─────────────┴──────────────────────────┴─────────────┤
-│  picker · search · ⋯  (Group & sync, Settings, Export, Help)
+│  study · Map · Export… · ⋯  (Group & sync, Settings, Help)
 └──────────────────────────────────────────────────────┘
 ```
 

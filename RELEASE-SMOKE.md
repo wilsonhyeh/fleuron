@@ -8,7 +8,7 @@ release is not ready.
 > All evidence is redacted and synthetic: no real study data, participant text,
 > or account identifiers may be recorded here or in the release notes.
 
-- **Version:** 2.10.0
+- **Version:** 2.11.0
 - **Commit:** pending tag (see git log at release time)
 - **Platform / build:** macOS arm64 debug bundle (`Fleuron.app`, id `study.fleuron.desktop`); Windows unverified
 - **Date (last run):** 2026-10-26
@@ -162,3 +162,15 @@ release is not ready.
 - [x] Colour codes by family is on by default, themes take palette colours in creation order, sub-codes share their theme's, and turning it off restores stored colours without writing any (`Last verified: 2026-10-26 — code-colors.test.ts withFamilyColors 2/2; models.rs serde default true; harness toggle on/off`)
 - [x] Codebook hide button in the header, even page inset, single review control (`Last verified: 2026-10-26 — harness screenshots light and dark`)
 - [x] Packaged-app selftest passes on the release tree (`Last verified: 2026-10-26 — run-selftest.mjs against a 2.10.0 debug bundle under the test identity study.fleuron.devtest: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)
+
+## 23. Reading header (2.11.0 new)
+
+- [x] The interview name is one menu holding the interview list (several interviews only), the reviewed count with a small bar, and this interview's actions; no native `<select>` and no separate "···" button remain (`Last verified: 2026-10-26 — e2e manage-speakers.spec.ts opens "Current interview" and the actions PASS; note-draft-lifecycle pickInterview helper PASS; harness at 1280 and 1024`)
+- [x] Review progress is a hairline on the header's bottom edge with an accessible "N of M passages reviewed" value; the separate reviewed label is gone (`Last verified: 2026-10-26 — harness: role="progressbar" aria-label "Passages reviewed" reports the study's count; e2e reading-qol PASS`)
+- [x] Search rests as an icon and expands in place on click or Cmd/Ctrl+F; Escape on an empty field blurs; the match count stays in the sticky bar (`Last verified: 2026-10-26 — e2e reading-qol.spec.ts PASS; harness: icon at rest, field expanded while focused, Escape collapsed it`)
+- [x] Filter is an icon button that turns accent and shows a corner count while a filter is on (`Last verified: 2026-10-26 — harness filter on and off at 1280; e2e reading-qol PASS`)
+- [x] Aa opens a text-size popover (− 100% +), reads accent when the size is not 100%, and the zoom shortcuts are unchanged (`Last verified: 2026-10-26 — e2e reading-qol opens "Text size" and restores 100% PASS; harness 90% then 100%`)
+- [x] With the map open at the 1024px minimum window the header fits and no control overlaps or is clipped (`Last verified: 2026-10-26 — harness sweep 1024-1920 with the map open and closed; overlap and clipping script clean`)
+- [x] The toolbar shows the study title in full when there is room, and "coding as" appears only with 2+ coders or a shared group (`Last verified: 2026-10-26 — harness: full title at 1440 and 1024; a one-coder study renders no coder label`)
+- [x] The Structure view's centre wraps the study title onto up to three lines with the full text in an SVG `<title>` (`Last verified: 2026-10-26 — wrap-lines.test.ts 5/5 with neutral fixture titles; harness Structure view at 1440 shows the three-line centre`)
+- [x] Packaged-app selftest passes on the release tree (`Last verified: 2026-10-26 — run-selftest.mjs against a 2.11.0 debug bundle under the test identity study.fleuron.devtest: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)

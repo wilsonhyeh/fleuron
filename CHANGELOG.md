@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0]
+
+### Changed
+
+- **Reading header:** The interview's name is one menu: switch interviews (when there are several), see how many passages you have reviewed, and edit details, manage speakers, replace the transcript or delete the interview. It replaces the dropdown, the separate ··· button and the "reviewed" label. Review progress is a thin line along the bottom of the header. Search, Filter and text size (Aa) are matching icon buttons; search opens in place when clicked or with Cmd/Ctrl+F.
+- **Toolbar:** The study title shows in full when there is room. "Coding as" appears only when a study has more than one coder.
+
+### Fixed
+
+- **Map:** The Structure view wraps the study title in its centre instead of cutting it short.
+- **Narrow transcript:** With the map open, the header's controls no longer run into each other.
+
+---
+
 ## [2.10.0]
 
 ### Added
