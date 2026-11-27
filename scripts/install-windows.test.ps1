@@ -808,7 +808,8 @@ exit 0
                 [string]$ScriptPath,
                 [string[]]$ArgList,
                 [hashtable]$ExtraEnv,
-                [string]$ShellExe
+                [string]$ShellExe,
+                [int]$TimeoutMs = 180000
             )
             if (-not $ShellExe) { $ShellExe = $WinPsExe }
             $envMap = @{
@@ -830,7 +831,7 @@ exit 0
                     $envMap[$k] = $ExtraEnv[$k]
                 }
             }
-            return Invoke-ShellFile -ShellExe $ShellExe -ScriptPath $ScriptPath -ArgList $ArgList -ExtraEnv $envMap -UseExecutionPolicy
+            return Invoke-ShellFile -ShellExe $ShellExe -ScriptPath $ScriptPath -ArgList $ArgList -ExtraEnv $envMap -UseExecutionPolicy -TimeoutMs $TimeoutMs
         }
 
         function Get-MockLogLines {
@@ -1573,21 +1574,32 @@ exit 0
             }
         }
 
-        # M-MOTW-GATE. With the gate removed the marked setup reaches Start-Process,
-        # where ShellExecute asks the user to run a file from the internet - a modal
-        # prompt no CI run can answer - so cap the installer's own setup wait at 3s
-        # (the C16b technique) and expect exit 50 instead of exit 30.
+        # M-MOTW-GATE. With the gate removed the marked setup reaches Start-Process, and
+        # ShellExecute blocks there on an "open this file?" prompt that no CI run can
+        # answer: the installer's own setup timeout never starts, so the harness has to
+        # time the launch out (15s). Proving the mutation changed behaviour means: no
+        # policy stop (30) and no completed install of the marked setup. Then kill the
+        # tree the timeout left behind and clean the work dir ourselves.
         Setup-Case
         $mutPath = Join-Path $script:CaseTemp 'mut_motw.ps1'
         if (-not (New-MutatedScript -Marker 'MOTW-GATE' -ReplacementLine '$null = 0  # MOTW-GATE-MUT' -OutPath $mutPath)) {
             Fail 'M-MOTW-GATE' 'marker # MOTW-GATE not found exactly once'
         } else {
-            $res = Run-Installer -ScriptPath $mutPath -ArgList @() -ExtraEnv @{ MOCK_CURL_MOTW = '1'; FLEURON_INSTALL_TEST_TIMEOUT_SEC = '3' }
-            if ($res.ExitCode -ne 30) {
-                if (Assert-NoLeftovers 'M-MOTW-GATE') { Pass 'M-MOTW-GATE' ("mutating MOTW-GATE skips exit 30 (rc=" + $res.ExitCode + ")") }
-                else { Write-Host ('    M-MOTW-GATE rc=' + $res.ExitCode + ' out=' + $res.Out) }
+            $res = Run-Installer -ScriptPath $mutPath -ArgList @() -ExtraEnv @{ MOCK_CURL_MOTW = '1' } -TimeoutMs 15000
+            $reachedLaunch = ($res.Out -match 'running the verified setup file')
+            $ranMarked = ($res.Out -match 'installed Fleuron')
+            if ($res.ExitCode -ne 30 -and $reachedLaunch -and -not $ranMarked) {
+                Stop-Process -Name 'Fleuron_2.11.0_x64-setup' -Force -ErrorAction SilentlyContinue
+                for ($i = 0; $i -lt 25; $i++) {
+                    Get-ChildItem -LiteralPath $script:CaseTemp -Filter 'fleuron-install.*' -Force -ErrorAction SilentlyContinue |
+                        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+                    $still = @(Get-ChildItem -LiteralPath $script:CaseTemp -Filter 'fleuron-install.*' -Force -ErrorAction SilentlyContinue)
+                    if ($still.Count -eq 0) { break }
+                    Start-Sleep -Milliseconds 200
+                }
+                if (Assert-NoLeftovers 'M-MOTW-GATE') { Pass 'M-MOTW-GATE' ("mutating MOTW-GATE removes the policy stop and leaves the marked setup waiting on the OS prompt (rc=" + $res.ExitCode + ")") }
             } else {
-                Fail 'M-MOTW-GATE' 'mutated script still exited 30'
+                Fail 'M-MOTW-GATE' ("mutated script still exited 30, never reached the launch, or installed the marked setup (rc=" + $res.ExitCode + ")")
             }
         }
 
