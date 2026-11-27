@@ -1573,13 +1573,16 @@ exit 0
             }
         }
 
-        # M-MOTW-GATE
+        # M-MOTW-GATE. With the gate removed the marked setup reaches Start-Process,
+        # where ShellExecute asks the user to run a file from the internet - a modal
+        # prompt no CI run can answer - so cap the installer's own setup wait at 3s
+        # (the C16b technique) and expect exit 50 instead of exit 30.
         Setup-Case
         $mutPath = Join-Path $script:CaseTemp 'mut_motw.ps1'
         if (-not (New-MutatedScript -Marker 'MOTW-GATE' -ReplacementLine '$null = 0  # MOTW-GATE-MUT' -OutPath $mutPath)) {
             Fail 'M-MOTW-GATE' 'marker # MOTW-GATE not found exactly once'
         } else {
-            $res = Run-Installer -ScriptPath $mutPath -ArgList @() -ExtraEnv @{ MOCK_CURL_MOTW = '1' }
+            $res = Run-Installer -ScriptPath $mutPath -ArgList @() -ExtraEnv @{ MOCK_CURL_MOTW = '1'; FLEURON_INSTALL_TEST_TIMEOUT_SEC = '3' }
             if ($res.ExitCode -ne 30) {
                 if (Assert-NoLeftovers 'M-MOTW-GATE') { Pass 'M-MOTW-GATE' ("mutating MOTW-GATE skips exit 30 (rc=" + $res.ExitCode + ")") }
                 else { Write-Host ('    M-MOTW-GATE rc=' + $res.ExitCode + ' out=' + $res.Out) }
