@@ -1058,11 +1058,18 @@ exit 0
         $pfFleuron = Join-Path $script:CasePf 'Fleuron'
         New-Item -ItemType Directory -Path $pfFleuron -Force | Out-Null
         Copy-Item -LiteralPath (Join-Path $MockDir 'app-2.11.0.exe') -Destination (Join-Path $pfFleuron 'Fleuron.exe') -Force
+        $probePath = Join-Path $script:CaseTemp 'probe_pf.ps1'
+        $probeText = @'
+Write-Output ('PF=' + $env:ProgramFiles)
+Write-Output ('EX=' + (Test-Path -LiteralPath (Join-Path $env:ProgramFiles 'Fleuron\Fleuron.exe')))
+'@
+        Write-Utf8NoBom -Path $probePath -Text $probeText
+        $probe = Run-Installer -ScriptPath $probePath -ArgList @()
         $res = Run-Installer -ScriptPath $Rendered -ArgList @()
         if ($res.ExitCode -eq 5) {
             if (Assert-NoLeftovers 'C5b') { Pass 'C5b' 'ProgramFiles Fleuron.exe exits 5' }
         } else {
-            Fail 'C5b' ("rc=" + $res.ExitCode + " out=" + $res.Out)
+            Fail 'C5b' ("rc=" + $res.ExitCode + " probe=" + ($probe.Out -replace '\s+', ' ') + " out=" + $res.Out)
         }
 
         # C6a: junction at case\local\Fleuron -> 5
