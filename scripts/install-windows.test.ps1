@@ -886,14 +886,15 @@ exit 0
 
         function Assert-NoLeftovers {
             param([string]$Id)
-            $leftTmp = @(Get-ChildItem -LiteralPath $script:CaseTemp -Filter 'fleuron-install.*' -Force -ErrorAction SilentlyContinue)
-            if ($leftTmp.Count -gt 0) {
-                Fail ($Id + ' (cleanup)') ("leftover temp dir in case\\temp: " + $leftTmp[0].FullName)
-                return $false
-            }
             $leftProc = @(Get-Process -Name 'Fleuron_2.11.0_x64-setup' -ErrorAction SilentlyContinue)
             if ($leftProc.Count -gt 0) {
-                Fail ($Id + ' (cleanup)') 'leftover Fleuron_2.11.0_x64-setup process'
+                Fail ($Id + ' (cleanup)') ('leftover Fleuron_2.11.0_x64-setup process (pid ' + $leftProc[0].Id + ')')
+                return $false
+            }
+            $leftTmp = @(Get-ChildItem -LiteralPath $script:CaseTemp -Filter 'fleuron-install.*' -Force -ErrorAction SilentlyContinue)
+            if ($leftTmp.Count -gt 0) {
+                $names = @(Get-ChildItem -LiteralPath $leftTmp[0].FullName -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Name })
+                Fail ($Id + ' (cleanup)') ("leftover temp dir in case\\temp: " + $leftTmp[0].FullName + " [" + ($names -join ', ') + "]")
                 return $false
             }
             $fleuronDir = Join-Path $script:CaseLocal 'Fleuron'
@@ -1581,6 +1582,7 @@ exit 0
             $res = Run-Installer -ScriptPath $mutPath -ArgList @() -ExtraEnv @{ MOCK_CURL_MOTW = '1' }
             if ($res.ExitCode -ne 30) {
                 if (Assert-NoLeftovers 'M-MOTW-GATE') { Pass 'M-MOTW-GATE' ("mutating MOTW-GATE skips exit 30 (rc=" + $res.ExitCode + ")") }
+                else { Write-Host ('    M-MOTW-GATE rc=' + $res.ExitCode + ' out=' + $res.Out) }
             } else {
                 Fail 'M-MOTW-GATE' 'mutated script still exited 30'
             }
