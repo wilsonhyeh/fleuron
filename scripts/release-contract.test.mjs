@@ -556,18 +556,33 @@ test("canonical support matrix + filenames appear in candidate summary/report", 
   );
 });
 
-test("current install materials use the package version's asset names", () => {
-  const installing = readFile("docs/INSTALLING.md");
-  assert.ok(installing.includes(CANONICAL_MAC_DMG));
-  assert.ok(installing.includes(CANONICAL_WIN_EXE));
+test("current install materials name assets by the version placeholder", () => {
+  const surfaces = [
+    "docs/INSTALLING.md",
+    "README.md",
+    "docs/IT-DEPLOYMENT.md",
+    "src/content/trust-and-permissions.ts",
+  ];
+  for (const p of surfaces) {
+    const text = readFile(p);
+    assert.ok(
+      text.includes("Fleuron_<version>_universal.dmg") ||
+        text.includes("Fleuron_<version>_x64-setup.exe"),
+      `${p} must name the manual downloads with the <version> placeholder`,
+    );
+    assert.doesNotMatch(
+      text,
+      /Fleuron_\d+\.\d+\.\d+_/,
+      `${p} must not hard-code a release version in an asset name`,
+    );
+  }
   // Install materials must never point a user at a QA runner: running one
   // wipes the default study library without asking.
-  assert.ok(!/qa-runner/.test(installing), "INSTALLING.md must not advertise a QA runner");
+  assert.ok(
+    !/qa-runner/.test(readFile("docs/INSTALLING.md")),
+    "INSTALLING.md must not advertise a QA runner",
+  );
   assert.ok(!/qa-runner/.test(readFile("README.md")), "README.md must not advertise a QA runner");
-
-  const trust = readFile("src/content/trust-and-permissions.ts");
-  assert.ok(trust.includes(CANONICAL_MAC_DMG));
-  assert.ok(trust.includes(CANONICAL_WIN_EXE));
 });
 
 // ----------------------

@@ -41,10 +41,14 @@ export const OFFICIAL_URLS = {
   issues: `${REPO}/issues`,
 } as const;
 
-/** The two manual downloads. Other release assets are updater internals or optional QA runners. */
+/**
+ * The two manual downloads. Other release assets are updater internals or optional QA runners.
+ * `<version>` is the release number shown on the latest Releases page; the names are
+ * version-agnostic on purpose so this copy cannot go stale between releases.
+ */
 export const CANONICAL_ASSETS = {
-  macos: "Fleuron_2.11.2_universal.dmg",
-  windows: "Fleuron_2.11.2_x64-setup.exe",
+  macos: "Fleuron_<version>_universal.dmg",
+  windows: "Fleuron_<version>_x64-setup.exe",
 } as const;
 
 /**
@@ -54,7 +58,7 @@ export const CANONICAL_ASSETS = {
 export const UPDATER_INFRASTRUCTURE_ASSETS = [
   "Fleuron_universal.app.tar.gz",
   "Fleuron_universal.app.tar.gz.sig",
-  "Fleuron_2.11.2_x64-setup.exe.sig",
+  "Fleuron_<version>_x64-setup.exe.sig",
   "latest.json",
 ] as const;
 

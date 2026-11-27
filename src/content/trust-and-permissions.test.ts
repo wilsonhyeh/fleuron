@@ -148,9 +148,9 @@ describe("network, sign-in storage, and canonical assets", () => {
     expect(STORED_SIGN_IN.universalNote).toContain("never stored");
   });
 
-  it("canonical assets are exactly the two manual downloads", () => {
-    expect(CANONICAL_ASSETS.macos).toBe("Fleuron_2.11.2_universal.dmg");
-    expect(CANONICAL_ASSETS.windows).toBe("Fleuron_2.11.2_x64-setup.exe");
+  it("canonical assets are exactly the two manual downloads, named by version placeholder", () => {
+    expect(CANONICAL_ASSETS.macos).toBe("Fleuron_<version>_universal.dmg");
+    expect(CANONICAL_ASSETS.windows).toBe("Fleuron_<version>_x64-setup.exe");
     expect(OFFICIAL_URLS.website).toBe("https://fleuron.study/");
     expect(OFFICIAL_URLS.installGuideWeb).toBe("https://fleuron.study/install/");
     expect(OFFICIAL_URLS.privacyWeb).toBe("https://fleuron.study/privacy/");

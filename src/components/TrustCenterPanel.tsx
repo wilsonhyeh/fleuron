@@ -337,8 +337,9 @@ export function TrustCenterPanel() {
             <a href={OFFICIAL_URLS.releases} target="_blank" rel="noreferrer" className="underline">
               {OFFICIAL_URLS.releases}
             </a>{" "}
-            ({CANONICAL_ASSETS.macos} / {CANONICAL_ASSETS.windows}). Advanced
-            verification steps are in the install guide.
+            ({CANONICAL_ASSETS.macos} / {CANONICAL_ASSETS.windows}, where{" "}
+            {"<version>"} is the release number). Advanced verification steps are
+            in the install guide.
           </p>
         </section>
       </div>

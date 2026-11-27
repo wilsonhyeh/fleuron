@@ -13,6 +13,7 @@ Fleuron offers a checksum-verified macOS Terminal installer (`install-mac.sh`) a
 - **Trust anchor:** the `wilsonhyeh/fleuron` GitHub release over TLS at the moment line 1 runs.
 - **Verification and privileges:** the script downloads the release DMG itself, refuses any local disk-image path argument (exit `2`), verifies the DMG's SHA-256 against both a value baked into the script at release time and the release's `SHA256SUMS.txt`, checks the app's bundle identifier/version/signature, and copies to `/Applications` when writable or `~/Applications` with no administrator rights. It never prompts for a password and never modifies any macOS security setting.
 - **Post-install updates:** arrive through Fleuron's built-in Tauri updater (minisign-verified).
+- **Version placeholder:** `<version>` in the commands and filenames below is the release number; the release tag adds a leading `v` (`v<version>`).
 
 ## 2. Published where
 
@@ -196,13 +197,13 @@ The Terminal installer's trust anchor is the integrity of the wilsonhyeh GitHub 
 ```bash
 # 0. Context
 sw_vers; uname -m; id -Gn | tr ' ' '\n' | grep -qx admin && echo ADMIN || echo STANDARD
-# 1. Render a test installer against the live v2.11.2 assets (curl -> no quarantine)
+# 1. Render a test installer against the live release's assets (curl -> no quarantine)
 mkdir -p /tmp/flt && cd /tmp/flt
-/usr/bin/curl --proto '=https' --proto-redir '=https' -fL -o Fleuron_2.11.2_universal.dmg https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.2/Fleuron_2.11.2_universal.dmg
-bash ~/Developer/codemap/scripts/render-install-mac.sh 2.11.2 /tmp/flt/Fleuron_2.11.2_universal.dmg /tmp/flt/install-mac.sh
+/usr/bin/curl --proto '=https' --proto-redir '=https' -fL -o Fleuron_<version>_universal.dmg https://github.com/wilsonhyeh/fleuron/releases/download/v<version>/Fleuron_<version>_universal.dmg
+bash ~/Developer/codemap/scripts/render-install-mac.sh <version> /tmp/flt/Fleuron_<version>_universal.dmg /tmp/flt/install-mac.sh
 # 2. Browser vs curl attributes: also download the same DMG with Safari into ~/Downloads, then
-xattr -l ~/Downloads/Fleuron_2.11.2_universal.dmg     # EXPECT com.apple.quarantine present
-xattr -l /tmp/flt/Fleuron_2.11.2_universal.dmg        # EXPECT no com.apple.quarantine (record anything else, e.g. com.apple.provenance)
+xattr -l ~/Downloads/Fleuron_<version>_universal.dmg     # EXPECT com.apple.quarantine present
+xattr -l /tmp/flt/Fleuron_<version>_universal.dmg        # EXPECT no com.apple.quarantine (record anything else, e.g. com.apple.provenance)
 # 3. Install (remove any existing copy first)
 /bin/bash /tmp/flt/install-mac.sh --uninstall
 /bin/bash /tmp/flt/install-mac.sh; echo "exit=$?"     # EXPECT the success block, exit=0, NO password prompt
@@ -389,22 +390,22 @@ Get-ExecutionPolicy -List
 
 # 1. Browser vs curl.exe vs Invoke-WebRequest Zone.Identifier into $env:TEMP\flt
 New-Item -ItemType Directory -Force -Path "$env:TEMP\flt" | Out-Null
-# Download Fleuron_2.11.2_x64-setup.exe with Microsoft Edge to "$env:TEMP\flt\edge-setup.exe"
-& "$env:SystemRoot\System32\curl.exe" --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL -o "$env:TEMP\flt\curl-setup.exe" https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.2/Fleuron_2.11.2_x64-setup.exe
+# Download Fleuron_<version>_x64-setup.exe with Microsoft Edge to "$env:TEMP\flt\edge-setup.exe"
+& "$env:SystemRoot\System32\curl.exe" --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL -o "$env:TEMP\flt\curl-setup.exe" https://github.com/wilsonhyeh/fleuron/releases/download/v<version>/Fleuron_<version>_x64-setup.exe
 # In Windows PowerShell 5.1:
-Invoke-WebRequest -Uri https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.2/Fleuron_2.11.2_x64-setup.exe -OutFile "$env:TEMP\flt\iwr-setup.exe"
+Invoke-WebRequest -Uri https://github.com/wilsonhyeh/fleuron/releases/download/v<version>/Fleuron_<version>_x64-setup.exe -OutFile "$env:TEMP\flt\iwr-setup.exe"
 Get-Content "$env:TEMP\flt\edge-setup.exe" -Stream Zone.Identifier                      # EXPECT ZoneId=3
 Get-Content "$env:TEMP\flt\curl-setup.exe" -Stream Zone.Identifier                      # EXPECT absent
 Get-Content "$env:TEMP\flt\iwr-setup.exe"  -Stream Zone.Identifier                      # RECORD whether ZoneId=3 or absent
 
-# 2. Render a test installer on Linux (bash scripts/render-install-windows.sh 2.11.2 <curl-setup.exe> install-windows.ps1) and copy to "$env:TEMP\flt\install-windows.ps1"
+# 2. Render a test installer on Linux (bash scripts/render-install-windows.sh <version> <curl-setup.exe> install-windows.ps1) and copy to "$env:TEMP\flt\install-windows.ps1"
 
 # 3. Install with line 2 against "$env:TEMP\flt\install-windows.ps1"
 & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy RemoteSigned -File "$env:TEMP\flt\install-windows.ps1"
 $LASTEXITCODE                                                                           # EXPECT the output block, exit 0, no SmartScreen prompt, no UAC prompt
 Get-Content "$env:LOCALAPPDATA\Fleuron\Fleuron.exe" -Stream Zone.Identifier             # EXPECT absent
 (Get-Item "$env:LOCALAPPDATA\Fleuron\Fleuron.exe").VersionInfo |
-  Format-List ProductName, FileVersion, FileMajorPart, FileMinorPart, FileBuildPart     # EXPECT Fleuron 2.11.2
+  Format-List ProductName, FileVersion, FileMajorPart, FileMinorPart, FileBuildPart     # EXPECT Fleuron <version>
 Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Fleuron |
   Format-List DisplayVersion, InstallLocation, UninstallString
 # Launch Fleuron from Start menu                                                        # EXPECT opens with no prompt

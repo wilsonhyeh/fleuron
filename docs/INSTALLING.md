@@ -6,13 +6,13 @@
 ## Choose your file
 
 Fleuron is distributed from `https://fleuron.study` and the [official Releases page](https://github.com/wilsonhyeh/fleuron/releases); website buttons link directly to binaries hosted on that release page.
-Only these files are manual downloads:
+Only these files are manual downloads. In the filenames below, `<version>` is the release number shown on the [Releases page](https://github.com/wilsonhyeh/fleuron/releases/latest).
 
 | Your computer | Download this exact file |
 | --- | --- |
-| macOS (Intel or Apple Silicon) — disk image | `Fleuron_2.11.2_universal.dmg` |
+| macOS (Intel or Apple Silicon) — disk image | `Fleuron_<version>_universal.dmg` |
 | macOS (Intel or Apple Silicon) — Terminal installer (downloads and checks the DMG for you; see below) | `install-mac.sh` |
-| Windows 11 x64 | `Fleuron_2.11.2_x64-setup.exe` |
+| Windows 11 x64 | `Fleuron_<version>_x64-setup.exe` |
 | Windows 11 x64 — PowerShell installer (downloads and checks the setup file for you; see below) | `install-windows.ps1` |
 
 You may also see these on a release page. They are **updater infrastructure — do not download them by hand**:
@@ -51,7 +51,7 @@ Choose this option when you are comfortable pasting two commands, want the insta
 **What it does:**
 
 1. Checks the release checksum list (`SHA256SUMS.txt`).
-2. Downloads `Fleuron_2.11.2_universal.dmg` from the tagged GitHub release.
+2. Downloads `Fleuron_<version>_universal.dmg` from the tagged GitHub release.
 3. Refuses the file unless its SHA-256 equals the value built into the installer and matches `SHA256SUMS.txt`.
 4. Opens the disk image read-only.
 5. Confirms the app's identifier, version, and signature.
@@ -73,19 +73,19 @@ Choose this option when you are comfortable pasting two commands, want the insta
 **Expected output:**
 
 ```text
-fleuron-install: Fleuron 2.11.2 installer for macOS (arm64)
+fleuron-install: Fleuron <version> installer for macOS (arm64)
 fleuron-install: install location: /Applications/Fleuron.app
 fleuron-install: checking the release checksum list ... ok
-fleuron-install: downloading Fleuron_2.11.2_universal.dmg ...
+fleuron-install: downloading Fleuron_<version>_universal.dmg ...
 <curl progress bar>
 fleuron-install: SHA-256 matches the pinned release value ... ok
-fleuron-install: checking the app inside the disk image ... ok (study.fleuron.desktop 2.11.2, ad-hoc signed)
-fleuron-install: installed Fleuron 2.11.2 to /Applications/Fleuron.app
+fleuron-install: checking the app inside the disk image ... ok (study.fleuron.desktop <version>, ad-hoc signed)
+fleuron-install: installed Fleuron <version> to /Applications/Fleuron.app
 fleuron-install: done. Open Fleuron from Applications. Later updates arrive through Fleuron's built-in updater.
 ```
 
 Running it again when Fleuron is already at the latest version prints:
-`fleuron-install: Fleuron 2.11.2 is already installed at <path> and verifies; nothing to do.`
+`fleuron-install: Fleuron <version> is already installed at <path> and verifies; nothing to do.`
 
 Upgrades normally arrive through the in-app updater; rerunning the newest installer also upgrades.
 
@@ -100,7 +100,7 @@ Upgrades normally arrive through the in-app updater; rerunning the newest instal
 | `3` | Unsupported (not macOS, macOS older than 10.15, run as root, or not bash) | Run as a regular user on macOS 10.15 or later with `/bin/bash` |
 | `4` | Fleuron is running | Quit Fleuron and run the installer again |
 | `5` | Existing install cannot be replaced safely (owned by another account or IT, a different bundle, or a symlink) | Another account or IT installed Fleuron; ask them |
-| `10` | Download failed or was cut off | Check your connection and retry; a 404 means that release has no Terminal installer yet; use option A |
+| `10` | Download failed or was cut off | Check your connection and retry; every release from v2.11.2 onward carries the Terminal installer, so a 404 means the download is unavailable right now — use option A |
 | `20` | `SECURITY STOP` — checksum mismatch | Stop. Do not retry from another website. File an install issue |
 | `30` | Disk image could not be opened | A managed Mac may block disk images; contact IT |
 | `40` | `SECURITY STOP` — app identity or signature check failed | Stop. Do not retry from another website. File an install issue |
@@ -110,7 +110,7 @@ Upgrades normally arrive through the in-app updater; rerunning the newest instal
 
 ## Install on Windows 11 — option A: setup file (double-click)
 
-1. Double-click `Fleuron_2.11.2_x64-setup.exe`.
+1. Double-click `Fleuron_<version>_x64-setup.exe`.
 2. **Expected warning:** SmartScreen shows **“Windows protected your PC”** with *Unknown publisher*. Expected for a newly published, non-store app.
 3. Click **More info**, confirm *Unknown publisher*, then **Run anyway**.
 4. The installer installs for **your user account only**. It never asks for administrator credentials. There is no UAC prompt anywhere in this flow.
@@ -133,11 +133,11 @@ Choose this option when you are comfortable pasting two commands into PowerShell
 
 **What it does:**
 1. Checks the release checksum list (`SHA256SUMS.txt`).
-2. Downloads `Fleuron_2.11.2_x64-setup.exe` from the tagged GitHub release with the built-in `curl.exe`.
+2. Downloads `Fleuron_<version>_x64-setup.exe` from the tagged GitHub release with the built-in `curl.exe`.
 3. Refuses the file unless its SHA-256 equals the value built into the installer and matches `SHA256SUMS.txt`.
 4. Stops with POLICY STOP if Smart App Control, S mode, or an organization policy would block Fleuron.
 5. Runs the verified setup file silently for your account only; like option A it adds Start menu and desktop shortcuts.
-6. Confirms Fleuron 2.11.2 is installed in `%LOCALAPPDATA%\Fleuron`.
+6. Confirms Fleuron <version> is installed in `%LOCALAPPDATA%\Fleuron`.
 
 **What it never does:**
 - Ask for administrator rights or show a User Account Control prompt.
@@ -152,18 +152,18 @@ Choose this option when you are comfortable pasting two commands into PowerShell
 
 **Expected output:**
 ```text
-fleuron-install: Fleuron 2.11.2 installer for Windows (x64)
+fleuron-install: Fleuron <version> installer for Windows (x64)
 fleuron-install: install location: C:\Users\<you>\AppData\Local\Fleuron
 fleuron-install: checking the release checksum list ... ok
-fleuron-install: downloading Fleuron_2.11.2_x64-setup.exe ...
+fleuron-install: downloading Fleuron_<version>_x64-setup.exe ...
 <curl progress bar>
 fleuron-install: SHA-256 matches the pinned release value ... ok
 fleuron-install: running the verified setup file for this Windows account (no administrator rights) ...
-fleuron-install: installed Fleuron 2.11.2 to C:\Users\<you>\AppData\Local\Fleuron
+fleuron-install: installed Fleuron <version> to C:\Users\<you>\AppData\Local\Fleuron
 fleuron-install: done. Open Fleuron from the Start menu. Later updates arrive through Fleuron's built-in updater.
 ```
 Running it again when Fleuron is current prints:
-`fleuron-install: Fleuron 2.11.2 is already installed at <path>; nothing to do.`
+`fleuron-install: Fleuron <version> is already installed at <path>; nothing to do.`
 Upgrades normally arrive through the in-app updater; rerunning the newest installer also upgrades.
 
 **Uninstall:** download the installer again with line 1, then run `& "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy RemoteSigned -File "$env:USERPROFILE\fleuron-install-windows.ps1" --uninstall`. Studies in `%USERPROFILE%\Fleuron` are kept. You can also remove Fleuron from **Settings → Apps → Installed apps**.
@@ -177,7 +177,7 @@ Upgrades normally arrive through the in-app updater; rerunning the newest instal
 | `3` | Unsupported (not Windows, Windows older than 10 version 1809, PowerShell older than 5.1, `curl.exe` missing, non-x64 processor, or run as administrator) | Run from a normal PowerShell window on Windows 11 x64, or use option A |
 | `4` | Fleuron is running | Quit Fleuron and run the installer again |
 | `5` | Existing install cannot be managed safely (installed for all users by IT, a different app named Fleuron, a linked folder, or a folder you cannot write) | Ask whoever installed it |
-| `10` | Download failed or was cut off | Check your connection and retry; a 404 means that release has no PowerShell installer yet; use option A |
+| `10` | Download failed or was cut off | Check your connection and retry; every release from v2.11.2 onward carries the PowerShell installer, so a 404 means the download is unavailable right now — use option A |
 | `20` | `SECURITY STOP` — checksum mismatch | Stop. Do not retry from another website. File an install issue |
 | `30` | `POLICY STOP` — Smart App Control, S mode, an organization policy, Microsoft Defender, or an unexpected internet mark blocked the install | Stop. Follow the message. Do not change security settings for Fleuron; on a managed PC contact IT |
 | `50` | Setup or uninstall failed | Retry once or use option A; file an install issue with the full output |
@@ -216,27 +216,27 @@ Optional steps for the disk-image and setup-file paths. The Terminal and PowerSh
 
 ```bash
 # GitHub's per-asset digest, visible on the release page:
-shasum -a 256 Fleuron_2.11.2_universal.dmg
+shasum -a 256 Fleuron_<version>_universal.dmg
 ```
 
 Verify against the published `SHA256SUMS.txt` on the release page:
 
 ```bash
-gh release download v2.11.2 --repo wilsonhyeh/fleuron --dir .
+gh release download v<version> --repo wilsonhyeh/fleuron --dir .
 shasum -a 256 -c SHA256SUMS.txt
 ```
 
 Artifact attestation proves which public repository, workflow, and commit produced each asset:
 
 ```bash
-gh attestation verify Fleuron_2.11.2_universal.dmg --repo wilsonhyeh/fleuron
+gh attestation verify Fleuron_<version>_universal.dmg --repo wilsonhyeh/fleuron
 ```
 
 On Windows (PowerShell):
 
 ```powershell
-Get-FileHash .\Fleuron_2.11.2_x64-setup.exe -Algorithm SHA256
-gh attestation verify .\Fleuron_2.11.2_x64-setup.exe --repo wilsonhyeh/fleuron
+Get-FileHash .\Fleuron_<version>_x64-setup.exe -Algorithm SHA256
+gh attestation verify .\Fleuron_<version>_x64-setup.exe --repo wilsonhyeh/fleuron
 ```
 
 These checks help verify file integrity and build provenance. They do not establish software safety or replace an OS publisher identity.
