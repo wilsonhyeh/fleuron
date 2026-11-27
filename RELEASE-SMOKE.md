@@ -11,7 +11,7 @@ release is not ready.
 - **Version:** 2.11.2
 - **Commit:** pending tag (see git log at release time)
 - **Platform / build:** macOS arm64 debug bundle (`Fleuron.app`, id `study.fleuron.desktop`); Windows unverified
-- **Install verified on:** macOS 27.0.1 (build 26A434) — see § 25
+- **Install verified on:** macOS 27.0.1 (build 26A434), DMG / GUI path — see § 25
 - **Date (last run):** 2026-11-27
 - **Verifier:** implementation agent (source + local stack + packaged-app selftest); **Wilson for every row that needs a real macOS or Windows machine**
 
@@ -178,13 +178,13 @@ release is not ready.
 
 ## 24. Terminal installers (2.11.2 new)
 
-Neither installer has been run against a real release artifact on a real Mac or PC. The mocked suites do run on the real operating systems in CI (macos-latest for `install-mac.test.sh`, windows-latest for `install-windows.test.ps1`), and the first windows-latest run is what found and fixed four Windows-only defects.
+Neither installer has been run against a real release artifact on a real Mac or PC. The mocked suites do run on the real operating systems in CI (macos-latest for `install-mac.test.sh`, windows-latest for `install-windows.test.ps1`), and the first windows-latest run is what found and fixed four Windows-only defects. Wilson's completed install used the DMG / GUI path (§ 25), not `install-mac.sh`, so the Terminal path's central claim — a `curl`-fetched app launching with no Gatekeeper dialog — is still unverified end-to-end.
 
 - [x] `install-mac.sh` pins this release's DMG SHA-256 and `SHA256SUMS.txt` before touching a disk image, and every `curl` call passes `--proto '=https' --proto-redir '=https' --tlsv1.2 --fail` so a redirect cannot downgrade the download (`Last verified: 2026-11-27 — bash scripts/install-mac.test.sh 33/33 on Linux and on the release workflow's macos-latest leg with a mocked curl that refuses to serve without --proto-redir '=https'; C27 and C27-MUT fail if the flag is dropped`)
 - [x] `install-windows.ps1` carries the same download pins plus read-only policy gates, hashes with .NET rather than `Get-FileHash`, and never changes a Windows security setting (`Last verified: 2026-11-27 — Test workflow run 46052484583 on windows-latest: all 68 checks passed, 0 skipped, including the eight gate mutations; the M-MOTW-GATE mutation records that without the gate Windows waits on its own open-file prompt instead of installing`)
 - [x] Both installers are rendered at release time from the staged artifacts, uploaded inside the draft release, re-validated against the attested artifacts, and covered by `SHA256SUMS.txt` and the `subject-checksums` attestation (`Last verified: 2026-11-27 — release-contract assertions plus a local render and exact-grep replay of every release-workflow check; the workflow steps themselves first execute on the v2.11.2 tag`)
 - [x] The stable download URLs for both scripts are documented with the redirect-pinned `curl`/`curl.exe` command, and the README's manual-download table no longer hard-codes a release number (`Last verified: 2026-11-27 — release-contract doc assertions; the README and IT-DEPLOYMENT tables use the version-agnostic Fleuron_<version>_* form`)
 
-## 25. macOS 27.0.1 first install (2.11.2)
+## 25. macOS 27.0.1 first install — DMG / GUI path (2.11.2)
 
-- [x] End-to-end macOS install completes on **macOS 27.0.1** (build 26A434): the “Fleuron” Not Opened dialog appears, the grey **Done** leaves the app in Applications, **Open Anyway** clears the Gatekeeper block, and the installed app launches (`Last verified: 2026-11-27 — Wilson's Mac, macOS 27.0.1 build 26A434: full install completed past the Gatekeeper block and the app launches; the verified dialog wording is recorded in docs/INSTALLING.md`)
+- [x] End-to-end **DMG / GUI install** completes on **macOS 27.0.1** (build 26A434): open the downloaded disk image, drag Fleuron into Applications, launch it, and the “Fleuron” Not Opened dialog appears; the grey **Done** leaves the app in Applications, **Open Anyway** clears the Gatekeeper block, and the installed app launches (`Last verified: 2026-11-27 — Wilson's Mac, macOS 27.0.1 build 26A434: full install completed past the Gatekeeper block and the app launches; this validates the disk-image path only, not install-mac.sh or install-windows.ps1`)

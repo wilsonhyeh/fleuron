@@ -166,7 +166,7 @@ Fleuron offers a checksum-verified macOS Terminal installer (`install-mac.sh`) a
 The Terminal installer's trust anchor is the integrity of the wilsonhyeh GitHub account and GitHub's release delivery over TLS at the moment the partner runs line 1.
 - The pinned SHA-256 and the SHA256SUMS cross-check turn 'whatever bytes arrive' into 'exactly the bytes this release's CI built'. That defeats network tampering without a CA compromise, truncation, mirrors, cached or tampered disk images, partial asset swaps and maintainer re-upload mistakes.
 - They do not defend against an attacker who can replace the script itself (account, token or GitHub compromise). Only the optional `gh attestation verify` raises that bar today, and only notarization/Developer ID would give macOS an independent publisher identity.
-- On this path macOS shows no unverified-developer dialog. For this ad-hoc build that dialog never carried an identity. We make no claim that any OS malware scan runs.
+- On this path macOS shows no unverified-developer dialog. For this ad-hoc build that dialog never carried an identity. We make no claim that any OS malware scan runs. This path has not yet been exercised end-to-end on a real Mac (`RELEASE-SMOKE.md` § 24), so treat the no-dialog outcome as the design's intent, not an observed result.
 - Updates after install are protected by the updater's minisign key, which a release-asset compromise alone does not have.
 
 ## 8. Serving URL
