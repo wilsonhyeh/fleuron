@@ -128,7 +128,8 @@ Install flow (public docs: docs/INSTALLING.md):
 First launch warning (the ONLY supported path):
   System Settings → Privacy & Security → Open Anyway → Open.
   In that dialog the blue, filled default button is Move to Trash and it
-  deletes the app; click the grey Done instead.
+  deletes the app; click the grey Done instead. Verified on macOS 27.0.1;
+  earlier versions may differ.
   A "damaged" or malware warning means stop — see the install guide.
 
 EOF

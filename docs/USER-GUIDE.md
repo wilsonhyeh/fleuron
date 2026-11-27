@@ -138,7 +138,7 @@ Every codebook field syncs word-for-word: names, definitions, colours, inclusion
 
 | Problem | What to do |
 |---------|------------|
-| macOS blocks the app | In the dialog, click the grey **Done** — the blue **Move to Trash** is the default and deletes the app. Then System Settings → Privacy & Security → Open Anyway (first time) |
+| macOS blocks the app | In the dialog (verified on macOS 27.0.1; earlier versions may differ), click the grey **Done** — the blue **Move to Trash** is the default and deletes the app. Then System Settings → Privacy & Security → Open Anyway (first time) |
 | Windows SmartScreen | Confirm you downloaded from the official releases page, then **More info** → **Run anyway**. Never use file Properties to unblock anything |
 | macOS says “damaged” or malware | Stop — that is not the ordinary warning. Delete and re-download from the official page; file an install issue if it repeats |
 | Forgot password | Settings → I already have one → Forgot password? Type the short code from the email |

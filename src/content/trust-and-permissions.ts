@@ -114,7 +114,7 @@ export const SUPPORT_MATRIX: SupportRow[] = [
   {
     platform: "macOS 14 (Sonoma) or newer — Intel and Apple Silicon",
     tier: "supported",
-    note: "Officially documented and manually validated. One universal DMG covers both chips.",
+    note: "Officially documented and manually validated on macOS 27.0.1. One universal DMG covers both chips.",
   },
   {
     platform: "macOS 10.15–13",
@@ -162,7 +162,7 @@ export const MACOS_WARNING_CARDS: WarningCard[] = [
     signal: "\u201cFleuron\u201d Not Opened",
     meaning: "expected",
     explanation:
-      "Expected for the official non-notarized, ad-hoc signed build. The dialog body reads: Apple could not verify \u201cFleuron\u201d is free of malware that may harm your Mac or compromise your privacy. macOS is saying it cannot verify the publisher — not that it found malware.",
+      "Expected for the official non-notarized, ad-hoc signed build. The dialog body reads: Apple could not verify \u201cFleuron\u201d is free of malware that may harm your Mac or compromise your privacy. Verified on macOS 27.0.1 (build 26A434); earlier macOS versions may show different wording. macOS is saying it cannot verify the publisher — not that it found malware.",
     userAction:
       "Click the grey Done button. The blue, filled, highlighted button is Move to Trash and it is the default: clicking it, or pressing Return, deletes Fleuron. Never click Move to Trash and do not press Return. Then confirm you downloaded from github.com/wilsonhyeh/fleuron/releases, open System Settings \u2192 Privacy & Security \u2192 Open Anyway, authenticate, and Open. Prefer Terminal? The install guide's checksum-verified Terminal installer is an alternative; downloads made in Terminal do not show this dialog.",
   },

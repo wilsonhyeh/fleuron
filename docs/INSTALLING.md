@@ -30,11 +30,13 @@ You may also see these on a release page. They are **updater infrastructure — 
 2. Launch Fleuron.
 3. **Expected warning:** “Apple cannot check the app for malicious software” / “cannot verify the developer”. This release does not have Apple Developer ID signing or notarization. Open-source licensing does not determine whether an app is signed.
 
-   The dialog in current macOS is titled **“Fleuron” Not Opened** and reads:
+   The dialog on macOS 27.0.1 is titled **“Fleuron” Not Opened** and reads:
 
    > Apple could not verify “Fleuron” is free of malware that may harm your Mac or compromise your privacy.
 
    It offers two buttons, stacked: **Move to Trash** — blue, filled, and highlighted, the default — and **Done** — grey, below it.
+
+   This wording was verified on **macOS 27.0.1** (build 26A434). Earlier macOS versions may differ — Fleuron supports macOS 10.15 and later — so check the title and the buttons rather than the version.
 
    **Warning: the blue button deletes the app.** **Move to Trash** is the prominent button, so clicking it — or pressing Return — moves Fleuron to the Trash and removes it from Applications. Click the grey **Done** instead, then continue with step 4.
 
