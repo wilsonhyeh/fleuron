@@ -790,7 +790,9 @@ exit 0
             foreach ($d in @($script:CaseHome, $script:CaseLocal, $script:CaseRoaming, $script:CaseTemp, $script:CasePf, $script:CaseServer)) {
                 New-Item -ItemType Directory -Path $d -Force | Out-Null
             }
-            Copy-Item -LiteralPath (Join-Path $ServerClean '*') -Destination $script:CaseServer -Force
+            # -Path (not -LiteralPath): the '*' must expand, or nothing is copied and every
+            # runtime case fails at its first download with an empty mock server.
+            Copy-Item -Path (Join-Path $ServerClean '*') -Destination $script:CaseServer -Force
             Write-Utf8NoBom -Path $script:CaseLog -Text ''
 
             if (-not $script:RegRoot.StartsWith('HKCU:\Software\FleuronInstallTest\')) {
