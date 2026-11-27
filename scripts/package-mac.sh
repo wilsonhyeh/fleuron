@@ -127,6 +127,8 @@ Install flow (public docs: docs/INSTALLING.md):
 
 First launch warning (the ONLY supported path):
   System Settings → Privacy & Security → Open Anyway → Open.
+  In that dialog the blue, filled default button is Move to Trash and it
+  deletes the app; click the grey Done instead.
   A "damaged" or malware warning means stop — see the install guide.
 
 EOF

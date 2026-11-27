@@ -20,7 +20,7 @@ Fleuron is a solo-maintained, open-source desktop application for qualitative co
 ## Package provenance
 
 - No Authenticode certificate is purchased; SmartScreen shows *Unknown publisher → Run anyway* for first runs
-- macOS builds are ad-hoc signed whole bundles: `codesign --verify --deep --strict` passes with `Signature=adhoc`, `TeamIdentifier=not set`. Gatekeeper still warns and users must use System Settings → Privacy & Security → Open Anyway once
+- macOS builds are ad-hoc signed whole bundles: `codesign --verify --deep --strict` passes with `Signature=adhoc`, `TeamIdentifier=not set`. Gatekeeper still warns and users must use System Settings → Privacy & Security → Open Anyway once. In that dialog the blue, highlighted default button is **Move to Trash**, which deletes the app; tell users to click the grey **Done** and then use Open Anyway
 - Every release includes GitHub artifact attestations and a sorted `SHA256SUMS.txt`; verify with:
 
 ```bash

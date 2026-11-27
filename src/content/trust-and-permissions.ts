@@ -148,7 +148,7 @@ export type WarningMeaning =
   | "release-blocking";
 
 export interface WarningCard {
-  /** Short label shown in UI, e.g. "Apple cannot verify the developer". */
+  /** Short label shown in UI, e.g. the macOS Not Opened title. */
   signal: string;
   meaning: WarningMeaning;
   /** What this warning actually means for Fleuron. Never "harmless". */
@@ -159,12 +159,12 @@ export interface WarningCard {
 
 export const MACOS_WARNING_CARDS: WarningCard[] = [
   {
-    signal: "\u201cApple cannot check the app for malicious software\u201d / \u201ccannot verify the developer\u201d",
+    signal: "\u201cFleuron\u201d Not Opened",
     meaning: "expected",
     explanation:
-      "Expected for the official non-notarized, ad-hoc signed build. macOS is saying it cannot verify the publisher — not that it found malware.",
+      "Expected for the official non-notarized, ad-hoc signed build. The dialog body reads: Apple could not verify \u201cFleuron\u201d is free of malware that may harm your Mac or compromise your privacy. macOS is saying it cannot verify the publisher — not that it found malware.",
     userAction:
-      "Confirm you downloaded from github.com/wilsonhyeh/fleuron/releases, then System Settings \u2192 Privacy & Security \u2192 Open Anyway, authenticate, and Open. Prefer Terminal? The install guide's checksum-verified Terminal installer is an alternative; downloads made in Terminal do not show this dialog.",
+      "Click the grey Done button. The blue, filled, highlighted button is Move to Trash and it is the default: clicking it, or pressing Return, deletes Fleuron. Never click Move to Trash and do not press Return. Then confirm you downloaded from github.com/wilsonhyeh/fleuron/releases, open System Settings \u2192 Privacy & Security \u2192 Open Anyway, authenticate, and Open. Prefer Terminal? The install guide's checksum-verified Terminal installer is an alternative; downloads made in Terminal do not show this dialog.",
   },
   {
     signal: "\u201cWill damage your computer\u201d / malware alert / \u201cdamaged and cannot be opened\u201d",

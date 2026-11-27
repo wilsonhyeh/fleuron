@@ -29,6 +29,15 @@ You may also see these on a release page. They are **updater infrastructure — 
 1. Open the DMG and drag **Fleuron** into **Applications**.
 2. Launch Fleuron.
 3. **Expected warning:** “Apple cannot check the app for malicious software” / “cannot verify the developer”. This release does not have Apple Developer ID signing or notarization. Open-source licensing does not determine whether an app is signed.
+
+   The dialog in current macOS is titled **“Fleuron” Not Opened** and reads:
+
+   > Apple could not verify “Fleuron” is free of malware that may harm your Mac or compromise your privacy.
+
+   It offers two buttons, stacked: **Move to Trash** — blue, filled, and highlighted, the default — and **Done** — grey, below it.
+
+   **Warning: the blue button deletes the app.** **Move to Trash** is the prominent button, so clicking it — or pressing Return — moves Fleuron to the Trash and removes it from Applications. Click the grey **Done** instead, then continue with step 4.
+
 4. Continue: close the dialog, then open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**, authenticate, then **Open**.
 
 Open Anyway stays available after the first run unless macOS re-prompts after an update.
@@ -66,7 +75,7 @@ Choose this option when you are comfortable pasting two commands, want the insta
 - Use a disk image you already downloaded.
 - Touch your studies.
 
-> macOS shows its 'cannot verify the developer' dialog for files a web browser marks as downloaded. Files fetched by Terminal are not marked, so on this path you should not see that dialog or need Open Anyway. Neither path gives macOS a verified publisher. On this path the installer's SHA-256 check against the official release is the check, and it stops rather than continuing on any mismatch.
+> macOS shows its 'cannot verify the developer' dialog for files a web browser marks as downloaded. Files fetched by Terminal are not marked, so on this path you should not see that dialog or need Open Anyway. Neither path gives macOS a verified publisher. On this path the installer's SHA-256 check against the official release is the check, and it stops rather than continuing on any mismatch. If macOS does show that dialog anyway, click the grey **Done** — never the blue **Move to Trash**, which deletes the app.
 >
 > If Terminal asks for a password, press Control-C and stop.
 

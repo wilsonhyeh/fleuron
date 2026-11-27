@@ -38,6 +38,8 @@ Downloads are distributed from [fleuron.study](https://fleuron.study/) and the [
 
 New studies default to a local working library (`~/Fleuron` / `%USERPROFILE%\Fleuron`). Windows installs per-user with no administrator prompt (double-click the setup file, or use the checksum-verified PowerShell installer); macOS uses System Settings → Privacy & Security → Open Anyway once, or the checksum-verified Terminal installer described in docs/INSTALLING.md.
 
+**macOS first launch:** the dialog's blue, highlighted **Move to Trash** button is the default and deletes the app — clicking it, or pressing Return, removes Fleuron. Click the grey **Done** instead, then allow the app under **System Settings → Privacy & Security → Open Anyway**. A "damaged" or malware warning is different: stop and see the install guide.
+
 For detailed usage instructions and workflow tips, see the [User Guide](docs/USER-GUIDE.md), [synthetic transcript-coding tutorial](https://fleuron.study/guides/code-interview-transcripts/) and [reflexive thematic analysis workflow](https://fleuron.study/guides/reflexive-thematic-analysis/).
 
 ---

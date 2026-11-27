@@ -158,6 +158,7 @@ Fleuron offers a checksum-verified macOS Terminal installer (`install-mac.sh`) a
 - The installer never ingests a browser-downloaded disk image (it rejects any path argument with exit `2`).
 - Because no quarantine attribute is ever created on this path, nothing needs clearing, and the contract test (`src/lib/privacy-contract.test.ts`) continues banning quarantine mutation while permitting only `xattr -l <path>` and `xattr -p <name> <path>` inspection.
 - If a future macOS version begins quarantining `curl` output, the result is the normal Open Anyway dialog — failing in the safe direction.
+- When the browser path does show that dialog, macOS titles it “Fleuron” Not Opened and offers a blue, filled **Move to Trash** default above a grey **Done**. Move to Trash deletes the app; the safe click is Done, then System Settings → Privacy & Security → Open Anyway.
 - **Is this working around OS protection?** No system setting is changed. Like any command-line install, fetching with `curl` does not attach a browser download attribute; Gatekeeper's first-launch assessment applies to browser-marked downloads. For this ad-hoc build that dialog never carried a publisher identity, and because the build is not notarized there was never an Apple malware scan to lose. We make no claim about any OS malware scan on this path.
 
 ## 7. Residual risk
