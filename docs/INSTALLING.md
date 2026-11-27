@@ -42,9 +42,9 @@ You may also see these on a release page. They are **updater infrastructure — 
 
 4. Continue: close the dialog, then open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**, authenticate, then **Open**.
 
-Open Anyway stays available after the first run unless macOS re-prompts after an update.
+The **Open Anyway** button appears only after a blocked launch, only for the last app macOS blocked, and only for about an hour. If it is gone, open Fleuron from Applications again, click the grey **Done** — never the blue **Move to Trash**, which deletes the app — and go straight back to **System Settings → Privacy & Security**.
 
-Apple lists **Open Anyway** for about an hour after a blocked launch, and only for the app macOS blocked most recently. If it is not there when you look, launch Fleuron again, click the grey **Done**, and go straight back to **Privacy & Security**. The approval is what persists: once you have opened the app this way, later launches need nothing — until an update replaces the binary and macOS asks again.
+The approval is what persists: once you have opened the app this way, later launches need nothing — until an update replaces the binary and macOS asks again.
 
 ## Install on macOS — option B: Terminal (checksum-verified)
 
