@@ -188,7 +188,7 @@ The Terminal installer's trust anchor is the integrity of the wilsonhyeh GitHub 
 
 ## 10. Rollout
 
-- `v2.11.1` is the first release that carries `install-mac.sh`, so `https://github.com/wilsonhyeh/fleuron/releases/latest/download/install-mac.sh` resolves once that release is published. `v2.11.0` and earlier carry no such asset and return 404.
+- `v2.11.2` is the first release that carries `install-mac.sh`, so `https://github.com/wilsonhyeh/fleuron/releases/latest/download/install-mac.sh` resolves once that release is published. `v2.11.0` and earlier carry no such asset and return 404.
 - The `docs/INSTALLING.md` rewrite ships in the same release commit and tag, and `fleuron.study/install` re-renders it automatically. Keep the ordering invariant regardless: never merge a `docs/INSTALLING.md` that documents the stable URL before a published release carries the asset, unless you backfill by hand — render locally from the `curl`-fetched DMG and run `gh release upload <tag> install-mac.sh`, accepting that a backfilled script sits outside that release's `SHA256SUMS.txt` and attestation.
 
 ## 11. Mac verification checklist (5 minutes)
@@ -196,13 +196,13 @@ The Terminal installer's trust anchor is the integrity of the wilsonhyeh GitHub 
 ```bash
 # 0. Context
 sw_vers; uname -m; id -Gn | tr ' ' '\n' | grep -qx admin && echo ADMIN || echo STANDARD
-# 1. Render a test installer against the live v2.11.1 assets (curl -> no quarantine)
+# 1. Render a test installer against the live v2.11.2 assets (curl -> no quarantine)
 mkdir -p /tmp/flt && cd /tmp/flt
-/usr/bin/curl --proto '=https' --proto-redir '=https' -fL -o Fleuron_2.11.1_universal.dmg https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.1/Fleuron_2.11.1_universal.dmg
-bash ~/Developer/codemap/scripts/render-install-mac.sh 2.11.1 /tmp/flt/Fleuron_2.11.1_universal.dmg /tmp/flt/install-mac.sh
+/usr/bin/curl --proto '=https' --proto-redir '=https' -fL -o Fleuron_2.11.2_universal.dmg https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.2/Fleuron_2.11.2_universal.dmg
+bash ~/Developer/codemap/scripts/render-install-mac.sh 2.11.2 /tmp/flt/Fleuron_2.11.2_universal.dmg /tmp/flt/install-mac.sh
 # 2. Browser vs curl attributes: also download the same DMG with Safari into ~/Downloads, then
-xattr -l ~/Downloads/Fleuron_2.11.1_universal.dmg     # EXPECT com.apple.quarantine present
-xattr -l /tmp/flt/Fleuron_2.11.1_universal.dmg        # EXPECT no com.apple.quarantine (record anything else, e.g. com.apple.provenance)
+xattr -l ~/Downloads/Fleuron_2.11.2_universal.dmg     # EXPECT com.apple.quarantine present
+xattr -l /tmp/flt/Fleuron_2.11.2_universal.dmg        # EXPECT no com.apple.quarantine (record anything else, e.g. com.apple.provenance)
 # 3. Install (remove any existing copy first)
 /bin/bash /tmp/flt/install-mac.sh --uninstall
 /bin/bash /tmp/flt/install-mac.sh; echo "exit=$?"     # EXPECT the success block, exit=0, NO password prompt
@@ -372,7 +372,7 @@ The Windows PowerShell installer's trust anchor is the integrity of the `wilsonh
 
 ### 13.13 Rollout
 
-- `v2.11.1` is the first release that carries `install-windows.ps1`, so `https://github.com/wilsonhyeh/fleuron/releases/latest/download/install-windows.ps1` resolves once that release is published. `v2.11.0` and earlier carry no such asset and return 404.
+- `v2.11.2` is the first release that carries `install-windows.ps1`, so `https://github.com/wilsonhyeh/fleuron/releases/latest/download/install-windows.ps1` resolves once that release is published. `v2.11.0` and earlier carry no such asset and return 404.
 - The `docs/INSTALLING.md` rewrite ships in the same release commit and tag. Keep the ordering invariant regardless: do not land a guide that documents the stable URL before a published release carries the asset, unless you backfill by hand — render locally from the `curl`-fetched setup exe (`bash scripts/render-install-windows.sh <version> <setup-exe> install-windows.ps1`) and run `gh release upload <tag> install-windows.ps1`, accepting that a backfilled script sits outside that release's `SHA256SUMS.txt` and attestation.
 
 ### 13.14 Windows verification checklist (requires a real Windows 11 x64 PC)
@@ -389,22 +389,22 @@ Get-ExecutionPolicy -List
 
 # 1. Browser vs curl.exe vs Invoke-WebRequest Zone.Identifier into $env:TEMP\flt
 New-Item -ItemType Directory -Force -Path "$env:TEMP\flt" | Out-Null
-# Download Fleuron_2.11.1_x64-setup.exe with Microsoft Edge to "$env:TEMP\flt\edge-setup.exe"
-& "$env:SystemRoot\System32\curl.exe" --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL -o "$env:TEMP\flt\curl-setup.exe" https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.1/Fleuron_2.11.1_x64-setup.exe
+# Download Fleuron_2.11.2_x64-setup.exe with Microsoft Edge to "$env:TEMP\flt\edge-setup.exe"
+& "$env:SystemRoot\System32\curl.exe" --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL -o "$env:TEMP\flt\curl-setup.exe" https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.2/Fleuron_2.11.2_x64-setup.exe
 # In Windows PowerShell 5.1:
-Invoke-WebRequest -Uri https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.1/Fleuron_2.11.1_x64-setup.exe -OutFile "$env:TEMP\flt\iwr-setup.exe"
+Invoke-WebRequest -Uri https://github.com/wilsonhyeh/fleuron/releases/download/v2.11.2/Fleuron_2.11.2_x64-setup.exe -OutFile "$env:TEMP\flt\iwr-setup.exe"
 Get-Content "$env:TEMP\flt\edge-setup.exe" -Stream Zone.Identifier                      # EXPECT ZoneId=3
 Get-Content "$env:TEMP\flt\curl-setup.exe" -Stream Zone.Identifier                      # EXPECT absent
 Get-Content "$env:TEMP\flt\iwr-setup.exe"  -Stream Zone.Identifier                      # RECORD whether ZoneId=3 or absent
 
-# 2. Render a test installer on Linux (bash scripts/render-install-windows.sh 2.11.1 <curl-setup.exe> install-windows.ps1) and copy to "$env:TEMP\flt\install-windows.ps1"
+# 2. Render a test installer on Linux (bash scripts/render-install-windows.sh 2.11.2 <curl-setup.exe> install-windows.ps1) and copy to "$env:TEMP\flt\install-windows.ps1"
 
 # 3. Install with line 2 against "$env:TEMP\flt\install-windows.ps1"
 & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy RemoteSigned -File "$env:TEMP\flt\install-windows.ps1"
 $LASTEXITCODE                                                                           # EXPECT the output block, exit 0, no SmartScreen prompt, no UAC prompt
 Get-Content "$env:LOCALAPPDATA\Fleuron\Fleuron.exe" -Stream Zone.Identifier             # EXPECT absent
 (Get-Item "$env:LOCALAPPDATA\Fleuron\Fleuron.exe").VersionInfo |
-  Format-List ProductName, FileVersion, FileMajorPart, FileMinorPart, FileBuildPart     # EXPECT Fleuron 2.11.1
+  Format-List ProductName, FileVersion, FileMajorPart, FileMinorPart, FileBuildPart     # EXPECT Fleuron 2.11.2
 Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Fleuron |
   Format-List DisplayVersion, InstallLocation, UninstallString
 # Launch Fleuron from Start menu                                                        # EXPECT opens with no prompt

@@ -3183,7 +3183,7 @@ dependencies = [
 
 [[package]]
 name = "qualitative-coding-app"
-version = "2.11.1"
+version = "2.11.2"
 dependencies = [
  "chrono",
  "fs2",

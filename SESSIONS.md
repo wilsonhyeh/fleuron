@@ -84,7 +84,7 @@ toolbar title uncapped and "coding as" shown only with 2+ coders; Structure map
 centre wraps the title (`src/lib/wrap-lines.ts`). Frontend only; no schema
 change, no Supabase migration.
 
-## 2026-11-27 — Fleuron 2.11.1: terminal installers shipped
+## 2026-11-27 — Fleuron 2.11.2: terminal installers shipped
 
 Shipped the macOS Terminal installer (`scripts/install-mac.sh`, its renderer,
 mock suite and the `C1`-`C27` cases) and the Windows PowerShell installer
@@ -104,8 +104,27 @@ table uses the version-agnostic `Fleuron_<version>_*` form instead of the stale
 transcript panel's "How to fix access" link targets
 `#file-access-troubleshooting`, which is the guide's real heading.
 
-Gates: tsc clean; vitest 514/514; install-mac suite 33/33; windows installer
-contract 22/22; release-contract 61/61; workflow-shell 75 blocks clean; ps1
-ASCII clean; sync-version --check clean. Nothing was executed on macOS or
-Windows: the first real runs are the `v2.11.1` release workflow's
-`windows-latest` leg and RELEASE-SMOKE § 24.
+The `v2.11.1` tag was cut and its release workflow run failed on the first-ever
+`windows-latest` run of the mocked PowerShell suite (21 passed, 5 failed).
+Because that tag is published history, the fixes ship as `2.11.2` instead of
+moving it. Four Windows-only defects surfaced and were fixed on `main`, each
+verified by the `Test` workflow's windows-latest leg before re-tagging:
+
+1. `Setup-Case` copied the mock server with `Copy-Item -LiteralPath ... '*'`,
+   which treats `*` as a literal name, so every runtime case started with an
+   empty server and failed its first download.
+2. The installer hashed with `Get-FileHash`, which is unavailable when
+   `powershell.exe` is started from a shell carrying a PowerShell 7 module path.
+   It now hashes with `System.Security.Cryptography.SHA256` (same digest; this
+   is a real user-visible fix, recorded in `CHANGELOG.md`).
+3. C5b's `ProgramFiles` environment override never reaches the child shell, so
+   the case now uses the real machine path and removes it in a `finally`.
+4. Removing the MOTW gate reaches `Start-Process`, where ShellExecute prompts
+   for a file from the internet; that mutation now caps the setup wait at 3s and
+   expects exit 50.
+
+Gates on the release tree: tsc clean; vitest 514/514; install-mac suite 33/33;
+windows installer contract 22/22; release-contract 61/61; workflow-shell clean;
+ps1 ASCII clean; sync-version --check clean; windows mocked suite 68/68 on
+`windows-latest`. No installer has been executed against a real DMG or setup
+file yet; a real macOS and Windows pass is still RELEASE-SMOKE § 24.

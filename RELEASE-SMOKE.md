@@ -8,7 +8,7 @@ release is not ready.
 > All evidence is redacted and synthetic: no real study data, participant text,
 > or account identifiers may be recorded here or in the release notes.
 
-- **Version:** 2.11.1
+- **Version:** 2.11.2
 - **Commit:** pending tag (see git log at release time)
 - **Platform / build:** macOS arm64 debug bundle (`Fleuron.app`, id `study.fleuron.desktop`); Windows unverified
 - **Date (last run):** 2026-11-27
@@ -175,11 +175,11 @@ release is not ready.
 - [x] The Structure view's centre wraps the study title onto up to three lines with the full text in an SVG `<title>` (`Last verified: 2026-10-26 — wrap-lines.test.ts 5/5 with neutral fixture titles; harness Structure view at 1440 shows the three-line centre`)
 - [x] Packaged-app selftest passes on the release tree (`Last verified: 2026-10-26 — run-selftest.mjs against a 2.11.0 debug bundle under the test identity study.fleuron.devtest: 15 PASS + 1 SKIP group-lifecycle-online, exit 0`)
 
-## 24. Terminal installers (2.11.1 new)
+## 24. Terminal installers (2.11.2 new)
 
-Neither installer has been executed on macOS or Windows by the authors of this change; everything below is a local (Linux host) mocked or static result. The first real execution is the release CI's `windows-latest` leg and a maintainer's Mac, respectively.
+Neither installer has been run against a real release artifact on a real Mac or PC. The mocked suites do run on the real operating systems in CI (macos-latest for `install-mac.test.sh`, windows-latest for `install-windows.test.ps1`), and the first windows-latest run is what found and fixed four Windows-only defects.
 
-- [x] `install-mac.sh` pins this release's DMG SHA-256 and `SHA256SUMS.txt` before touching a disk image, and every `curl` call passes `--proto '=https' --proto-redir '=https' --tlsv1.2 --fail` so a redirect cannot downgrade the download (`Last verified: 2026-11-27 — bash scripts/install-mac.test.sh 33/33 on a Linux host with a mocked curl that refuses to serve without --proto-redir '=https'; C27 and C27-MUT fail if the flag is dropped`)
-- [x] `install-windows.ps1` carries the same download pins plus read-only policy gates and never changes a Windows security setting (`Last verified: 2026-11-27 — node --test scripts/install-windows-contract.test.mjs 22/22 locally, including the negative mutation that strips --proto-redir; the pwsh runtime suite is still unexecuted on Windows`)
-- [x] Both installers are rendered at release time from the staged artifacts, uploaded inside the draft release, re-validated against the attested artifacts, and covered by `SHA256SUMS.txt` and the `subject-checksums` attestation (`Last verified: 2026-11-27 — release-contract assertions plus dry bash scripts/render-install-mac.sh and render-install-windows.sh runs; the workflow steps themselves first execute on the v2.11.1 tag`)
+- [x] `install-mac.sh` pins this release's DMG SHA-256 and `SHA256SUMS.txt` before touching a disk image, and every `curl` call passes `--proto '=https' --proto-redir '=https' --tlsv1.2 --fail` so a redirect cannot downgrade the download (`Last verified: 2026-11-27 — bash scripts/install-mac.test.sh 33/33 on Linux and on the release workflow's macos-latest leg with a mocked curl that refuses to serve without --proto-redir '=https'; C27 and C27-MUT fail if the flag is dropped`)
+- [x] `install-windows.ps1` carries the same download pins plus read-only policy gates, hashes with .NET rather than `Get-FileHash`, and never changes a Windows security setting (`Last verified: 2026-11-27 — Test workflow run 46052484583 on windows-latest: all 68 checks passed, 0 skipped, including the eight gate mutations; the M-MOTW-GATE mutation records that without the gate Windows waits on its own open-file prompt instead of installing`)
+- [x] Both installers are rendered at release time from the staged artifacts, uploaded inside the draft release, re-validated against the attested artifacts, and covered by `SHA256SUMS.txt` and the `subject-checksums` attestation (`Last verified: 2026-11-27 — release-contract assertions plus a local render and exact-grep replay of every release-workflow check; the workflow steps themselves first execute on the v2.11.2 tag`)
 - [x] The stable download URLs for both scripts are documented with the redirect-pinned `curl`/`curl.exe` command, and the README's manual-download table no longer hard-codes a release number (`Last verified: 2026-11-27 — release-contract doc assertions; the README and IT-DEPLOYMENT tables use the version-agnostic Fleuron_<version>_* form`)

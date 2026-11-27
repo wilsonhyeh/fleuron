@@ -10,9 +10,9 @@ Only these files are manual downloads:
 
 | Your computer | Download this exact file |
 | --- | --- |
-| macOS (Intel or Apple Silicon) — disk image | `Fleuron_2.11.1_universal.dmg` |
+| macOS (Intel or Apple Silicon) — disk image | `Fleuron_2.11.2_universal.dmg` |
 | macOS (Intel or Apple Silicon) — Terminal installer (downloads and checks the DMG for you; see below) | `install-mac.sh` |
-| Windows 11 x64 | `Fleuron_2.11.1_x64-setup.exe` |
+| Windows 11 x64 | `Fleuron_2.11.2_x64-setup.exe` |
 | Windows 11 x64 — PowerShell installer (downloads and checks the setup file for you; see below) | `install-windows.ps1` |
 
 You may also see these on a release page. They are **updater infrastructure — do not download them by hand**:
@@ -51,7 +51,7 @@ Choose this option when you are comfortable pasting two commands, want the insta
 **What it does:**
 
 1. Checks the release checksum list (`SHA256SUMS.txt`).
-2. Downloads `Fleuron_2.11.1_universal.dmg` from the tagged GitHub release.
+2. Downloads `Fleuron_2.11.2_universal.dmg` from the tagged GitHub release.
 3. Refuses the file unless its SHA-256 equals the value built into the installer and matches `SHA256SUMS.txt`.
 4. Opens the disk image read-only.
 5. Confirms the app's identifier, version, and signature.
@@ -73,19 +73,19 @@ Choose this option when you are comfortable pasting two commands, want the insta
 **Expected output:**
 
 ```text
-fleuron-install: Fleuron 2.11.1 installer for macOS (arm64)
+fleuron-install: Fleuron 2.11.2 installer for macOS (arm64)
 fleuron-install: install location: /Applications/Fleuron.app
 fleuron-install: checking the release checksum list ... ok
-fleuron-install: downloading Fleuron_2.11.1_universal.dmg ...
+fleuron-install: downloading Fleuron_2.11.2_universal.dmg ...
 <curl progress bar>
 fleuron-install: SHA-256 matches the pinned release value ... ok
-fleuron-install: checking the app inside the disk image ... ok (study.fleuron.desktop 2.11.1, ad-hoc signed)
-fleuron-install: installed Fleuron 2.11.1 to /Applications/Fleuron.app
+fleuron-install: checking the app inside the disk image ... ok (study.fleuron.desktop 2.11.2, ad-hoc signed)
+fleuron-install: installed Fleuron 2.11.2 to /Applications/Fleuron.app
 fleuron-install: done. Open Fleuron from Applications. Later updates arrive through Fleuron's built-in updater.
 ```
 
 Running it again when Fleuron is already at the latest version prints:
-`fleuron-install: Fleuron 2.11.1 is already installed at <path> and verifies; nothing to do.`
+`fleuron-install: Fleuron 2.11.2 is already installed at <path> and verifies; nothing to do.`
 
 Upgrades normally arrive through the in-app updater; rerunning the newest installer also upgrades.
 
@@ -110,7 +110,7 @@ Upgrades normally arrive through the in-app updater; rerunning the newest instal
 
 ## Install on Windows 11 — option A: setup file (double-click)
 
-1. Double-click `Fleuron_2.11.1_x64-setup.exe`.
+1. Double-click `Fleuron_2.11.2_x64-setup.exe`.
 2. **Expected warning:** SmartScreen shows **“Windows protected your PC”** with *Unknown publisher*. Expected for a newly published, non-store app.
 3. Click **More info**, confirm *Unknown publisher*, then **Run anyway**.
 4. The installer installs for **your user account only**. It never asks for administrator credentials. There is no UAC prompt anywhere in this flow.
@@ -133,11 +133,11 @@ Choose this option when you are comfortable pasting two commands into PowerShell
 
 **What it does:**
 1. Checks the release checksum list (`SHA256SUMS.txt`).
-2. Downloads `Fleuron_2.11.1_x64-setup.exe` from the tagged GitHub release with the built-in `curl.exe`.
+2. Downloads `Fleuron_2.11.2_x64-setup.exe` from the tagged GitHub release with the built-in `curl.exe`.
 3. Refuses the file unless its SHA-256 equals the value built into the installer and matches `SHA256SUMS.txt`.
 4. Stops with POLICY STOP if Smart App Control, S mode, or an organization policy would block Fleuron.
 5. Runs the verified setup file silently for your account only; like option A it adds Start menu and desktop shortcuts.
-6. Confirms Fleuron 2.11.1 is installed in `%LOCALAPPDATA%\Fleuron`.
+6. Confirms Fleuron 2.11.2 is installed in `%LOCALAPPDATA%\Fleuron`.
 
 **What it never does:**
 - Ask for administrator rights or show a User Account Control prompt.
@@ -152,18 +152,18 @@ Choose this option when you are comfortable pasting two commands into PowerShell
 
 **Expected output:**
 ```text
-fleuron-install: Fleuron 2.11.1 installer for Windows (x64)
+fleuron-install: Fleuron 2.11.2 installer for Windows (x64)
 fleuron-install: install location: C:\Users\<you>\AppData\Local\Fleuron
 fleuron-install: checking the release checksum list ... ok
-fleuron-install: downloading Fleuron_2.11.1_x64-setup.exe ...
+fleuron-install: downloading Fleuron_2.11.2_x64-setup.exe ...
 <curl progress bar>
 fleuron-install: SHA-256 matches the pinned release value ... ok
 fleuron-install: running the verified setup file for this Windows account (no administrator rights) ...
-fleuron-install: installed Fleuron 2.11.1 to C:\Users\<you>\AppData\Local\Fleuron
+fleuron-install: installed Fleuron 2.11.2 to C:\Users\<you>\AppData\Local\Fleuron
 fleuron-install: done. Open Fleuron from the Start menu. Later updates arrive through Fleuron's built-in updater.
 ```
 Running it again when Fleuron is current prints:
-`fleuron-install: Fleuron 2.11.1 is already installed at <path>; nothing to do.`
+`fleuron-install: Fleuron 2.11.2 is already installed at <path>; nothing to do.`
 Upgrades normally arrive through the in-app updater; rerunning the newest installer also upgrades.
 
 **Uninstall:** download the installer again with line 1, then run `& "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy RemoteSigned -File "$env:USERPROFILE\fleuron-install-windows.ps1" --uninstall`. Studies in `%USERPROFILE%\Fleuron` are kept. You can also remove Fleuron from **Settings → Apps → Installed apps**.
@@ -216,27 +216,27 @@ Optional steps for the disk-image and setup-file paths. The Terminal and PowerSh
 
 ```bash
 # GitHub's per-asset digest, visible on the release page:
-shasum -a 256 Fleuron_2.11.1_universal.dmg
+shasum -a 256 Fleuron_2.11.2_universal.dmg
 ```
 
 Verify against the published `SHA256SUMS.txt` on the release page:
 
 ```bash
-gh release download v2.11.1 --repo wilsonhyeh/fleuron --dir .
+gh release download v2.11.2 --repo wilsonhyeh/fleuron --dir .
 shasum -a 256 -c SHA256SUMS.txt
 ```
 
 Artifact attestation proves which public repository, workflow, and commit produced each asset:
 
 ```bash
-gh attestation verify Fleuron_2.11.1_universal.dmg --repo wilsonhyeh/fleuron
+gh attestation verify Fleuron_2.11.2_universal.dmg --repo wilsonhyeh/fleuron
 ```
 
 On Windows (PowerShell):
 
 ```powershell
-Get-FileHash .\Fleuron_2.11.1_x64-setup.exe -Algorithm SHA256
-gh attestation verify .\Fleuron_2.11.1_x64-setup.exe --repo wilsonhyeh/fleuron
+Get-FileHash .\Fleuron_2.11.2_x64-setup.exe -Algorithm SHA256
+gh attestation verify .\Fleuron_2.11.2_x64-setup.exe --repo wilsonhyeh/fleuron
 ```
 
 These checks help verify file integrity and build provenance. They do not establish software safety or replace an OS publisher identity.
