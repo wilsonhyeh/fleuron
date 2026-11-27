@@ -164,7 +164,7 @@ export const MACOS_WARNING_CARDS: WarningCard[] = [
     explanation:
       "Expected for the official non-notarized, ad-hoc signed build. The dialog body reads: Apple could not verify \u201cFleuron\u201d is free of malware that may harm your Mac or compromise your privacy. Verified on macOS 27.0.1 (build 26A434); earlier macOS versions may show different wording. macOS is saying it cannot verify the publisher — not that it found malware.",
     userAction:
-      "Click the grey Done button. The blue, filled, highlighted button is Move to Trash and it is the default: clicking it, or pressing Return, deletes Fleuron. Never click Move to Trash and do not press Return. Then confirm you downloaded from github.com/wilsonhyeh/fleuron/releases, open System Settings \u2192 Privacy & Security \u2192 Open Anyway, authenticate, and Open. Prefer Terminal? The install guide's checksum-verified Terminal installer is an alternative; downloads made in Terminal do not show this dialog.",
+      "Click the grey Done button. The blue, filled, highlighted button is Move to Trash and it is the default: clicking it, or pressing Return, deletes Fleuron. Never click Move to Trash and do not press Return. Then confirm you downloaded from github.com/wilsonhyeh/fleuron/releases, open System Settings \u2192 Privacy & Security \u2192 Open Anyway (macOS lists it for about an hour after the blocked launch; if it is gone, open Fleuron again and go straight back), authenticate, and Open. Prefer Terminal? The install guide's checksum-verified Terminal installer is an alternative; downloads made in Terminal do not show this dialog.",
   },
   {
     signal: "\u201cWill damage your computer\u201d / malware alert / \u201cdamaged and cannot be opened\u201d",

@@ -1,8 +1,8 @@
 # User guide — Fleuron
 
-> **Collaboration is paused (since Fleuron 2.8.0).** Accounts, shared studies, and sync are turned off, and the app makes no sync connection; it goes online only to check for and download updates. The collaboration material in this document describes how the feature works when it returns.
+> **Collaboration is paused (since Fleuron 2.8.0).** Accounts, shared studies, and sync are turned off, and the app makes no sync connection; it goes online only to check for and download updates. In 2.11.x no account, join, share, or sync control appears anywhere in the app, so nothing in the collaboration sections below can be followed today. They describe how the feature works when it returns.
 
-Current as of **v1.0.0**. In-app help is the same content: press **Help** on the welcome screen or toolbar, or **`?`** / **Cmd+/** anytime.
+Current as of **2.11.2**. In-app help covers the same ground: press **Help** on the welcome screen or toolbar, or **`?`** / **Cmd+/** anytime.
 
 ---
 
@@ -12,7 +12,7 @@ Current as of **v1.0.0**. In-app help is the same content: press **Help** on the
 |------|-------------|
 | **The app** | Installed once from the `.dmg` (macOS) or `.exe` (Windows) |
 | **An account** | Yours alone. Create it in Settings or as the first step of Join a group. Colleagues never see it. |
-| **A group key** | Eight characters from **Group & sync…**. That is the only thing a second coder carries. |
+| **A group key** | Eight characters from **Study & sync…**. That is the only thing a second coder carries. |
 | **Transcripts in Box** | De-identified files. Both of you import the same file under the same study label. |
 
 The app is the tool; the **project** is a `.fleuron` folder on *this* computer. Coding travels through sync. Transcripts travel through Box. **Never copy, sync, or share the live project folder.**
@@ -32,7 +32,7 @@ The app is the tool; the **project** is a `.fleuron` folder on *this* computer. 
 5. Link each transcript from Box. Fleuron checks the passage count against the group's copy.
 6. **Start coding** enables once every transcript is linked.
 
-**Starting a new study.** Home screen → **Set up a new study** (⌘N). Then **⋯ → Group & sync… → Start a group** and send the key.
+**Starting a new study.** Home screen → **Set up a new study** (⌘N). Then **⋯ → Study & sync… → Start a group** and send the key.
 
 ---
 
@@ -75,7 +75,7 @@ Click **Map** in the toolbar (or **⇧⌘M / Ctrl+Shift+M**) to open a live map 
 
 Click a code or a line for its definition, the codes it shares passages with, and the passages; click a passage to open it. The expand button fills the window for presenting; **Esc** returns. A line means two codes were applied to the same passage, nothing more: what the relationship is stays your call.
 
-On a grouped project the toolbar shows the name you confirmed when you joined — it is not a picker. Change it in **Group & sync…**.
+On a grouped project the toolbar shows the name you confirmed when you joined — it is not a picker. Change it in **Study & sync…**.
 
 ---
 
@@ -92,7 +92,7 @@ On a grouped project the toolbar shows the name you confirmed when you joined �
 
 1. Put the de-identified transcript in the team's Box folder — study IDs only, in the text *and* the filename.
 2. You both create the interview with **the same study label** and import that same file.
-3. Sync runs when coding pauses, on window blur, and on a slow pull cycle. **Sync now** in **Group & sync…** forces a run.
+3. Sync runs when coding pauses, on window blur, and on a slow pull cycle. **Sync now** in **Study & sync…** forces a run.
 
 What crosses the network when you collaborate: which passage, which codes, which coder — coded-span references plus your de-identified study/participant label, interview segment counts, and content hashes. **No transcript text, no memos, no file paths.** Segment hashes are derived from transcript content, so two people importing the same file independently produce identical hashes.
 
@@ -120,7 +120,7 @@ Every codebook field syncs word-for-word: names, definitions, colours, inclusion
 │  right-click│   bubble names it        │    exists)  │
 │  = apply    │                          │             │
 ├─────────────┴──────────────────────────┴─────────────┤
-│  study · Map · Export… · ⋯  (Group & sync, Settings, Help)
+│  study · Map · Export… · ⋯  (Study & sync, Settings, Help)
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -142,10 +142,10 @@ Every codebook field syncs word-for-word: names, definitions, colours, inclusion
 | Windows SmartScreen | Confirm you downloaded from the official releases page, then **More info** → **Run anyway**. Never use file Properties to unblock anything |
 | macOS says “damaged” or malware | Stop — that is not the ordinary warning. Delete and re-download from the official page; file an install issue if it repeats |
 | Forgot password | Settings → I already have one → Forgot password? Type the short code from the email |
-| Teammate's codes missing | Open **Group & sync…** → **Sync now**. You must be signed in. |
+| Teammate's codes missing | Open **Study & sync…** → **Sync now**. You must be signed in. |
 | Chip says "3 to send" | Coding is already saved here; that count has not reached the group yet |
 | Sync refuses / passages don't line up | Different transcript or different study label. Re-import the same Box file under the same label |
-| Recent project won't open | Folder moved — remove the row, then Open project… |
+| Recent project won't open | Folder moved — remove the row, then Open study… |
 | Join wants an account first | That is the first step of the wizard. Continue stays hidden until you are signed in |
 | Folder already in another group | Binding would mix two studies — use **Create a new copy** instead |
 

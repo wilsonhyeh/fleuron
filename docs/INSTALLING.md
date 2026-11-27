@@ -44,6 +44,8 @@ You may also see these on a release page. They are **updater infrastructure — 
 
 Open Anyway stays available after the first run unless macOS re-prompts after an update.
 
+Apple lists **Open Anyway** for about an hour after a blocked launch, and only for the app macOS blocked most recently. If it is not there when you look, launch Fleuron again, click the grey **Done**, and go straight back to **Privacy & Security**. The approval is what persists: once you have opened the app this way, later launches need nothing — until an update replaces the binary and macOS asks again.
+
 ## Install on macOS — option B: Terminal (checksum-verified)
 
 Choose this option when you are comfortable pasting two commands, want the installer to enforce the SHA-256 check automatically, or have no administrator account (it installs to `~/Applications` when `/Applications` is not writable).

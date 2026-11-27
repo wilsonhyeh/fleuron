@@ -85,12 +85,12 @@ release is not ready.
 
 ## 14. First launch / platforms
 
-- [ ] macOS fresh install reports 2.0.1 in About (`PENDING DRAFT ASSET — requires published release build`)
-- [ ] Windows fresh install reports 2.0.1 (`PENDING DRAFT ASSET — requires published release build`)
+- [ ] macOS fresh install reports <version> in About (`PENDING DRAFT ASSET — requires published release build`)
+- [ ] Windows fresh install reports <version> (`PENDING DRAFT ASSET — requires published release build`)
 
 ## 15. Updater path (previous release to this release)
 
-- [ ] The updater delivers 2.0.1 to windows and macOS and both restart cleanly with local project data intact (`PENDING POST-PUBLISH UPDATER — requires published release with updater artifacts`)
+- [ ] The updater delivers <version> to windows and macOS and both restart cleanly with local project data intact (`PENDING POST-PUBLISH UPDATER — requires published release with updater artifacts`)
 
 ## 16. Integration evidence (local/staging stack)
 
