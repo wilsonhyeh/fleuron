@@ -291,6 +291,25 @@ function Test-FleuronSumsFile {
     if ($matchName -ne 1 -or $matchExact -ne 1) { Stop-Fleuron -Code 20 -Security -Message ('SHA256SUMS.txt does not match the pinned hash for ' + $script:SetupName + '. Nothing was installed.') }  # SUMS-GATE
 }
 
+# Hash with .NET, not Get-FileHash: the cmdlet needs Microsoft.PowerShell.Utility to
+# autoload, and that can fail when powershell.exe is started from a shell carrying a
+# PowerShell 7 module path (the installer then died with "Get-FileHash is not
+# recognized"). ComputeHash is the same SHA-256 over the same bytes, in every host.
+function Get-FleuronFileSha256 {
+    param([string]$Path)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
+    try {
+        $bytes = $sha.ComputeHash($stream)
+    } finally {
+        $stream.Dispose()
+        $sha.Dispose()
+    }
+    $hex = ''
+    foreach ($b in $bytes) { $hex = $hex + $b.ToString('x2') }
+    return $hex
+}
+
 # 1260 ERROR_ACCESS_DISABLED_BY_POLICY, 4551 ERROR_SYSTEM_INTEGRITY_POLICY_VIOLATION,
 # 225 ERROR_VIRUS_INFECTED, 226 ERROR_VIRUS_DELETED. Mapping is unverified on Windows.
 function Get-FleuronLaunchFailureCode {
@@ -369,7 +388,7 @@ function Invoke-FleuronInstall {
     if (-not (Test-Path -LiteralPath $partial -PathType Leaf)) {
         Stop-Fleuron -Code 30 -Policy -Message ('the downloaded setup file is missing or unreadable. Security software such as Microsoft Defender may have removed it. Do not restore or allow the file. Nothing was installed. File an install issue: ' + $script:IssueUrl)
     }
-    $h = (Get-FileHash -LiteralPath $partial -Algorithm SHA256).Hash.ToLowerInvariant()
+    $h = Get-FleuronFileSha256 -Path $partial
     if ($h -cne $FleuronSetupSha256) { Stop-Fleuron -Code 20 -Security -Message ('downloaded setup file hash (' + $h + ') does not match pinned release value (' + $FleuronSetupSha256 + '). Do not run this file. Nothing was installed. Report it: ' + $script:IssueUrl) }  # CHECKSUM-GATE
     Write-FleuronLog 'SHA-256 matches the pinned release value ... ok'
     $setup = Join-Path $script:Work $script:SetupName
