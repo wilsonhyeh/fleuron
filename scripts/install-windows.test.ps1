@@ -777,7 +777,6 @@ exit 0
         $script:CaseLocal = Join-Path $script:CaseDir 'local'
         $script:CaseRoaming = Join-Path $script:CaseDir 'roaming'
         $script:CaseTemp = Join-Path $script:CaseDir 'temp'
-        $script:CasePf = Join-Path $script:CaseDir 'pf'
         $script:CaseServer = Join-Path $script:CaseDir 'server'
         $script:CaseLog = Join-Path $script:CaseDir 'mock.log'
         $script:RegRoot = $TestRegParent + '\case'
@@ -787,7 +786,7 @@ exit 0
             if (Test-Path -LiteralPath $script:CaseDir) {
                 Remove-Item -LiteralPath $script:CaseDir -Recurse -Force
             }
-            foreach ($d in @($script:CaseHome, $script:CaseLocal, $script:CaseRoaming, $script:CaseTemp, $script:CasePf, $script:CaseServer)) {
+            foreach ($d in @($script:CaseHome, $script:CaseLocal, $script:CaseRoaming, $script:CaseTemp, $script:CaseServer)) {
                 New-Item -ItemType Directory -Path $d -Force | Out-Null
             }
             # -Path (not -LiteralPath): the '*' must expand, or nothing is copied and every
@@ -818,7 +817,6 @@ exit 0
                 APPDATA = $script:CaseRoaming
                 TEMP = $script:CaseTemp
                 TMP = $script:CaseTemp
-                ProgramFiles = $script:CasePf
                 FLEURON_INSTALL_TEST_SYSROOT = $Sysroot
                 FLEURON_INSTALL_TEST_REGROOT = $script:RegRoot
                 MOCK_DIR = $MockDir
@@ -1054,22 +1052,30 @@ exit 0
         }
 
         # C5b: ProgramFiles\Fleuron\Fleuron.exe exists -> 5
+        # The ProgramFiles environment variable does not propagate into the child shell
+        # (a probe through the same harness reported PF=C:\Program Files), so use the
+        # real machine path - the runner account owns it - and remove it afterwards.
         Setup-Case
-        $pfFleuron = Join-Path $script:CasePf 'Fleuron'
-        New-Item -ItemType Directory -Path $pfFleuron -Force | Out-Null
-        Copy-Item -LiteralPath (Join-Path $MockDir 'app-2.11.0.exe') -Destination (Join-Path $pfFleuron 'Fleuron.exe') -Force
-        $probePath = Join-Path $script:CaseTemp 'probe_pf.ps1'
-        $probeText = @'
-Write-Output ('PF=' + $env:ProgramFiles)
-Write-Output ('EX=' + (Test-Path -LiteralPath (Join-Path $env:ProgramFiles 'Fleuron\Fleuron.exe')))
-'@
-        Write-Utf8NoBom -Path $probePath -Text $probeText
-        $probe = Run-Installer -ScriptPath $probePath -ArgList @()
-        $res = Run-Installer -ScriptPath $Rendered -ArgList @()
-        if ($res.ExitCode -eq 5) {
+        $pfFleuron = Join-Path ([System.Environment]::GetFolderPath('ProgramFiles')) 'Fleuron'
+        $pfMarker = Join-Path $pfFleuron 'Fleuron.exe'
+        $pfExisted = Test-Path -LiteralPath $pfFleuron
+        $res = $null
+        $c5bOk = $false
+        try {
+            New-Item -ItemType Directory -Path $pfFleuron -Force | Out-Null
+            Copy-Item -LiteralPath (Join-Path $MockDir 'app-2.11.0.exe') -Destination $pfMarker -Force
+            $res = Run-Installer -ScriptPath $Rendered -ArgList @()
+            $c5bOk = ($res.ExitCode -eq 5)
+        } finally {
+            # Never delete a real machine-wide install on a developer's own PC.
+            if (-not $pfExisted) { Remove-Item -LiteralPath $pfFleuron -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+        if ($c5bOk) {
             if (Assert-NoLeftovers 'C5b') { Pass 'C5b' 'ProgramFiles Fleuron.exe exits 5' }
         } else {
-            Fail 'C5b' ("rc=" + $res.ExitCode + " probe=" + ($probe.Out -replace '\s+', ' ') + " out=" + $res.Out)
+            $rc5b = -1
+            if ($null -ne $res) { $rc5b = $res.ExitCode }
+            Fail 'C5b' ("rc=" + $rc5b + " out=" + $res.Out)
         }
 
         # C6a: junction at case\local\Fleuron -> 5

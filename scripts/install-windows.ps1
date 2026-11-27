@@ -445,7 +445,7 @@ function Invoke-FleuronCleanup {
     if ($script:Work -and (Test-Path -LiteralPath $script:Work)) {
         # Retry: antivirus can hold the just-run setup file open for a moment, and a
         # failed removal would leave a downloaded installer behind in %TEMP%.
-        for ($i = 0; $i -lt 5; $i++) {
+        for ($i = 0; $i -lt 25; $i++) {
             Remove-Item -LiteralPath $script:Work -Recurse -Force -ErrorAction SilentlyContinue
             if (-not (Test-Path -LiteralPath $script:Work)) { break }
             Start-Sleep -Milliseconds 200
