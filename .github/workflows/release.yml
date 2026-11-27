@@ -64,6 +64,12 @@ jobs:
       - name: Migration verifier self-check
         run: bash scripts/verify-supabase-migrations.test.sh
 
+      - name: macOS installer mocked suite (bash 3.2)
+        run: /bin/bash scripts/install-mac.test.sh
+
+      - name: Windows installer static contract (+ negative mutations)
+        run: node --test scripts/install-windows-contract.test.mjs
+
       - name: TypeScript typecheck
         run: npx tsc --noEmit
 
@@ -158,6 +164,11 @@ jobs:
         run: |
           powershell -ExecutionPolicy Bypass -File qa/Test-Parse.ps1
           powershell -ExecutionPolicy Bypass -File qa/Invoke-FleuronQA.ps1 -SelfCheck
+
+      - name: Windows PowerShell installer mocked suite
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        shell: pwsh
+        run: pwsh -NoProfile -NonInteractive -File scripts/install-windows.test.ps1
 
       - name: Verify macOS whole-bundle seal + DMG artifact
         if: matrix.target == 'universal-apple-darwin'
@@ -256,6 +267,28 @@ jobs:
           node -e 'const j=require("./assets/latest.json"); if(j.version!==process.argv[1]) process.exit(1)' "$VERSION"
           echo "latest.json generated for v$VERSION"
 
+      - name: Render terminal installer (install-mac.sh) pinned to this DMG
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          bash scripts/render-install-mac.sh "$VERSION" "assets/Fleuron_${VERSION}_universal.dmg" assets/install-mac.sh
+          bash -n assets/install-mac.sh
+          WANT="$(shasum -a 256 "assets/Fleuron_${VERSION}_universal.dmg" | cut -d' ' -f1)"
+          grep -qx "FLEURON_DMG_SHA256=\"${WANT}\"" assets/install-mac.sh || { echo "install-mac.sh does not pin the staged DMG"; exit 1; }
+          grep -qx "FLEURON_VERSION=\"${VERSION}\"" assets/install-mac.sh || { echo "install-mac.sh version mismatch"; exit 1; }
+
+      - name: Render PowerShell installer (install-windows.ps1) pinned to this setup exe
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          bash scripts/render-install-windows.sh "$VERSION" "assets/Fleuron_${VERSION}_x64-setup.exe" assets/install-windows.ps1
+          command -v pwsh >/dev/null 2>&1 || { echo "pwsh is required to parse-check install-windows.ps1"; exit 1; }
+          FLEURON_PS_PARSE_TARGET="$PWD/assets/install-windows.ps1" pwsh -NoProfile -NonInteractive -Command '$tokens = $null; $errors = $null; [void][System.Management.Automation.Language.Parser]::ParseFile($env:FLEURON_PS_PARSE_TARGET, [ref]$tokens, [ref]$errors); if ($errors.Count -gt 0) { $errors | ForEach-Object { [Console]::Error.WriteLine($_.Message) }; exit 1 }; Write-Output "install-windows.ps1 parses"'
+          WANT="$(shasum -a 256 "assets/Fleuron_${VERSION}_x64-setup.exe" | cut -d' ' -f1)"
+          grep -qxF "\$FleuronSetupSha256 = '${WANT}'" assets/install-windows.ps1 || { echo "install-windows.ps1 does not pin the staged setup exe"; exit 1; }
+          grep -qxF "\$FleuronVersion = '${VERSION}'" assets/install-windows.ps1 || { echo "install-windows.ps1 version mismatch"; exit 1; }
+          if LC_ALL=C grep -q '[^[:cntrl:][:print:]]' assets/install-windows.ps1; then echo "install-windows.ps1 must be ASCII-only"; exit 1; fi
+
       - name: Create DRAFT release and attach exact assets
         shell: bash
         env:
@@ -271,6 +304,8 @@ jobs:
           #   Fleuron_universal.app.tar.gz
           #   Fleuron_universal.app.tar.gz.sig
           #   latest.json
+          #   install-mac.sh
+          #   install-windows.ps1
           gh release delete "$TAG" --yes --cleanup-tag=false 2>/dev/null || true
           # Resolve the version ONCE. Inlining $(node -p \"...\") inside a
           # double-quoted echo parses on bash 3.2 but is a syntax error on the
@@ -290,6 +325,8 @@ jobs:
             echo "- Official source commit: ${GITHUB_SHA}"
             echo "- Install guide and expected OS warnings: docs/INSTALLING.md"
             echo "- Exact privacy disclosure: docs/PRIVACY-AND-PERMISSIONS.md"
+            echo "- macOS Terminal install: \`install-mac.sh\` downloads this release's DMG and refuses it unless its SHA-256 matches; usage in docs/INSTALLING.md"
+            echo "- Windows PowerShell install: \`install-windows.ps1\` downloads this release's setup file and refuses it unless its SHA-256 matches; usage in docs/INSTALLING.md"
             echo "- Support: SUPPORT.md · Security: SECURITY.md"
             echo "- Changelog: CHANGELOG.md"
             echo ""
@@ -303,6 +340,8 @@ jobs:
             "$(echo assets/*-setup.exe.sig)" \
             "$(echo assets/*.app.tar.gz)" \
             "$(echo assets/*.app.tar.gz.sig)" \
+            "assets/install-mac.sh" \
+            "assets/install-windows.ps1" \
             --clobber
 
   provenance:
@@ -338,7 +377,7 @@ jobs:
           mv artifacts/Fleuron_universal.app.tar.gz verify/
           mv artifacts/Fleuron_universal.app.tar.gz.sig verify/
 
-      # The six-asset inventory is fail-closed after both platform uploads.
+      # The eight-asset inventory is fail-closed after both platform uploads.
       - name: Validate exact draft inventory + drafts stay drafts
         shell: bash
         env:
@@ -346,7 +385,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          EXPECTED="Fleuron_${VERSION}_universal.dmg Fleuron_${VERSION}_x64-setup.exe Fleuron_${VERSION}_x64-setup.exe.sig Fleuron_universal.app.tar.gz Fleuron_universal.app.tar.gz.sig latest.json"
+          EXPECTED="Fleuron_${VERSION}_universal.dmg Fleuron_${VERSION}_x64-setup.exe Fleuron_${VERSION}_x64-setup.exe.sig Fleuron_universal.app.tar.gz Fleuron_universal.app.tar.gz.sig latest.json install-windows.ps1 install-mac.sh"
           VIEW="$(gh release view "$TAG" --repo wilsonhyeh/fleuron --json isDraft,isPrerelease,targetCommitish)"
           echo "$VIEW" | grep -q '"isDraft":true' || { echo "release must be a draft"; exit 1; }
           echo "$VIEW" | grep -q '"isPrerelease":false' || { echo "must not be a prerelease"; exit 1; }
@@ -358,7 +397,7 @@ jobs:
           for want in $EXPECTED; do
             grep -qw "$want" <<<"$NAMES" || { echo "missing asset: $want"; exit 1; }
           done
-          echo "exact eight-asset inventory present on the draft"
+          echo "exact eight-asset inventory present on the draft (SHA256SUMS.txt is attached next)"
 
       - name: Validate latest.json content
         shell: bash
@@ -386,7 +425,34 @@ jobs:
             console.log("latest.json OK");
           ' "$VERSION" "$TAG"
 
-      - name: Generate sorted SHA256SUMS.txt for the six assets
+      - name: Validate install-mac.sh pins the attested DMG
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          gh release download "$TAG" --repo wilsonhyeh/fleuron --pattern 'install-mac.sh' --dir verify --clobber
+          bash -n verify/install-mac.sh
+          WANT="$(shasum -a 256 "verify/Fleuron_${VERSION}_universal.dmg" | cut -d' ' -f1)"
+          grep -qx "FLEURON_DMG_SHA256=\"${WANT}\"" verify/install-mac.sh || { echo "published install-mac.sh does not pin the attested DMG"; exit 1; }
+          grep -qx "FLEURON_VERSION=\"${VERSION}\"" verify/install-mac.sh || { echo "published install-mac.sh version mismatch"; exit 1; }
+
+      - name: Validate install-windows.ps1 pins the attested setup exe
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          gh release download "$TAG" --repo wilsonhyeh/fleuron --pattern 'install-windows.ps1' --dir verify --clobber
+          command -v pwsh >/dev/null 2>&1 || { echo "pwsh is required to parse-check install-windows.ps1"; exit 1; }
+          FLEURON_PS_PARSE_TARGET="$PWD/verify/install-windows.ps1" pwsh -NoProfile -NonInteractive -Command '$tokens = $null; $errors = $null; [void][System.Management.Automation.Language.Parser]::ParseFile($env:FLEURON_PS_PARSE_TARGET, [ref]$tokens, [ref]$errors); if ($errors.Count -gt 0) { $errors | ForEach-Object { [Console]::Error.WriteLine($_.Message) }; exit 1 }; Write-Output "install-windows.ps1 parses"'
+          WANT="$(shasum -a 256 "verify/Fleuron_${VERSION}_x64-setup.exe" | cut -d' ' -f1)"
+          grep -qxF "\$FleuronSetupSha256 = '${WANT}'" verify/install-windows.ps1 || { echo "published install-windows.ps1 does not pin the attested setup exe"; exit 1; }
+          grep -qxF "\$FleuronVersion = '${VERSION}'" verify/install-windows.ps1 || { echo "published install-windows.ps1 version mismatch"; exit 1; }
+
+      - name: Generate sorted SHA256SUMS.txt for the eight assets
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -398,7 +464,9 @@ jobs:
                    "Fleuron_universal.app.tar.gz" \
                    "Fleuron_universal.app.tar.gz.sig" \
                    "Fleuron_${VERSION}_x64-setup.exe" \
-                   "Fleuron_${VERSION}_x64-setup.exe.sig"; do
+                   "Fleuron_${VERSION}_x64-setup.exe.sig" \
+                   "install-mac.sh" \
+                   "install-windows.ps1"; do
             test -f "$f" || { echo "missing local copy: $f"; exit 1; }
             shasum -a 256 "$f"
           done > SHA256SUMS.raw.txt

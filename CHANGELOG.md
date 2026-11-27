@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.1]
+
+### Added
+
+- **macOS Terminal installer:** `install-mac.sh` is published with each release. It downloads that release's DMG, refuses it unless its SHA-256 matches the value pinned at build time and the release's SHA256SUMS.txt, checks the app's identity, and installs without administrator rights (to ~/Applications when /Applications is not writable). See docs/INSTALLING.md.
+- **Windows PowerShell installer:** `install-windows.ps1` is published with each release. It downloads that release's setup file with the built-in `curl.exe`, refuses it unless its SHA-256 matches the value pinned at build time and the release's SHA256SUMS.txt, stops with a POLICY STOP when Smart App Control, S mode, or an organization policy would block Fleuron, and runs the per-user setup silently without administrator rights. It changes no Windows security setting. See docs/INSTALLING.md.
+
+### Fixed
+
+- **Terminal installer redirect downgrade:** every `curl` call in `install-mac.sh` now passes `--proto-redir '=https'`, so a redirect can no longer downgrade the download to plain http (the Windows installer already pinned it, and the documented line 1 commands now show it too). The mocked suite's `curl` refuses to serve without it, and a new case fails if the flag disappears.
+- **Download names in the README:** the "Getting Started" table listed `Fleuron_2.1.0_*` files. It now uses the version-agnostic `Fleuron_<version>_*` form, with `<version>` defined as the release number, so it cannot rot again. `docs/IT-DEPLOYMENT.md` used a stale `2.0.1` name for the same reason and now uses the same form.
+- **File access help link:** the transcript panel's "How to fix access" link pointed at `#troubleshooting-file-access`; the guide's heading is "File access troubleshooting", so the link now targets `#file-access-troubleshooting`. No other docs anchor in the source pointed at a missing heading.
+
+---
+
 ## [2.11.0]
 
 ### Changed

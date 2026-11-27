@@ -31,10 +31,12 @@ Downloads are distributed from [fleuron.study](https://fleuron.study/) and the [
 
 | Platform | File |
 | --- | --- |
-| macOS (Intel + Apple Silicon) | `Fleuron_2.1.0_universal.dmg` |
-| Windows 11 x64 | `Fleuron_2.1.0_x64-setup.exe` |
+| macOS (Intel + Apple Silicon) | `Fleuron_<version>_universal.dmg` |
+| Windows 11 x64 | `Fleuron_<version>_x64-setup.exe` |
 
-New studies default to a local working library (`~/Fleuron` / `%USERPROFILE%\Fleuron`). Windows installs per-user with no administrator prompt; macOS uses System Settings → Privacy & Security → Open Anyway once.
+`<version>` is the release number shown on the [Releases page](https://github.com/wilsonhyeh/fleuron/releases/latest). Those two files are the only manual downloads; every other file on a release page is updater infrastructure or checksum material.
+
+New studies default to a local working library (`~/Fleuron` / `%USERPROFILE%\Fleuron`). Windows installs per-user with no administrator prompt (double-click the setup file, or use the checksum-verified PowerShell installer); macOS uses System Settings → Privacy & Security → Open Anyway once, or the checksum-verified Terminal installer described in docs/INSTALLING.md.
 
 For detailed usage instructions and workflow tips, see the [User Guide](docs/USER-GUIDE.md), [synthetic transcript-coding tutorial](https://fleuron.study/guides/code-interview-transcripts/) and [reflexive thematic analysis workflow](https://fleuron.study/guides/reflexive-thematic-analysis/).
 

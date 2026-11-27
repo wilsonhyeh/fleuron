@@ -156,6 +156,23 @@ describe("prohibited guidance never appears in user-facing text", () => {
     } catch {
       /* docs dir contents grow during v1.2; absence is not a violation */
     }
+    // The maintainer doc is the one place that names inspection commands, and
+    // the installer's messages are user-facing, so both must be inside the ban.
+    for (const name of readdirSync(resolve(REPO_ROOT, "docs/maintainers"))) {
+      if (!name.endsWith(".md")) continue;
+      yield {
+        file: `docs/maintainers/${name}`,
+        text: readFileSync(resolve(REPO_ROOT, "docs/maintainers", name), "utf8"),
+      };
+    }
+    yield {
+      file: "scripts/install-mac.sh",
+      text: readFileSync(resolve(REPO_ROOT, "scripts/install-mac.sh"), "utf8"),
+    };
+    yield {
+      file: "scripts/install-windows.ps1",
+      text: readFileSync(resolve(REPO_ROOT, "scripts/install-windows.ps1"), "utf8"),
+    };
     for (const name of readdirSync(resolve(SRC, "content"))) {
       if (!name.endsWith(".ts")) continue;
       yield {
@@ -169,9 +186,66 @@ describe("prohibited guidance never appears in user-facing text", () => {
     return text.split(/[.!?\n]/).map((s) => s.trim()).filter(Boolean);
   }
 
+  // Amended for the Terminal install path (docs/maintainers/TERMINAL-INSTALL.md).
+  // The Mac verification checklist must INSPECT extended attributes, so exactly
+  // two read-only forms are allowed: `xattr -l <path>` and `xattr -p <name> <path>`.
+  // Prose mentions, -d/-c/-w/-r, combined or extra flags all still fail: we
+  // never teach mutating or clearing com.apple.quarantine, and the installer
+  // never needs to (curl writes no quarantine attribute).
+  function xattrMisuse(s: string): boolean {
+    for (const m of s.matchAll(/\bxattr\b([^`;|&)]*)/g)) {
+      const flags = m[1].match(/(?:^|\s)-\S+/g)?.map((f) => f.trim()) ?? [];
+      if (flags.length !== 1 || (flags[0] !== "-l" && flags[0] !== "-p")) return true;
+    }
+    return false;
+  }
+
+  // Amended for the Windows PowerShell install path (scripts/install-windows.ps1
+  // and docs/maintainers/TERMINAL-INSTALL.md). Read-only stream inspection
+  // (`Get-Item ... -Stream Zone.Identifier`) and `-ExecutionPolicy RemoteSigned`
+  // are allowed; unblocking files, changing execution policy, Defender/mitigation
+  // mutations, and pipe-to-iex are banned unless explicitly negated in prose.
+  const WIN_NEGATION =
+    /\b(never|not|no|do not|don't|does not|doesn't|will not|won't|rejected|refuses|banned)\b/i;
+  const WIN_ALWAYS: RegExp[] = [
+    /\bUnblock-File\s+(-|["'$.~\\/]|[A-Za-z]:)/i,
+    /-ExecutionPolicy\s+(Bypass|Unrestricted)\s+-(File|Command)\b/i,
+    /\bSet-ExecutionPolicy\s+(-|Bypass\b|Unrestricted\b|RemoteSigned\b|AllSigned\b|Undefined\b)/i,
+    /\b(irm|iwr|Invoke-RestMethod|Invoke-WebRequest)\b[^\n|]*https?:\/\/[^\n|]*\|\s*(iex|Invoke-Expression)\b/i,
+    /\b(Remove-Item|Set-Content|Add-Content|Clear-Content|Out-File)\b[^\n]*-Stream\b/i,
+    /\b(Add|Set|Remove)-MpPreference\b/i,
+    /\bSet-ProcessMitigation\b/i,
+  ];
+  const WIN_GUARDED: RegExp[] = [
+    /\bUnblock-File\b/gi,
+    /-ExecutionPolicy\s+(Bypass|Unrestricted)\b/gi,
+    /\bSet-ExecutionPolicy\b/gi,
+    /\bInvoke-Expression\b/gi,
+    /\|\s*iex\b/gi,
+  ];
+  function windowsMisuse(line: string): boolean {
+    if (WIN_ALWAYS.some((re) => re.test(line))) return true;
+    for (const re of WIN_GUARDED) {
+      re.lastIndex = 0;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(line)) !== null) {
+        const before = line.slice(Math.max(0, m.index - 100), m.index);
+        if (!WIN_NEGATION.test(before)) return true;
+      }
+    }
+    return false;
+  }
+
   function violationIn(text: string): string | null {
+    for (const line of text.split("\n")) {
+      if (windowsMisuse(line)) {
+        return `Windows unblock/execution-policy guidance: "${line.trim().slice(0, 120)}"`;
+      }
+    }
+    // No `g` flag: CONTROL is only used with .test(); a global regex's lastIndex
+    // leaked between sentences and could skip a violation.
     const CONTROL =
-      /(Gatekeeper|Defender|SmartScreen|Smart App Control|Controlled Folder Access|User Account Control|\bUAC\b)/gi;
+      /(Gatekeeper|Defender|SmartScreen|Smart App Control|Controlled Folder Access|User Account Control|\bUAC\b)/i;
     const BYPASS_VERB =
       /\b(disable|turn\s+off|bypass|weaken|defeat)\s+(?:\w+\s+){0,2}?(Gatekeeper|Defender|SmartScreen|Smart App Control|Controlled Folder Access|User Account Control|\bUAC\b)/i;
     const stripQuarantine = /\b(strip|remove)\s+(?:\w+\s+){0,3}?quarantine/i;
@@ -193,7 +267,12 @@ describe("prohibited guidance never appears in user-facing text", () => {
         return `security-control bypass: "${s.slice(0, 120)}"`;
       if (/HIPAA|IRB/i.test(s)) return `compliance claim: "${s.slice(0, 120)}"`;
       if (/opaque\s+ids?/i.test(s)) return `'opaque IDs' framing: "${s.slice(0, 120)}"`;
-      if (/\bxattr\b/.test(s)) return `xattr guidance: "${s.slice(0, 120)}"`;
+      if (xattrMisuse(s)) return `xattr guidance: "${s.slice(0, 120)}"`;
+      if (
+        /\bspctl\s+--?(master-disable|global-disable|add|remove|disable)\b/i.test(s) ||
+        /\bcsrutil\s+disable\b/i.test(s)
+      )
+        return `security-setting mutation: "${s.slice(0, 120)}"`;
       if (/Properties\s*(→|->)\s*Unblock/i.test(s)) return `Unblock guidance: "${s.slice(0, 120)}"`;
       if (/right-?click\s*(→|->)?\s*open/i.test(s)) return `right-click Open guidance: "${s.slice(0, 120)}"`;
       if (/\b(add|create|allow)\b[^.]{0,60}\bfirewall\b[^.]{0,30}\b(exception|rule)\b/i.test(s) && !/\bno\s+(firewall|inbound)/i.test(s))
@@ -217,5 +296,81 @@ describe("prohibited guidance never appears in user-facing text", () => {
     for (const { file, text } of markdownAndContentFiles()) {
       expect(/because it('s| is) open[- ]source[, ]*(it )?(is )?safe/i.test(text), `${file} claims open-source proves safe`).toBe(false);
     }
+  });
+
+  it("scans maintainer docs and the terminal installer", () => {
+    const files = [...markdownAndContentFiles()].map((f) => f.file);
+    expect(files).toContain("docs/maintainers/TERMINAL-INSTALL.md");
+    expect(files).toContain("docs/maintainers/SIGNING-ACTIVATION.md");
+    expect(files).toContain("scripts/install-mac.sh");
+    expect(files).toContain("scripts/install-windows.ps1");
+  });
+
+  it("bans Windows unblocking, execution-policy changes and pipe-to-iex; permits read-only stream inspection", () => {
+    for (const ok of [
+      "The installer never runs Unblock-File and never removes a Zone.Identifier stream",
+      "Get-Item .\\Fleuron_2.11.0_x64-setup.exe -Stream Zone.Identifier",
+      "Get-Content .\\Fleuron_2.11.0_x64-setup.exe -Stream Zone.Identifier",
+      "powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File install-windows.ps1",
+      "We never document -ExecutionPolicy Bypass for users",
+      "Rejected: irm <url> | iex, because it leaves nothing on disk to inspect",
+      "Do not disable Smart App Control to run Fleuron",
+    ]) {
+      expect(violationIn(ok), `expected allowed Windows text: ${ok}`).toBeNull();
+    }
+
+    for (const bad of [
+      "Run Unblock-File on the downloaded installer",
+      "Unblock-File -Path .\\Fleuron_2.11.0_x64-setup.exe",
+      "powershell -ExecutionPolicy Bypass -File install-windows.ps1",
+      "Set-ExecutionPolicy -Scope CurrentUser RemoteSigned",
+      "irm https://example.invalid/install.ps1 | iex",
+      "Remove-Item .\\Fleuron.exe -Stream Zone.Identifier",
+      "Add-MpPreference -ExclusionPath C:\\Fleuron",
+      "Set-ProcessMitigation -Name Fleuron.exe -Disable DEP",
+      "Open Properties -> Unblock on the setup file",
+      "Add a firewall exception for Fleuron",
+      "Switch out of S mode to install Fleuron",
+      "Turn off Smart App Control to install",
+    ]) {
+      expect(violationIn(bad), `expected Windows violation for: ${bad}`).not.toBeNull();
+    }
+  });
+
+  it("permits only read-only xattr inspection", () => {
+    expect(violationIn("xattr -l ~/Applications/Fleuron.app")).toBeNull();
+    expect(violationIn("xattr -p com.apple.quarantine ~/Applications/Fleuron.app")).toBeNull();
+
+    for (const bad of [
+      "xattr -d com.apple.quarantine Fleuron.app",
+      "xattr -c Fleuron.app",
+      "xattr -cr Fleuron.app",
+      "xattr -w com.apple.quarantine x Fleuron.app",
+      "xattr -l -d com.apple.quarantine x",
+      "sudo xattr -r -d com.apple.quarantine /Applications/Fleuron.app",
+      "Run xattr on the app",
+    ]) {
+      expect(violationIn(bad), `expected xattr violation for: ${bad}`).not.toBeNull();
+    }
+  });
+
+  it("still bans the rest", () => {
+    // Each negative sample triggers its own rule in violationIn() (quarantine
+    // stripping, right-click Open, Gatekeeper bypass, spctl/csrutil mutation,
+    // compliance claim) and is not shadowed by an unrelated rule.
+    for (const bad of [
+      "Remove the quarantine attribute with Terminal",
+      "Use right-click → Open",
+      "To install, bypass Gatekeeper",
+      "spctl --master-disable",
+      "sudo spctl --global-disable",
+      "csrutil disable",
+      "IRB approved",
+    ]) {
+      expect(violationIn(bad), `expected violation for: ${bad}`).not.toBeNull();
+    }
+
+    expect(violationIn("Never bypass Gatekeeper")).toBeNull();
+    expect(violationIn("spctl -a -vv /Applications/Fleuron.app")).toBeNull();
   });
 });

@@ -284,7 +284,7 @@ test("release.yml provenance job holds the right scopes and pins actions/attest@
   assert.match(yaml, /actions\/attest@v4/);
 });
 
-test("release.yml enforces the exact six-asset inventory before any further step", () => {
+test("release.yml enforces the exact eight-asset inventory before any further step", () => {
   const yaml = readWf("release");
   for (const asset of [
     "Fleuron_" + VERSION_TOKEN + "_universal.dmg",
@@ -293,9 +293,159 @@ test("release.yml enforces the exact six-asset inventory before any further step
     "Fleuron_universal.app.tar.gz",
     "Fleuron_universal.app.tar.gz.sig",
     "latest.json",
+    "install-mac.sh",
+    "install-windows.ps1",
   ]) {
     assert.ok(yaml.includes(asset), "inventory must reference " + asset);
   }
+});
+
+function assertInstallMacWiring(yaml) {
+  const finalize = jobBlock(yaml, "finalize-draft");
+  assert.ok(
+    finalize.includes("scripts/render-install-mac.sh"),
+    "finalize-draft must call scripts/render-install-mac.sh",
+  );
+  assert.ok(
+    finalize.includes('"assets/install-mac.sh" \\'),
+    'finalize-draft must upload "assets/install-mac.sh" \\',
+  );
+  const renderIdx = finalize.indexOf("scripts/render-install-mac.sh");
+  const uploadIdx = finalize.indexOf("gh release upload");
+  assert.ok(uploadIdx !== -1 && renderIdx < uploadIdx, "render must precede gh release upload");
+
+  const prov = jobBlock(yaml, "provenance");
+  const expectedLine = prov.match(/^.*EXPECTED=.*$/m)?.[0] ?? "";
+  assert.ok(
+    expectedLine.includes("install-mac.sh"),
+    "provenance EXPECTED= line must include install-mac.sh",
+  );
+  assert.ok(
+    prov.includes('FLEURON_DMG_SHA256=\\"${WANT}\\"'),
+    "provenance must validate the FLEURON_DMG_SHA256 pin",
+  );
+  const shaIdx = prov.indexOf("Generate sorted SHA256SUMS.txt");
+  assert.ok(shaIdx !== -1, "provenance must include Generate sorted SHA256SUMS.txt step");
+  const shaRest = prov.slice(shaIdx);
+  const nextStep = shaRest.search(/^\s+- name:/m);
+  const shaBlock = nextStep === -1 ? shaRest : shaRest.slice(0, nextStep);
+  assert.ok(
+    shaBlock.includes("install-mac.sh"),
+    "SHA256SUMS step must include install-mac.sh",
+  );
+}
+
+test("release.yml renders, uploads, pins and checksums install-mac.sh", () => {
+  const yaml = readWf("release");
+  assertInstallMacWiring(yaml);
+  const mutated = yaml.replace(/(EXPECTED="[^"\n]*) install-mac\.sh"/, '$1"');
+  assert.notEqual(mutated, yaml, "negative mutation must modify EXPECTED=");
+  assert.throws(() => assertInstallMacWiring(mutated), /EXPECTED=/);
+});
+
+function assertInstallWindowsWiring(yaml) {
+  const finalize = jobBlock(yaml, "finalize-draft");
+  assert.ok(
+    finalize.includes("scripts/render-install-windows.sh"),
+    "finalize-draft must call scripts/render-install-windows.sh",
+  );
+  assert.ok(
+    finalize.includes('"assets/install-windows.ps1" \\'),
+    'finalize-draft must upload "assets/install-windows.ps1" \\',
+  );
+  const renderIdx = finalize.indexOf("scripts/render-install-windows.sh");
+  const uploadIdx = finalize.indexOf("gh release upload");
+  assert.ok(uploadIdx !== -1 && renderIdx < uploadIdx, "render must precede gh release upload");
+  assert.ok(
+    finalize.includes("command -v pwsh"),
+    "finalize-draft must check command -v pwsh before parse-checking install-windows.ps1",
+  );
+  assert.ok(
+    finalize.includes("[System.Management.Automation.Language.Parser]::ParseFile"),
+    "finalize-draft must parse-check install-windows.ps1 with Parser::ParseFile",
+  );
+  assert.ok(
+    finalize.includes("FleuronSetupSha256 = '${WANT}'"),
+    "finalize-draft must validate the FleuronSetupSha256 pin",
+  );
+
+  const prov = jobBlock(yaml, "provenance");
+  const expectedLine = prov.match(/^.*EXPECTED=.*$/m)?.[0] ?? "";
+  assert.ok(
+    expectedLine.includes("install-windows.ps1"),
+    "provenance EXPECTED= line must include install-windows.ps1",
+  );
+  assert.ok(
+    prov.includes("command -v pwsh"),
+    "provenance must check command -v pwsh before parse-checking install-windows.ps1",
+  );
+  assert.ok(
+    prov.includes("FleuronSetupSha256 = '${WANT}'"),
+    "provenance must validate the FleuronSetupSha256 pin",
+  );
+  assert.ok(
+    prov.includes("[System.Management.Automation.Language.Parser]::ParseFile"),
+    "provenance must parse-check install-windows.ps1 with Parser::ParseFile",
+  );
+  const shaIdx = prov.indexOf("Generate sorted SHA256SUMS.txt");
+  assert.ok(shaIdx !== -1, "provenance must include Generate sorted SHA256SUMS.txt step");
+  const shaRest = prov.slice(shaIdx);
+  const nextStep = shaRest.search(/^\s+- name:/m);
+  const shaBlock = nextStep === -1 ? shaRest : shaRest.slice(0, nextStep);
+  assert.ok(
+    shaBlock.includes("install-windows.ps1"),
+    "SHA256SUMS step must include install-windows.ps1",
+  );
+}
+
+test("release.yml renders, parse-checks, uploads, pins and checksums install-windows.ps1", () => {
+  const yaml = readWf("release");
+  assertInstallWindowsWiring(yaml);
+  const mutatedExpected = yaml.replace(/(EXPECTED="[^"\n]*) install-windows\.ps1/, "$1");
+  assert.notEqual(mutatedExpected, yaml, "negative mutation must modify EXPECTED=");
+  assert.throws(() => assertInstallWindowsWiring(mutatedExpected), /EXPECTED=/);
+
+  const mutatedPwsh = yaml.replace(/command -v pwsh/g, "true");
+  assert.notEqual(mutatedPwsh, yaml, "negative mutation must replace command -v pwsh");
+  assert.throws(() => assertInstallWindowsWiring(mutatedPwsh), /pwsh/);
+});
+
+function assertWindowsInstallerCiWiring(testYaml, releaseYaml) {
+  assert.ok(
+    testYaml.includes("scripts/install-windows.test.ps1"),
+    "test.yml must run scripts/install-windows.test.ps1",
+  );
+  assert.ok(
+    testYaml.includes("scripts/install-windows-contract.test.mjs"),
+    "test.yml must run scripts/install-windows-contract.test.mjs",
+  );
+  assert.ok(
+    testYaml.includes("runner.os == 'Windows'"),
+    "test.yml must gate Windows runtime tests with runner.os == 'Windows'",
+  );
+  const validateBlock = jobBlock(releaseYaml, "validate");
+  assert.ok(
+    validateBlock.includes("scripts/install-windows-contract.test.mjs"),
+    "release.yml validate job must run scripts/install-windows-contract.test.mjs",
+  );
+  const buildBlock = jobBlock(releaseYaml, "build-draft-assets");
+  assert.ok(
+    buildBlock.includes("scripts/install-windows.test.ps1"),
+    "release.yml build-draft-assets job must run scripts/install-windows.test.ps1",
+  );
+}
+
+test("CI runs the Windows installer suite and its static contract", () => {
+  const testYaml = readWf("test");
+  const releaseYaml = readWf("release");
+  assertWindowsInstallerCiWiring(testYaml, releaseYaml);
+
+  const mutated = testYaml.replaceAll("scripts/install-windows.test.ps1", "scripts/removed.ps1");
+  assert.notEqual(mutated, testYaml, "negative mutation must remove scripts/install-windows.test.ps1");
+  assert.throws(
+    () => assertWindowsInstallerCiWiring(mutated, releaseYaml),
+    /install-windows\.test\.ps1/,
+  );
 });
 
 test("release.yml keeps the QA runners out of the published assets", () => {
@@ -496,4 +646,180 @@ test("four workflow YAML files parse (authoritative Ruby loader; structural fall
       throw err;
     }
   }
+});
+
+// ----------------------
+// 8. Terminal installer contract (scripts/install-mac.sh & docs)
+// ----------------------
+
+function verifyInstallerTemplate(text) {
+  assert.match(
+    text,
+    /^FLEURON_VERSION="__FLEURON_VERSION__"$/m,
+    'missing exact FLEURON_VERSION="__FLEURON_VERSION__" line',
+  );
+  assert.match(
+    text,
+    /^FLEURON_DMG_SHA256="__FLEURON_DMG_SHA256__"$/m,
+    'missing exact FLEURON_DMG_SHA256="__FLEURON_DMG_SHA256__" line',
+  );
+  assert.ok(text.includes("--proto '=https'"), "must include --proto '=https'");
+  assert.ok(
+    text.includes("--proto-redir '=https'"),
+    "must include --proto-redir '=https' so a redirect can never downgrade to plain http",
+  );
+  assert.ok(text.includes("--fail"), "must include --fail");
+  assert.ok(text.includes("--tlsv1.2"), "must include --tlsv1.2");
+  assert.ok(
+    text.includes("hdiutil attach -readonly -nobrowse"),
+    "must attach DMG with -readonly -nobrowse",
+  );
+  // Order matters for the negative mutation below: the "never fetch latest"
+  // detector runs FIRST so a template that points at releases/latest fails with
+  // this exact reason, instead of tripping the tag-pinned include check with a
+  // less precise message.
+  assert.doesNotMatch(text, /releases\/latest/, "template must never fetch releases/latest");
+  assert.ok(
+    text.includes("/releases/download/v${FLEURON_VERSION}"),
+    "must download from /releases/download/v${FLEURON_VERSION}",
+  );
+  assert.doesNotMatch(
+    text,
+    /^\s*[^#\n]*\bsudo\s+(?!or\b)[a-z\/]/m,
+    "installer must never invoke sudo",
+  );
+  assert.doesNotMatch(
+    text,
+    /\bxattr\b|\bspctl\b|\bcsrutil\b|--noqtn|-noverify|\|\s*(ba)?sh\b/,
+    "installer must never run xattr/spctl/csrutil/--noqtn/-noverify or pipe to sh",
+  );
+  assert.ok(text.includes("# PATH-RESET"), "must include # PATH-RESET marker");
+  assert.ok(text.includes("# CHECKSUM-GATE"), "must include # CHECKSUM-GATE marker");
+  const nonEmpty = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  assert.equal(nonEmpty[nonEmpty.length - 1], 'main "$@"', 'last non-empty line must be main "$@"');
+}
+
+function assertNoTerminalPromise(text, label) {
+  assert.doesNotMatch(
+    text,
+    /No Terminal steps|never requires Terminal/i,
+    `${label}: must drop the no-Terminal promise`,
+  );
+}
+
+test("scripts/install-mac.sh satisfies the terminal installer security contract", () => {
+  assert.ok(existsSync(`${root}scripts/render-install-mac.sh`), "missing scripts/render-install-mac.sh");
+  assert.ok(existsSync(`${root}scripts/install-mac.test.sh`), "missing scripts/install-mac.test.sh");
+
+  const tpl = readFile("scripts/install-mac.sh");
+  verifyInstallerTemplate(tpl);
+
+  assert.throws(() => verifyInstallerTemplate(tpl + "\nsudo ditto a b\n"), /sudo/);
+
+  const noRedir = tpl.replace(/--proto-redir '=https' /g, "");
+  assert.notEqual(noRedir, tpl, "--proto-redir mutation must land");
+  assert.throws(() => verifyInstallerTemplate(noRedir), /--proto-redir/);
+
+  const latestMut = tpl.replace(/\/releases\/download\/v\$\{FLEURON_VERSION\}/g, "/releases/latest/download");
+  assert.notEqual(latestMut, tpl, "releases/latest mutation must land");
+  assert.throws(() => verifyInstallerTemplate(latestMut), /releases\/latest/);
+
+  assert.throws(
+    () => verifyInstallerTemplate(tpl + "\nxattr -d com.apple.quarantine x\n"),
+    /xattr/,
+  );
+});
+
+test("install guide documents the Terminal installer and drops the no-Terminal promise", () => {
+  assert.ok(
+    existsSync(`${root}docs/maintainers/TERMINAL-INSTALL.md`),
+    "missing docs/maintainers/TERMINAL-INSTALL.md",
+  );
+  const installing = readFile("docs/INSTALLING.md");
+  assert.ok(
+    installing.includes("https://github.com/wilsonhyeh/fleuron/releases/latest/download/install-mac.sh"),
+    "INSTALLING.md must document the stable install-mac.sh URL",
+  );
+  assert.ok(
+    installing.includes("/usr/bin/curl --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL"),
+    "INSTALLING.md must document the pinned curl invocation, including --proto-redir '=https'",
+  );
+  assert.ok(
+    installing.includes("/bin/bash ~/fleuron-install-mac.sh"),
+    "INSTALLING.md must document running /bin/bash ~/fleuron-install-mac.sh",
+  );
+
+  for (const [label, p] of [
+    ["README.md", "README.md"],
+    ["docs/INSTALLING.md", "docs/INSTALLING.md"],
+    ["src/content/trust-and-permissions.ts", "src/content/trust-and-permissions.ts"],
+  ]) {
+    assertNoTerminalPromise(readFile(p), label);
+  }
+
+  assert.throws(
+    () =>
+      assertNoTerminalPromise(
+        installing + "\nNormal installation never requires Terminal or checksums.\n",
+        "mutated INSTALLING.md",
+      ),
+    /no-Terminal promise/,
+  );
+});
+
+function assertWindowsInstallDocs(installing, readme, trust, termDoc) {
+  assert.ok(
+    installing.includes("https://github.com/wilsonhyeh/fleuron/releases/latest/download/install-windows.ps1"),
+    "INSTALLING.md must document the stable install-windows.ps1 URL",
+  );
+  assert.ok(
+    installing.includes("& \"$env:SystemRoot\\System32\\curl.exe\" --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL"),
+    "INSTALLING.md must document the pinned System32 curl.exe invocation",
+  );
+  assert.ok(
+    installing.includes("-NoProfile -ExecutionPolicy RemoteSigned -File \"$env:USERPROFILE\\fleuron-install-windows.ps1\""),
+    "INSTALLING.md must document running PowerShell with -ExecutionPolicy RemoteSigned",
+  );
+  for (const [label, text] of [
+    ["README.md", readme],
+    ["docs/INSTALLING.md", installing],
+    ["src/content/trust-and-permissions.ts", trust],
+  ]) {
+    assert.doesNotMatch(
+      text,
+      /-ExecutionPolicy\s+Bypass/i,
+      `${label}: must never suggest -ExecutionPolicy Bypass`,
+    );
+  }
+  assert.ok(
+    termDoc.includes("## 13. Windows PowerShell installer"),
+    "TERMINAL-INSTALL.md must include section ## 13. Windows PowerShell installer",
+  );
+  assert.ok(
+    termDoc.includes("unverified on Windows"),
+    "TERMINAL-INSTALL.md must document unverified on Windows status",
+  );
+  assert.ok(
+    termDoc.includes("https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies"),
+    "TERMINAL-INSTALL.md must link to about_execution_policies",
+  );
+}
+
+test("install guide documents the PowerShell installer", () => {
+  const installing = readFile("docs/INSTALLING.md");
+  const readme = readFile("README.md");
+  const trust = readFile("src/content/trust-and-permissions.ts");
+  const termDoc = readFile("docs/maintainers/TERMINAL-INSTALL.md");
+  assertWindowsInstallDocs(installing, readme, trust, termDoc);
+
+  const curlLine = "& \"$env:SystemRoot\\System32\\curl.exe\" --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL";
+  const mutated = installing.replace(curlLine, "");
+  assert.notEqual(mutated, installing, "negative mutation must remove the curl.exe line");
+  assert.throws(
+    () => assertWindowsInstallDocs(mutated, readme, trust, termDoc),
+    /curl\.exe/,
+  );
 });

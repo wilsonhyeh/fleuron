@@ -43,8 +43,8 @@ export const OFFICIAL_URLS = {
 
 /** The two manual downloads. Other release assets are updater internals or optional QA runners. */
 export const CANONICAL_ASSETS = {
-  macos: "Fleuron_2.11.0_universal.dmg",
-  windows: "Fleuron_2.11.0_x64-setup.exe",
+  macos: "Fleuron_2.11.1_universal.dmg",
+  windows: "Fleuron_2.11.1_x64-setup.exe",
 } as const;
 
 /**
@@ -54,7 +54,7 @@ export const CANONICAL_ASSETS = {
 export const UPDATER_INFRASTRUCTURE_ASSETS = [
   "Fleuron_universal.app.tar.gz",
   "Fleuron_universal.app.tar.gz.sig",
-  "Fleuron_2.11.0_x64-setup.exe.sig",
+  "Fleuron_2.11.1_x64-setup.exe.sig",
   "latest.json",
 ] as const;
 
@@ -160,7 +160,7 @@ export const MACOS_WARNING_CARDS: WarningCard[] = [
     explanation:
       "Expected for the official non-notarized, ad-hoc signed build. macOS is saying it cannot verify the publisher — not that it found malware.",
     userAction:
-      "Confirm you downloaded from github.com/wilsonhyeh/fleuron/releases, then System Settings \u2192 Privacy & Security \u2192 Open Anyway, authenticate, and Open. No Terminal steps are needed.",
+      "Confirm you downloaded from github.com/wilsonhyeh/fleuron/releases, then System Settings \u2192 Privacy & Security \u2192 Open Anyway, authenticate, and Open. Prefer Terminal? The install guide's checksum-verified Terminal installer is an alternative; downloads made in Terminal do not show this dialog.",
   },
   {
     signal: "\u201cWill damage your computer\u201d / malware alert / \u201cdamaged and cannot be opened\u201d",
@@ -187,7 +187,7 @@ export const WINDOWS_WARNING_CARDS: WarningCard[] = [
     explanation:
       "Reputation warning for a newly published, non-Authenticode-signed installer. It is the expected result of an unsigned-but-official download.",
     userAction:
-      "Confirm the download URL, version, and filename, then More info \u2192 Run anyway.",
+      "Confirm the download URL, version, and filename, then More info \u2192 Run anyway. Prefer PowerShell? The install guide's checksum-verified PowerShell installer is an alternative; files it downloads are not marked as coming from the internet, so this prompt is not expected on that path.",
   },
   {
     signal: "Microsoft Defender reports a threat / quarantines the installer",

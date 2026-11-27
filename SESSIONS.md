@@ -83,3 +83,29 @@ text size (`src/components/TextSizeButton.tsx`) as matching icon buttons;
 toolbar title uncapped and "coding as" shown only with 2+ coders; Structure map
 centre wraps the title (`src/lib/wrap-lines.ts`). Frontend only; no schema
 change, no Supabase migration.
+
+## 2026-11-27 — Fleuron 2.11.1: terminal installers shipped
+
+Shipped the macOS Terminal installer (`scripts/install-mac.sh`, its renderer,
+mock suite and the `C1`-`C27` cases) and the Windows PowerShell installer
+(`scripts/install-windows.ps1`, renderer, contract suite, mocked `pwsh` suite),
+wired into `.github/workflows/test.yml` and `release.yml` (render + pin-check,
+upload inside the draft release, `SHA256SUMS.txt`, `actions/attest` subject
+checksums), with `docs/INSTALLING.md` rewritten around option A / option B and
+`docs/maintainers/TERMINAL-INSTALL.md` recording the design, threat models and
+unverified-on-Windows status.
+
+Three defects fixed on the way: both `curl` calls in `install-mac.sh` now pass
+`--proto-redir '=https'` so a redirect cannot downgrade the download to plain
+http (the Windows installer already did; the mock `curl` now refuses to serve
+without it, and `C27`/`C27-MUT` fail if it disappears); the README's download
+table uses the version-agnostic `Fleuron_<version>_*` form instead of the stale
+`2.1.0` names (`docs/IT-DEPLOYMENT.md` had a stale `2.0.1` name); and the
+transcript panel's "How to fix access" link targets
+`#file-access-troubleshooting`, which is the guide's real heading.
+
+Gates: tsc clean; vitest 514/514; install-mac suite 33/33; windows installer
+contract 22/22; release-contract 61/61; workflow-shell 75 blocks clean; ps1
+ASCII clean; sync-version --check clean. Nothing was executed on macOS or
+Windows: the first real runs are the `v2.11.1` release workflow's
+`windows-latest` leg and RELEASE-SMOKE § 24.

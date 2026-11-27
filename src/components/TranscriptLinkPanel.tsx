@@ -242,7 +242,7 @@ export function TranscriptLinkPanel({
                 Choose another folder
               </button>
               <a
-                href="https://github.com/wilsonhyeh/fleuron/blob/main/docs/INSTALLING.md#troubleshooting-file-access"
+                href="https://github.com/wilsonhyeh/fleuron/blob/main/docs/INSTALLING.md#file-access-troubleshooting"
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-ghost btn-sm underline"

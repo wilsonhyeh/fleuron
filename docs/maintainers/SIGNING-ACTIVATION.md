@@ -12,6 +12,7 @@ Prerequisite: personal Apple Developer Program membership is active.
 - [ ] Notarize + staple: `xcrun notarytool submit` then `xcrun stapler staple`
 - [ ] Update `docs/INSTALLING.md`: delete the expected-warning section; document zero-warning launch
 - [ ] Update `scripts/verify-mac-bundle.sh`: require `Authority=Developer ID`, real TeamIdentifier, and flip the spctl check from "expected reject" to "must pass"
+- [ ] Update `scripts/install-mac.sh`: replace the `Signature=adhoc` / `TeamIdentifier=not set` assertions with the Developer ID authority and real TeamIdentifier, and re-run `bash scripts/install-mac.test.sh`
 - [ ] Recapture all macOS screenshots from signed builds before replacing docs imagery
 - [ ] Regenerate candidates; rerun the full gate set
 
@@ -24,6 +25,7 @@ Prerequisite: an OV/EV code-signing certificate you personally control.
 - [ ] Update `docs/INSTALLING.md` SmartScreen section to match observed behavior for signed builds
 - [ ] Extend `scripts/nsis-template.test.mjs`/release-contract tests: fail when a shipping artifact is unsigned once signing is active
 - [ ] Recapture SmartScreen screenshots only from signed builds
+- [ ] When Authenticode signing activates: add a publisher check (Get-AuthenticodeSignature) to `scripts/install-windows.ps1`, re-run its suite on windows-latest, and update section 13 of TERMINAL-INSTALL.md
 
 ## What must NEVER change, signed or not
 
